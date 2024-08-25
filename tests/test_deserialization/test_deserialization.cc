@@ -1,14 +1,19 @@
 #include <iostream>
 #include <test_macros.h>
 
-TEG_TEST_CASE("First test") {
-    std::cout << "First test" << std::endl;
+int stuff(int x) {
+    return x+x+x+x;
 }
 
-TEG_TEST_CASE("Second test") {
-    std::cout << "Second test" << std::endl;
+TEST_CASE("First test") {
+    CHECK(stuff(1) != 4);
 }
 
-TEG_TEST_CASE("Third test") {
-    std::cout << "Third test" << std::endl;
+TEST_CASE("Second test") {
+    CHECK_EQ(stuff(1), 4);
+}
+
+TEST_CASE("Third test") {
+    CHECK_EQ(stuff(1), 4);
+    CHECK_EQ(stuff(1), 4);
 }
