@@ -1,7 +1,7 @@
 test_serialization = executable(
   'test_serialization', 
   'test_serialization.cc',
-  dependencies: [teg_dep]
+  dependencies: [teg_dep, test_dep]
 )
 test(
   'serialization', 

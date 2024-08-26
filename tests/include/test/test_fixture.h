@@ -123,7 +123,7 @@ int execute_all_tests() {
         errors_count += test->errors_count();
     }
 
-    std::cout << "\nSummary:\n\n";
+    std::cout << "\nSummary\n";
     std::cout << "Ok:                 " << passes_count << " / " << asserts_count << "\n";
     std::cout << "Fail:               " << errors_count << " / " << asserts_count << "\n";
 

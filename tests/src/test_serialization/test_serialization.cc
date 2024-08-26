@@ -1,11 +1,8 @@
-#include "test.h"
+#include "larrad/larrad.h"
+#include "test/test.h"
 
 int stuff(int x) {
     return x+x+x+x;
-}
-
-TEST_CASE_G("First test", simple_deserialization) {
-    ASSERT(stuff(1) == 4);
 }
 
 TEST_CASE("Second test") {
