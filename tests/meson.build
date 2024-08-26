@@ -5,6 +5,4 @@ test_dep = declare_dependency(
   include_directories : test_inc
 )
 
-subdir('src/test_serialize')
-subdir('src/test_serialization')
-subdir('src/test_deserialization')
+subdir('src/test_fundamental')
