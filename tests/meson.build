@@ -5,4 +5,5 @@ test_dep = declare_dependency(
   include_directories : test_inc
 )
 
+subdir('src/test_reflection')
 subdir('src/test_fundamental')

@@ -1,10 +1,8 @@
 #include <cstdint>
 #include <concepts>
 #include <array>
-#include "larrad/larrad.h"
+#include "teg/teg.h"
 #include "test/test.h"
-
-namespace teg = larrad;
 
 template <std::integral T>
 constexpr std::array<T, 4> unsigned_values = {
