@@ -18,7 +18,25 @@ constexpr std::array<T, 5> signed_values = {
     -1, 0, 1
 };
 
-TEST_CASE("Serialize and deserialize integral types") {  
+TEST_CASE("Serialize and deserialize integral types") {
+    // bool
+    for (auto b0 : std::array<bool, 2>{false, true}) {
+        teg::buffer b;
+        teg::serialize(b, b0).or_throw();
+        
+        bool b1;
+        teg::deserialize(b, b1).or_throw();
+        ASSERT_EQ(b0, b1);
+    }
+    // char
+    for (auto c0 : std::array<char, 4>{'A', 'a', 'Z', 'z'}) {
+        teg::buffer b;
+        teg::serialize(b, c0).or_throw();
+        
+        char c1;
+        teg::deserialize(b, c1).or_throw();
+        ASSERT_EQ(c0, c1);
+    }
     // int8_t    
     for (auto i0 : signed_values<std::int8_t>) {
         teg::buffer b;

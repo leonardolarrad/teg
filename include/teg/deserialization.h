@@ -20,6 +20,7 @@
 
 #include "buffer.h"
 #include "error.h"
+#include "concepts.h"
 
 namespace teg::internal {
 
@@ -46,7 +47,7 @@ private:
 error deserialize_one(buffer_reader& reader, auto& obj) {
     using type = std::remove_cvref_t<decltype(obj)>;
 
-    if constexpr (std::is_fundamental_v<type> || std::is_enum_v<type>) {        
+    if constexpr (fundamental<type>) {        
         reader.read_bytes(reinterpret_cast<std::byte*>(&obj), sizeof(type));
         return {};
     }

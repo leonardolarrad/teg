@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cstring>
 
+#include "concepts.h"
 #include "member_count.h"
 #include "error.h"
 #include "visitor.h"
@@ -52,7 +53,7 @@ private:
 error serialize_one(buffer_writer& writer, const auto& obj) {
     using type = std::remove_cvref_t<decltype(obj)>;
 
-    if constexpr (std::is_fundamental_v<type> || std::is_enum_v<type>) {
+    if constexpr (fundamental<type>) {
         writer.write_bytes(reinterpret_cast<const std::byte*>(&obj), sizeof(type));
         return {};        
     }
@@ -84,9 +85,13 @@ error serialize_many(buffer_writer& writer, const auto& first_obj, const auto&..
 } // namespace teg::internal
 
 namespace teg {	
+    
+template <typename T>
+concept serializable = fundamental<T> || aggregate<T>;
 
+template <serializable... T>
 [[nodiscard]] inline constexpr 
-error serialize(buffer& output_buffer, const auto&... objs) {
+error serialize(buffer& output_buffer, const T&... objs) {
     if constexpr (sizeof...(objs) == 0) {
         return {};
     }

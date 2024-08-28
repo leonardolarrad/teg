@@ -128,6 +128,13 @@ concept optional_like = !expected_like<T> && requires(T optional) {
 };
 
 template <typename T>
+concept fundamental = std::is_fundamental_v<std::remove_cvref_t<T>> 
+    || std::is_enum_v<std::remove_cvref_t<T>>;
+
+template <typename T>
 concept aggregate = std::is_aggregate_v<std::remove_cvref_t<T>>;
+
+template <typename T>
+concept deserializable = fundamental<T> || aggregate<T>;
 
 } // namespace teg

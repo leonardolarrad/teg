@@ -21,17 +21,23 @@
 #include <cstddef>
 #include <concepts>
 #include <vector>
+#include "concepts.h"
 
 namespace teg::internal {
+
+template <typename T, typename... A>
+concept constructible_from = requires {
+    T{{A{}}...};
+};
 
 struct any_type {
     template <typename T>
     operator T();
 };
 
-template<typename T, typename ... A>
+template<aggregate T, typename ... A>
 inline constexpr std::size_t recursive_members_count() {
-    if constexpr (std::constructible_from<T, any_type, A...>) {
+    if constexpr (constructible_from<T, any_type, A...>) {
         return recursive_members_count<T, A..., any_type>();
     }
     else {
@@ -39,7 +45,7 @@ inline constexpr std::size_t recursive_members_count() {
     }        
 }
 
-template<typename T>
+template<aggregate T>
 inline constexpr std::size_t members_count() {
     using type = std::remove_cvref_t<T>;
 
@@ -48,9 +54,6 @@ inline constexpr std::size_t members_count() {
     }
     else if constexpr (!class_like<type>) {
         return 0;
-    }
-    else if constexpr (container_like<type>) {
-        return type{}.size();
     }
     else {
         return recursive_members_count<T>();
@@ -61,7 +64,7 @@ inline constexpr std::size_t members_count() {
 
 namespace teg {
 
-template <typename T>
+template <aggregate T>
 inline constexpr std::size_t members_count = internal::members_count<T>();
 
 } // namespace teg

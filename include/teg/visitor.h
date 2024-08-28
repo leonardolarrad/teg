@@ -20,13 +20,15 @@
 #include <type_traits>
 #include <variant>
 #include <concepts>
+
 #include "member_count.h"
+#include "concepts.h"
 
 namespace teg {
 
 constexpr static auto MAX_VISIT_MEMBERS = 64;
 
-template<typename O, typename V>
+template<aggregate O, typename V>
 constexpr decltype(auto) inline visit_members(O&& obj, V&& visitor) {
     using type = std::remove_cvref_t<O>;
 
@@ -41,525 +43,525 @@ constexpr decltype(auto) inline visit_members(O&& obj, V&& visitor) {
         return visitor();
     }
     else if constexpr (members_count == 1) {
-        auto &&[obj1] = obj;
-        return visitor(obj1);
+        auto &&[e1] = obj;
+        return visitor(e1);
     }
     else if constexpr (members_count == 2) {
-        auto &&[obj1, obj2] = obj;
-        return visitor(obj1, obj2);
+        auto &&[e1, e2] = obj;
+        return visitor(e1, e2);
     }
     else if constexpr (members_count == 3) {
-        auto &&[obj1, obj2, obj3] = obj;
-        return visitor(obj1, obj2, obj3);
+        auto &&[e1, e2, e3] = obj;
+        return visitor(e1, e2, e3);
     }
     else if constexpr (members_count == 4) {
-        auto &&[obj1, obj2, obj3, obj4] = obj;
-        return visitor(obj1, obj2, obj3, obj4);
+        auto &&[e1, e2, e3, e4] = obj;
+        return visitor(e1, e2, e3, e4);
     }
     else if constexpr (members_count == 5) {
-        auto &&[obj1, obj2, obj3, obj4, obj5] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5);
+        auto &&[e1, e2, e3, e4, e5] = obj;
+        return visitor(e1, e2, e3, e4, e5);
     }
     else if constexpr (members_count == 6) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6);
+        auto &&[e1, e2, e3, e4, e5, e6] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6);
     }
     else if constexpr (members_count == 7) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7);
+        auto &&[e1, e2, e3, e4, e5, e6, e7] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7);
     }
     else if constexpr (members_count == 8) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8);
     }
     else if constexpr (members_count == 9) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9);
     }
     else if constexpr (members_count == 10) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10);
     }
     else if constexpr (members_count == 11) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11);
     }
     else if constexpr (members_count == 12) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12);
     }
     else if constexpr (members_count == 13) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13);
     }
     else if constexpr (members_count == 14) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14] =
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14] =
             obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14);
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14);
     }
     else if constexpr (members_count == 15) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14,
-                obj15] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14,
+                e15] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15);
     }
     else if constexpr (members_count == 16) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16);
     }
     else if constexpr (members_count == 17) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17);
     }
     else if constexpr (members_count == 18) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18);
     }
     else if constexpr (members_count == 19) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19);
     }
     else if constexpr (members_count == 20) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20);
     }
     else if constexpr (members_count == 21) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21);
     }
     else if constexpr (members_count == 22) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22);
     }
     else if constexpr (members_count == 23) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23);
     }
     else if constexpr (members_count == 24) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24);
     }
     else if constexpr (members_count == 25) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24,
-                        obj25);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24,
+                        e25);
     }
     else if constexpr (members_count == 26) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26);
     }
     else if constexpr (members_count == 27) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27] =
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27] =
             obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27);
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27);
     }
     else if constexpr (members_count == 28) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28] =
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28] =
             obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28);
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28);
     }
     else if constexpr (members_count == 29) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29);
     }
     else if constexpr (members_count == 30) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30);
     }
     else if constexpr (members_count == 31) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31);
     }
     else if constexpr (members_count == 32) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32);
     }
     else if constexpr (members_count == 33) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33);
     }
     else if constexpr (members_count == 34) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34);
     }
     else if constexpr (members_count == 35) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35);
     }
     else if constexpr (members_count == 36) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36);
     }
     else if constexpr (members_count == 37) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36,
-                        obj37);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36,
+                        e37);
     }
     else if constexpr (members_count == 38) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38);
     }
     else if constexpr (members_count == 39) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39);
     }
     else if constexpr (members_count == 40) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40] =
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40] =
             obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40);
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40);
     }
     else if constexpr (members_count == 41) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41] =
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41] =
             obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41);
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41);
     }
     else if constexpr (members_count == 42) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42);
     }
     else if constexpr (members_count == 43) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43);
     }
     else if constexpr (members_count == 44) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44);
     }
     else if constexpr (members_count == 45) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45);
     }
     else if constexpr (members_count == 46) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46);
     }
     else if constexpr (members_count == 47) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47);
     }
     else if constexpr (members_count == 48) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48);
     }
     else if constexpr (members_count == 49) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48,
-                        obj49);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48,
+                        e49);
     }
     else if constexpr (members_count == 50) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50);
     }
     else if constexpr (members_count == 51) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50, obj51] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50, obj51);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50, e51] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50, e51);
     }
     else if constexpr (members_count == 52) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50, obj51, obj52] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50, obj51, obj52);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50, e51, e52);
     }
     else if constexpr (members_count == 53) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50, obj51, obj52, obj53] =
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53] =
             obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50, obj51, obj52, obj53);
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50, e51, e52, e53);
     }
     else if constexpr (members_count == 54) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50, obj51, obj52, obj53, obj54] =
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53, e54] =
             obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50, obj51, obj52, obj53, obj54);
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50, e51, e52, e53, e54);
     }
     else if constexpr (members_count == 55) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50, obj51, obj52, obj53, obj54,
-                obj55] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50, obj51, obj52, obj53, obj54, obj55);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53, e54,
+                e55] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50, e51, e52, e53, e54, e55);
     }
     else if constexpr (members_count == 56) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50, obj51, obj52, obj53, obj54,
-                obj55, obj56] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50, obj51, obj52, obj53, obj54, obj55, obj56);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53, e54,
+                e55, e56] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50, e51, e52, e53, e54, e55, e56);
     }
     else if constexpr (members_count == 57) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50, obj51, obj52, obj53, obj54,
-                obj55, obj56, obj57] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50, obj51, obj52, obj53, obj54, obj55, obj56, obj57);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53, e54,
+                e55, e56, e57] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50, e51, e52, e53, e54, e55, e56, e57);
     }
     else if constexpr (members_count == 58) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50, obj51, obj52, obj53, obj54,
-                obj55, obj56, obj57, obj58] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50, obj51, obj52, obj53, obj54, obj55, obj56, obj57, obj58);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53, e54,
+                e55, e56, e57, e58] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50, e51, e52, e53, e54, e55, e56, e57, e58);
     }
     else if constexpr (members_count == 59) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50, obj51, obj52, obj53, obj54,
-                obj55, obj56, obj57, obj58, obj59] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50, obj51, obj52, obj53, obj54, obj55, obj56, obj57, obj58, obj59);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53, e54,
+                e55, e56, e57, e58, e59] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50, e51, e52, e53, e54, e55, e56, e57, e58, e59);
     }
     else if constexpr (members_count == 60) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50, obj51, obj52, obj53, obj54,
-                obj55, obj56, obj57, obj58, obj59, obj60] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50, obj51, obj52, obj53, obj54, obj55, obj56, obj57, obj58, obj59, obj60);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53, e54,
+                e55, e56, e57, e58, e59, e60] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50, e51, e52, e53, e54, e55, e56, e57, e58, e59, e60);
     }
     else if constexpr (members_count == 61) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50, obj51, obj52, obj53, obj54,
-                obj55, obj56, obj57, obj58, obj59, obj60, obj61] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50, obj51, obj52, obj53, obj54, obj55, obj56, obj57, obj58, obj59, obj60,
-                        obj61);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53, e54,
+                e55, e56, e57, e58, e59, e60, e61] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50, e51, e52, e53, e54, e55, e56, e57, e58, e59, e60,
+                        e61);
     }
     else if constexpr (members_count == 62) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50, obj51, obj52, obj53, obj54,
-                obj55, obj56, obj57, obj58, obj59, obj60, obj61, obj62] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50, obj51, obj52, obj53, obj54, obj55, obj56, obj57, obj58, obj59, obj60, obj61,
-                        obj62);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53, e54,
+                e55, e56, e57, e58, e59, e60, e61, e62] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50, e51, e52, e53, e54, e55, e56, e57, e58, e59, e60, e61,
+                        e62);
     }
     else if constexpr (members_count == 63) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50, obj51, obj52, obj53, obj54,
-                obj55, obj56, obj57, obj58, obj59, obj60, obj61, obj62, obj63] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50, obj51, obj52, obj53, obj54, obj55, obj56, obj57, obj58, obj59, obj60, obj61,
-                        obj62, obj63);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53, e54,
+                e55, e56, e57, e58, e59, e60, e61, e62, e63] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50, e51, e52, e53, e54, e55, e56, e57, e58, e59, e60, e61,
+                        e62, e63);
     }
     else if constexpr (members_count == 64) {
-        auto &&[obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13, obj14, obj15,
-                obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25, obj26, obj27, obj28,
-                obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37, obj38, obj39, obj40, obj41,
-                obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49, obj50, obj51, obj52, obj53, obj54,
-                obj55, obj56, obj57, obj58, obj59, obj60, obj61, obj62, obj63, obj64] = obj;
-        return visitor(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9, obj10, obj11, obj12, obj13,
-                        obj14, obj15, obj16, obj17, obj18, obj19, obj20, obj21, obj22, obj23, obj24, obj25,
-                        obj26, obj27, obj28, obj29, obj30, obj31, obj32, obj33, obj34, obj35, obj36, obj37,
-                        obj38, obj39, obj40, obj41, obj42, obj43, obj44, obj45, obj46, obj47, obj48, obj49,
-                        obj50, obj51, obj52, obj53, obj54, obj55, obj56, obj57, obj58, obj59, obj60, obj61,
-                        obj62, obj63, obj64);
+        auto &&[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15,
+                e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28,
+                e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41,
+                e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53, e54,
+                e55, e56, e57, e58, e59, e60, e61, e62, e63, e64] = obj;
+        return visitor(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13,
+                        e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25,
+                        e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37,
+                        e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49,
+                        e50, e51, e52, e53, e54, e55, e56, e57, e58, e59, e60, e61,
+                        e62, e63, e64);
     }
 }
 
