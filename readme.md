@@ -18,6 +18,6 @@ meson setup build/
 meson compile -C build/
 ```
 
-## PRUEBAS UNITARIAS Y DE INTEGRACIÓN
+## PRUEBAS UNITARIAS
 
 El directorio [`tests/`](tests/) contiene un conjunto de pruebas unitarias y de integración desarrolladas para la asercicón de las funcionalidades de la librería. Dírigase al directorio para más información sobre la tabla de pruebas y cómo ejecutarlas.
