@@ -11,10 +11,10 @@ Trabajo Experimental de Grado.
 ### Compilación
 
 ```bash
-# Configurar el proyecto en la carpeta 'build/'.
+# Configurar el proyecto en la carpeta 'build/'
 meson setup build/
 
-# Compilar la librería.
+# Compilar la librería
 meson compile -C build/
 ```
 
