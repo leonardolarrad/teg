@@ -7,3 +7,4 @@ test_dep = declare_dependency(
 
 subdir('src/test_reflection')
 subdir('src/test_fundamental')
+subdir('src/test_carray')
