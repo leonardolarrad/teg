@@ -90,10 +90,6 @@ TEST_CASE("Reflect members count") {
 }
 
 TEST_CASE("Visit members") {
-    std::function f = [](int x, int y) {
-        return x + y;
-    };
-
     {
         auto r = teg::visit_members(
             int_2 { 1999, 1998 },
