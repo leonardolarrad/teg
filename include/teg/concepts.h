@@ -37,15 +37,37 @@ template <typename T>
 concept class_like = std::is_class_v<std::remove_cvref_t<T>>;
 
 template <typename T>
-concept container_like = requires(T container) {
+concept fixed_nonzero_size = std::integral_constant<std::size_t, T{}.size()>::value > 0;
+
+template <typename T>
+concept container = requires(T container) {
     typename std::remove_cvref_t<T>::value_type;
+    typename std::remove_cvref_t<T>::size_type;
     container.size();
     container.begin();
     container.end();
 };
 
 template <typename T>
-concept span_like = container_like<T> && requires (T span) {
+concept fixed_size_container = container<T> && fixed_nonzero_size<T>;
+
+template <typename T>
+concept contiguous_container = container<T> && requires(T container) {
+    std::span{ container };  
+};
+
+template <typename T>
+concept associative_container = container<T> && requires (T container) {
+    typename std::remove_cvref_t<T>::key_type;
+};
+
+template <typename T>
+concept resizable_container = container<T> && requires (T container) {
+    container.resize(std::size_t{});
+};
+
+template <typename T>
+concept span_like = container<T> && requires (T span) {
     T{(typename T::value_type*)nullptr, std::size_t{}};
     span.subspan(std::size_t{}, std::size_t{});
 };
@@ -57,7 +79,7 @@ template <typename T>
 concept static_span_like = span_like<T> && T::extent != std::dynamic_extent;
 
 template <typename T>
-concept array_like = container_like<T> && requires(T array) {
+concept array_like = container<T> && requires(T array) {
     typename std::remove_cvref_t<T>::value_type;
     array.size();
 };
@@ -67,13 +89,13 @@ concept c_array_like = std::is_array_v<T>
     && std::extent_v<std::remove_cvref_t<T>> > 0;
 
 template <typename T>
-concept map_like = container_like<T> && requires(T map) {
+concept map_like = container<T> && requires(T map) {
     typename std::remove_cvref_t<T>::key_type;
     typename std::remove_cvref_t<T>::mapped_type;
 };
 
 template <typename T>
-concept set_like = container_like<T> && requires(T set) {
+concept set_like = container<T> && requires(T set) {
     typename std::remove_cvref_t<T>::key_type;
 };
 
@@ -95,7 +117,7 @@ constexpr bool char_like =
     || std::is_same_v<T, char32_t>;
 
 template <typename T>
-concept string_like = container_like<T> && requires(T string) {
+concept string_like = container<T> && requires(T string) {
     requires char_like<typename std::remove_cvref_t<T>::value_type>;
     string.length();
     string.data();
@@ -136,5 +158,20 @@ concept aggregate = std::is_aggregate_v<std::remove_cvref_t<T>>;
 
 template <typename T>
 concept deserializable = fundamental<T> || aggregate<T>;
+
+template <typename T, typename... A>
+concept constructible_from = requires {
+    T{{A{}}...};
+};
+
+template <typename T>
+concept trivial_serializable = 
+    fundamental<T> || aggregate<T>;
+
+template <typename T>
+concept trivial_deserializable = trivial_serializable<T>;
+
+
+
 
 } // namespace teg

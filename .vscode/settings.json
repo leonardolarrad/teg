@@ -74,6 +74,9 @@
         "memory_resource": "cpp",
         "string_view": "cpp",
         "cinttypes": "cpp",
-        "expected": "cpp"
+        "expected": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "xtree": "cpp"
     }
 }

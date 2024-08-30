@@ -62,6 +62,18 @@ error deserialize_one(buffer_reader& reader, auto& obj) {
 }
 
 [[nodiscard]] inline constexpr 
+error deserialize_one(buffer_reader& reader, fixed_size_container auto& obj) {
+    // the size is know at compile time, therefor we dont need to serialize it
+    // deserialize elements
+    for (auto& elem : obj) {
+        if (auto result = deserialize_one(reader, elem); failure(result)) [[unlikely]] {
+            return result;
+        }
+    }
+    return {};
+}
+
+[[nodiscard]] inline constexpr 
 error deserialize_many(buffer_reader& reader) {
     return {};
 }

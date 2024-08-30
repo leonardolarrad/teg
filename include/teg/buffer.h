@@ -21,27 +21,51 @@
 #include <cstddef>
 #include <vector>
 
+#include "concepts.h"
+
+namespace teg::internal {
+
+inline constexpr 
+std::size_t buffer_size_one(auto const& obj) {
+    return sizeof(obj);
+}
+
+inline constexpr 
+std::size_t buffer_size_one(fixed_size_container auto const& obj) {    
+    std::size_t size = 0;
+    for (auto const& elem : obj) {
+        size += buffer_size_one(elem);
+    }
+    return size;
+}
+
+inline constexpr 
+std::size_t buffer_size_one(container auto const& obj) {
+    using type = std::remove_cvref_t<decltype(obj)>;
+    using size_type = typename type::size_type;
+    
+    auto size = sizeof(size_type);
+    for (auto const& elem : obj) {
+        size += buffer_size_one(elem);
+    }
+    return size;
+}
+
+
+inline constexpr
+std::size_t buffer_size_many(auto const&... objs) {
+    return (buffer_size_one(objs) + ...);
+}
+
+} // namespace teg::internal
+
 namespace teg {
 
 using buffer = std::vector<std::byte>;
 
-namespace internal {
-
-inline constexpr 
-std::size_t compute_size_one(const auto& obj) {
-    return sizeof(obj);
-}
-
-inline constexpr
-std::size_t compute_size_many(const auto&... objs) {
-    return (compute_size_one(objs) + ...);
-}
-
-} // namespace internal
-
-inline constexpr 
-std::size_t compute_serialized_size(const auto&... obj) {
-    return internal::compute_size_many(obj...);
+[[nodiscard]] inline constexpr 
+std::size_t buffer_size(const auto&... obj) {
+    return internal::buffer_size_many(obj...);
 }
 
 } // namespace teg

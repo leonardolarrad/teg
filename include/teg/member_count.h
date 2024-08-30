@@ -25,11 +25,6 @@
 
 namespace teg::internal {
 
-template <typename T, typename... A>
-concept constructible_from = requires {
-    T{{A{}}...};
-};
-
 struct any_type {
     template <typename T>
     operator T();

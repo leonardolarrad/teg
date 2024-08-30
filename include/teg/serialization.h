@@ -50,7 +50,7 @@ private:
 };
 
 [[nodiscard]] inline constexpr 
-error serialize_one(buffer_writer& writer, const auto& obj) {
+error serialize_one(buffer_writer& writer, auto const& obj) {
     using type = std::remove_cvref_t<decltype(obj)>;
 
     if constexpr (fundamental<type>) {
@@ -65,6 +65,18 @@ error serialize_one(buffer_writer& writer, const auto& obj) {
             }
         );
     }
+}
+
+[[nodiscard]] inline constexpr 
+error serialize_one(buffer_writer& writer, fixed_size_container auto const& obj) {
+    // the size is know at compile time, therefor we dont need to serialize it
+    // serialize elements
+    for (auto const& elem : obj) {
+        if (auto result = serialize_one(writer, elem); failure(result)) [[unlikely]] {
+            return result;
+        }
+    }
+    return {};
 }
 
 [[nodiscard]] inline constexpr 
@@ -97,7 +109,7 @@ error serialize(buffer& output_buffer, const T&... objs) {
     }
 
     auto curr_size = output_buffer.size();
-    auto objs_size = compute_serialized_size(objs...);
+    auto objs_size = buffer_size(objs...);
     output_buffer.resize(curr_size + objs_size);
 
     auto writer = internal::buffer_writer{ output_buffer };

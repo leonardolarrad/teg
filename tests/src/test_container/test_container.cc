@@ -9,7 +9,7 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
-TEST_CASE("(De)serialize std::array") {
+TEST_CASE("De/serialize std::array") {
     {
         teg::buffer b;
         std::array<int, 2> arr0 = { 1, 2 };
