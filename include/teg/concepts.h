@@ -25,6 +25,8 @@
 #include <vector>
 #include <span>
 
+#include "container.h"
+
 namespace teg {
 
 template <typename T>
@@ -37,33 +39,8 @@ template <typename T>
 concept class_like = std::is_class_v<std::remove_cvref_t<T>>;
 
 template <typename T>
-concept fixed_nonzero_size = std::integral_constant<std::size_t, T{}.size()>::value > 0;
-
-template <typename T>
-concept container = requires(T container) {
-    typename std::remove_cvref_t<T>::value_type;
-    typename std::remove_cvref_t<T>::size_type;
-    container.size();
-    container.begin();
-    container.end();
-};
-
-template <typename T>
-concept fixed_size_container = container<T> && fixed_nonzero_size<T>;
-
-template <typename T>
 concept contiguous_container = container<T> && requires(T container) {
     std::span{ container };  
-};
-
-template <typename T>
-concept associative_container = container<T> && requires (T container) {
-    typename std::remove_cvref_t<T>::key_type;
-};
-
-template <typename T>
-concept resizable_container = container<T> && requires (T container) {
-    container.resize(std::size_t{});
 };
 
 template <typename T>
