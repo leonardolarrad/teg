@@ -9,6 +9,20 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
+TEST_CASE("debug") {
+    class c_elem {
+    public:
+        c_elem() = default;
+        ~c_elem() = default;
+        c_elem(const c_elem&) = default;
+        c_elem(c_elem&&) = default;
+        c_elem& operator=(const c_elem&) = delete;
+        c_elem& operator=(c_elem&&) = delete;
+    };
+
+    std::vector<c_elem> v0;
+}
+
 TEST_CASE("De/serialize std::array") {
     {
         teg::buffer b;
