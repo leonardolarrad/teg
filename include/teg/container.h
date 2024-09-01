@@ -19,8 +19,10 @@
 #pragma once
 #include <type_traits>
 #include <concepts>
+#include <iterator>
 #include <memory>
 #include <utility>
+#include <string>
 
 namespace teg {
 
@@ -55,13 +57,16 @@ concept erasable =
     || (allocator_aware<C> && allocator_erasable<C, typename C::allocator_type, T>) 
     || (!allocator_aware<C> && default_erasable<T>);
 
+template<typename T, typename ... U>
+concept any_of = (std::same_as<T, U> || ...);
+
 ///  Containers are objects that store other objects. They control allocation
 ///  and deallocation  of these objects through constructors, destructors,
 ///  insert and erase operations. 
 /// 
 ///  ISO/IEC 14882:2020 [container.requirements.general]
 template <typename C>
-concept container = requires (C container, const C const_container) 
+concept container = requires (C container) 
 {
     /// Value type requiements
     typename C::value_type;
@@ -98,16 +103,13 @@ concept container = requires (C container, const C const_container)
 
     /// Container requiements
     requires std::regular<C>;
-    requires std::swappable<C>;
 
-    { container.begin() } -> std::same_as<typename C::iterator>;
-    { container.end() } -> std::same_as<typename C::iterator>;
-    { const_container.begin() } -> std::same_as<typename C::const_iterator>;
-    { const_container.end() } -> std::same_as<typename C::const_iterator>;
+    { container.begin() } -> any_of<typename C::iterator, typename C::const_iterator>;
+    { container.end() } -> any_of<typename C::iterator, typename C::const_iterator>;
     { container.cbegin() } -> std::same_as<typename C::const_iterator>;
     { container.cend() } -> std::same_as<typename C::const_iterator>;    
-    { const_container.max_size() } -> std::same_as<typename C::size_type>;
-    { const_container.empty() } -> std::convertible_to<bool>;
+    { container.max_size() } -> std::same_as<typename C::size_type>;
+    { container.empty() } -> std::convertible_to<bool>;
 };
 
 
@@ -136,9 +138,9 @@ concept sequence_container = container<T>;
 ///  set, multiset, map and multimap.
 ///
 ///  ISO/IEC 14882:2020 [associative.reqmts]
-template <typename T>
-concept associative_container = container<T> && requires (T container) {
-    typename std::remove_cvref_t<T>::key_type;
+template <typename C>
+concept associative_container = container<C> && requires (C container) {
+    typename C::key_type;
 };
 
 template <typename T>
