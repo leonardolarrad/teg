@@ -62,7 +62,7 @@ concept array_like = container<T> && requires(T array) {
 };
 
 template <class T>
-concept c_array_like = std::is_array_v<T> 
+concept c_array = std::is_array_v<T> 
     && std::extent_v<std::remove_cvref_t<T>> > 0;
 
 template <typename T>

@@ -13,9 +13,19 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
+TEST_CASE("Allocator aware containers") {
+    ASSERT(teg::allocator_aware<std::vector<int>>);
+}
+
 class valid_elem {
 public:
     valid_elem() = default;
+    ~valid_elem() = default;
+    valid_elem(const valid_elem&) = default;
+    valid_elem(valid_elem&&) = default;
+    valid_elem& operator=(const valid_elem&) = default;
+    valid_elem& operator=(valid_elem&&) = default;
+    bool operator==(const valid_elem&) const = default;
 };
 
 class invalid_elem {
@@ -23,8 +33,16 @@ private:
     invalid_elem();
 };
 
-TEST_CASE("Concept: teg::container") {    
-    ASSERT((teg::container<std::array<valid_elem, 10>>));    
+TEST_CASE("Concept: teg::container") {
+
+    std::vector<valid_elem> v0 = { valid_elem{}, valid_elem{} };
+    std::vector<valid_elem> v1 = { valid_elem{}, valid_elem{} };
+
+    auto c = v0 == v1;
+
+    ASSERT(c);
+
+    ASSERT((teg::container<std::array<int, 10>>));    
     ASSERT((teg::container<std::vector<valid_elem>>));
     ASSERT((teg::container<std::deque<valid_elem>>));
     ASSERT((teg::container<std::forward_list<valid_elem>>));

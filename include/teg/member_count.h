@@ -44,7 +44,7 @@ template<aggregate T>
 inline constexpr std::size_t members_count() {
     using type = std::remove_cvref_t<T>;
 
-    if constexpr (c_array_like<type>) {
+    if constexpr (c_array<type>) {
         return std::extent_v<type>;
     }
     else if constexpr (!class_like<type>) {
