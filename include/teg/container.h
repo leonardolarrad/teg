@@ -29,7 +29,8 @@ namespace teg {
 template<typename T, typename ... U>
 concept any_of = (std::same_as<T, U> || ...);
 
-
+template <typename T>
+concept copy_assignable = std::is_copy_assignable_v<T>;
 
 
 template <typename T>
@@ -183,14 +184,8 @@ template <typename C, typename T>
 concept container_element =
        std::same_as<T, typename C::value_type>
     && std::copy_constructible<T>
-    && std::equality_comparable<T>
     && copy_insertable<C, T>
     && erasable<C, T>;
-
-//template <typename C>
-//concept container_element_reference = 
-//       std::same_as<typename C::reference, typename C::value_type&>
-//    && std::same_as<typename C::const_reference, typename C::value_type const&>;
 
 template <typename C, typename R>
 concept container_element_reference = 
@@ -242,7 +237,11 @@ concept container =
     && container_element_const_iterator<C, typename C::const_iterator>
     && container_difference_type<C, typename C::difference_type>
     && container_size_type<C, typename C::size_type>
-    && std::regular<C>
+    && !std::equality_comparable<typename C::value_type> || std::equality_comparable<C>
+    && !std::movable<typename C::value_type> || std::movable<C>
+    && !std::copyable<typename C::value_type> || std::copyable<C> 
+    && !std::semiregular<typename C::value_type> || std::semiregular<C>
+    && !std::regular<typename C::value_type> || std::regular<C>
     && requires (C c) {
         { c.begin() } -> any_of<typename C::iterator, typename C::const_iterator>;
         { c.end() } -> any_of<typename C::iterator, typename C::const_iterator>;
@@ -252,68 +251,6 @@ concept container =
         { c.empty() } -> std::convertible_to<bool>;
     };
 
-///  Containers are objects that store other objects. They control allocation
-///  and deallocation  of these objects through constructors, destructors,
-///  insert and erase operations. 
-/// 
-///  ISO/IEC 14882:2020 [container.requirements.general]
-template <typename C>
-concept ccontainer = std::regular<C> 
-    && requires (C container) {
-        /// Value type requiements
-        typename C::value_type;
-        requires std::copy_constructible<typename C::value_type>;
-        requires teg::copy_insertable<C, typename C::value_type>;
-        requires teg::emplace_constructible<C, typename C::value_type>;
-        requires teg::erasable<C, typename C::value_type>;
-        requires std::equality_comparable<typename C::value_type>;
-
-        typename C::reference;
-        typename C::const_reference;
-        requires std::same_as<typename C::reference, typename C::value_type&>;
-        requires std::same_as<typename C::const_reference, typename C::value_type const&>;
-
-        typename C::iterator;
-        typename C::const_iterator;
-        requires std::forward_iterator<typename C::iterator>;
-        requires std::forward_iterator<typename C::const_iterator>;
-        requires std::convertible_to<typename C::iterator, typename C::const_iterator>;
-        requires std::same_as<std::iter_value_t<typename C::iterator>, typename C::value_type>;
-        requires std::same_as<std::iter_value_t<typename C::const_iterator>, typename C::value_type>;
-        requires std::same_as<std::iter_reference_t<typename C::iterator>, typename C::reference>
-            || std::same_as<std::iter_reference_t<typename C::iterator>, typename C::const_reference>;
-        requires std::same_as<std::iter_reference_t<typename C::const_iterator>, typename C::const_reference>;
-
-        typename C::difference_type;
-        typename C::size_type; 
-        requires std::signed_integral<typename C::difference_type>;
-        requires std::unsigned_integral<typename C::size_type>;
-        requires std::in_range<typename C::size_type>(std::numeric_limits<typename C::difference_type>::max());
-        requires std::same_as<
-            typename C::difference_type,
-            typename std::iterator_traits<typename C::iterator>::difference_type>;
-        requires std::same_as<
-            typename C::difference_type,
-            typename std::iterator_traits<typename C::const_iterator>::difference_type>;
-
-        /// Container requiements
-        { container.begin() } -> any_of<typename C::iterator, typename C::const_iterator>;
-        { container.end() } -> any_of<typename C::iterator, typename C::const_iterator>;
-        { container.cbegin() } -> std::same_as<typename C::const_iterator>;
-        { container.cend() } -> std::same_as<typename C::const_iterator>;    
-        { container.max_size() } -> std::same_as<typename C::size_type>;
-        { container.empty() } -> std::convertible_to<bool>;
-    };
-
-template <typename T>
-concept fixed_nonzero_size = requires {
-    { T{}.size() } -> std::convertible_to<std::size_t>;
-    { T{}.size() > 0 } -> std::convertible_to<bool>;
-    requires T{}.size() > 0;
-};
-
-template <typename T>
-concept fixed_size_container = container<T> && fixed_nonzero_size<T>;
 
 ///  A sequence container organizes a finite set of objects, all of the same type, 
 ///  into a strictly linear arrangement. The library provides four basic kinds of 
@@ -323,7 +260,12 @@ concept fixed_size_container = container<T> && fixed_nonzero_size<T>;
 ///
 ///  ISO/IEC 14882:2020 [sequence.reqmts]
 template <typename C>
-concept sequence_container = container<C>
+concept sequence_container = container<C>    
+    //&& emplace_constructible<C, typename C::value_type>
+    //&& copy_assignable<typename C::value_type>
+    && std::input_iterator<typename C::iterator>
+    && std::input_iterator<typename C::const_iterator>
+
     && requires (
         C c, 
         typename C::iterator i, typename C::const_iterator j,
@@ -343,14 +285,27 @@ concept associative_container = container<C> && requires (C container) {
     typename C::key_type;
 };
 
+
+
+
+template <typename T>
+concept fixed_nonzero_size = requires {
+    { T{}.size() } -> std::convertible_to<std::size_t>;
+    { T{}.size() > 0 } -> std::convertible_to<bool>;
+    requires T{}.size() > 0;
+};
+
+template <typename T>
+concept fixed_size_container = container<T> && fixed_nonzero_size<T>;
+
+template <typename C, typename T>
+concept container_of = container<C> && std::same_as<T, typename C::value_type>;
+
 template <typename T>
 concept serializable_container =
        fixed_size_container<T> 
     || sequence_container<T> 
     || associative_container<T>;
     
-
-template <typename C, typename T>
-concept container_of = container<C> && std::same_as<T, typename C::value_type>;
 
 } // namespace teg

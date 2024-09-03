@@ -19,13 +19,13 @@ TEST_CASE("Allocator aware containers") {
 
 class valid_elem {
 public:
-    valid_elem() = default;
-    ~valid_elem() = default;
-    valid_elem(const valid_elem&) = default;
-    valid_elem(valid_elem&&) = default;
-    valid_elem& operator=(const valid_elem&) = default;
-    valid_elem& operator=(valid_elem&&) = default;
-    bool operator==(const valid_elem&) const = default;
+   //valid_elem() = default;
+   //~valid_elem() = default;
+   //valid_elem(const valid_elem&) = default;
+   //valid_elem(valid_elem&&) = default;
+   //valid_elem& operator=(const valid_elem&) = default;
+   //valid_elem& operator=(valid_elem&&) = default;
+    //bool operator==(const valid_elem&) const = default;
 };
 
 class invalid_elem {
@@ -34,14 +34,6 @@ private:
 };
 
 TEST_CASE("Concept: teg::container") {
-
-    std::vector<valid_elem> v0 = { valid_elem{}, valid_elem{} };
-    std::vector<valid_elem> v1 = { valid_elem{}, valid_elem{} };
-
-    auto c = v0 == v1;
-
-    ASSERT(c);
-
     ASSERT((teg::container<std::array<int, 10>>));    
     ASSERT((teg::container<std::vector<valid_elem>>));
     ASSERT((teg::container<std::deque<valid_elem>>));
@@ -58,7 +50,6 @@ TEST_CASE("Concept: teg::container") {
     ASSERT((teg::container<std::unordered_map<int, valid_elem>>));
     ASSERT((teg::container<std::unordered_multiset<int>>));
     ASSERT((teg::container<std::unordered_multimap<int, valid_elem>>));
-
 }
 
 auto test_container(teg::container auto const& c) {
