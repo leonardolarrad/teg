@@ -26,13 +26,6 @@
 
 namespace teg {
 
-template<typename T, typename ... U>
-concept any_of = (std::same_as<T, U> || ...);
-
-template <typename T>
-concept copy_assignable = std::is_copy_assignable_v<T>;
-
-
 template <typename T>
 struct is_basic_string : std::false_type {};
 
@@ -183,8 +176,6 @@ concept erasable =
 template <typename C, typename T>
 concept container_element =
        std::same_as<T, typename C::value_type>
-    && std::copy_constructible<T>
-    && copy_insertable<C, T>
     && erasable<C, T>;
 
 template <typename C, typename R>
@@ -226,7 +217,7 @@ concept container_size_type =
 ///  Containers are objects that store other objects. They control allocation
 ///  and deallocation  of these objects through constructors, destructors,
 ///  insert and erase operations. 
-/// 
+///
 ///  ISO/IEC 14882:2020 [container.requirements.general]
 template <typename C>
 concept container = 
@@ -242,15 +233,36 @@ concept container =
     && !std::copyable<typename C::value_type> || std::copyable<C> 
     && !std::semiregular<typename C::value_type> || std::semiregular<C>
     && !std::regular<typename C::value_type> || std::regular<C>
-    && requires (C c) {
-        { c.begin() } -> any_of<typename C::iterator, typename C::const_iterator>;
-        { c.end() } -> any_of<typename C::iterator, typename C::const_iterator>;
-        { c.cbegin() } -> std::same_as<typename C::const_iterator>;
-        { c.cend() } -> std::same_as<typename C::const_iterator>;    
-        { c.max_size() } -> std::same_as<typename C::size_type>;
-        { c.empty() } -> std::convertible_to<bool>;
+    && requires (C a, C const b) {
+        { a.begin() }    -> std::same_as<typename C::iterator>;
+        { a.end() }      -> std::same_as<typename C::iterator>;
+        { b.begin() }    -> std::same_as<typename C::const_iterator>;
+        { b.end() }      -> std::same_as<typename C::const_iterator>;
+        { a.cbegin() }   -> std::same_as<typename C::const_iterator>;
+        { a.cend() }     -> std::same_as<typename C::const_iterator>;    
+        { a.max_size() } -> std::same_as<typename C::size_type>;
+        { a.empty() }    -> std::convertible_to<bool>;
     };
 
+///   If the iterator type of a container belongs to the bidirectional or 
+///   random access iterator categories (23.3), the container is called reversible 
+///
+///  ISO/IEC 14882:2020 [container.requirements.general]
+template <typename C>
+concept reversible_container = container<C>
+    && std::bidirectional_iterator<typename C::iterator>
+    && std::bidirectional_iterator<typename C::const_iterator>
+    && std::bidirectional_iterator<typename C::reverse_iterator>
+    && std::bidirectional_iterator<typename C::const_reverse_iterator>
+    && std::convertible_to<typename C::reverse_iterator, typename C::const_reverse_iterator>
+    && requires(C a, C const b) {
+        { a.rbegin() }  -> std::same_as<typename C::reverse_iterator>;
+        { a.rend() }    -> std::same_as<typename C::reverse_iterator>;
+        { b.rbegin() }  -> std::same_as<typename C::const_reverse_iterator>;
+        { b.rend() }    -> std::same_as<typename C::const_reverse_iterator>;
+        { a.crbegin() } -> std::same_as<typename C::const_reverse_iterator>;
+        { a.crend() }   -> std::same_as<typename C::const_reverse_iterator>;
+    };
 
 ///  A sequence container organizes a finite set of objects, all of the same type, 
 ///  into a strictly linear arrangement. The library provides four basic kinds of 
@@ -261,11 +273,8 @@ concept container =
 ///  ISO/IEC 14882:2020 [sequence.reqmts]
 template <typename C>
 concept sequence_container = container<C>    
-    //&& emplace_constructible<C, typename C::value_type>
-    //&& copy_assignable<typename C::value_type>
     && std::input_iterator<typename C::iterator>
     && std::input_iterator<typename C::const_iterator>
-
     && requires (
         C c, 
         typename C::iterator i, typename C::const_iterator j,

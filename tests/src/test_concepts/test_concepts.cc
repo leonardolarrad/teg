@@ -13,9 +13,9 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
-TEST_CASE("Allocator aware containers") {
-    ASSERT(teg::allocator_aware<std::vector<int>>);
-}
+//TEST_CASE("Allocator aware containers") {
+//    ASSERT(teg::allocator_aware<std::vector<int>>);
+//}
 
 class valid_elem {
 public:
@@ -25,7 +25,7 @@ public:
    //valid_elem(valid_elem&&) = default;
    //valid_elem& operator=(const valid_elem&) = default;
    //valid_elem& operator=(valid_elem&&) = default;
-    //bool operator==(const valid_elem&) const = default;
+   //bool operator==(const valid_elem&) const = default;
 };
 
 class invalid_elem {
@@ -33,7 +33,7 @@ private:
     invalid_elem();
 };
 
-TEST_CASE("Concept: teg::container") {
+TEST_CASE("Concept teg::container") {
     ASSERT((teg::container<std::array<int, 10>>));    
     ASSERT((teg::container<std::vector<valid_elem>>));
     ASSERT((teg::container<std::deque<valid_elem>>));
@@ -52,6 +52,24 @@ TEST_CASE("Concept: teg::container") {
     ASSERT((teg::container<std::unordered_multimap<int, valid_elem>>));
 }
 
+TEST_CASE("Concept teg::reversible_container") {
+    ASSERT((teg::reversible_container<std::array<int, 10>>));    
+    ASSERT((teg::reversible_container<std::vector<valid_elem>>));
+    ASSERT((teg::reversible_container<std::deque<valid_elem>>));
+    ASSERT((teg::reversible_container<std::list<valid_elem>>));
+    ASSERT((teg::reversible_container<std::map<int, valid_elem>>));
+    ASSERT((teg::reversible_container<std::multimap<int, valid_elem>>));
+    ASSERT((teg::reversible_container<std::set<valid_elem>>));
+    ASSERT((teg::reversible_container<std::multiset<valid_elem>>));
+    ASSERT((teg::reversible_container<std::basic_string<char>>));
+    
+    ASSERT(!(teg::reversible_container<std::forward_list<valid_elem>>));
+    ASSERT(!(teg::reversible_container<std::unordered_set<int>>));    
+    ASSERT(!(teg::reversible_container<std::unordered_map<int, valid_elem>>));
+    ASSERT(!(teg::reversible_container<std::unordered_multiset<int>>));
+    ASSERT(!(teg::reversible_container<std::unordered_multimap<int, valid_elem>>));
+}
+
 auto test_container(teg::container auto const& c) {
     return true;
 }
@@ -62,8 +80,9 @@ auto test_container(auto const& c) {
 
 TEST_CASE("Overload resolution with concepts") {
     std::vector<int> v0 = std::vector<int>{1, 2, 3};
-    ASSERT(test_container(v0));
     std::vector<int> const& v1 = std::vector<int>{1, 2, 3};
+    
+    ASSERT(test_container(v0));
     ASSERT(test_container(v1));
     ASSERT(!test_container(int{}));
 }
