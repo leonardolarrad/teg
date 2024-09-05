@@ -125,20 +125,17 @@ concept copy_insertable = move_insertable<C, T>
 
 
 
-template <typename T, typename... Args>
-concept default_emplace_constructable =
-requires(T* p, Args&&... args) {
-    std::construct_at(p, args...);
+template <typename T>
+concept default_emplace_constructable = requires(T* p, T&& args) {
+    std::construct_at(p, std::forward<T>(args), std::forward<T>(args));
 };
 
-template <typename C, typename A, typename T, typename... Args>
-concept allocator_emplace_constructable = requires(A m, T* p, Args&&... args) {
-    requires std::same_as<
-        typename C::allocator_type, 
-        typename std::allocator_traits<A>::rebind_alloc<T>>;
-
-    std::allocator_traits<A>::construct(m, p, std::forward<T>(args)...);
-};
+template <typename C, typename A, typename T>
+concept allocator_emplace_constructable = 
+       std::same_as<typename C::allocator_type, typename std::allocator_traits<A>::rebind_alloc<T>>
+    && requires(A m, T* p, T&& args) {
+        std::allocator_traits<A>::construct(m, p, std::forward<T>(args), std::forward<T>(args));
+    };
 
 template <typename C, typename T>
 concept emplace_constructible = 
@@ -214,6 +211,14 @@ concept container_size_type =
     && std::same_as<S, typename C::size_type>
     && std::in_range<S>(std::numeric_limits<typename C::difference_type>::max());
 
+template <typename C, typename T>
+concept strongest_element_property = 
+       !std::equality_comparable<typename C::value_type> || std::equality_comparable<C>
+    && !std::movable<typename C::value_type> || std::movable<C>
+    && !std::copyable<typename C::value_type> || std::copyable<C> 
+    && !std::semiregular<typename C::value_type> || std::semiregular<C>
+    && !std::regular<typename C::value_type> || std::regular<C>;
+
 ///  Containers are objects that store other objects. They control allocation
 ///  and deallocation  of these objects through constructors, destructors,
 ///  insert and erase operations. 
@@ -228,11 +233,7 @@ concept container =
     && container_element_const_iterator<C, typename C::const_iterator>
     && container_difference_type<C, typename C::difference_type>
     && container_size_type<C, typename C::size_type>
-    && !std::equality_comparable<typename C::value_type> || std::equality_comparable<C>
-    && !std::movable<typename C::value_type> || std::movable<C>
-    && !std::copyable<typename C::value_type> || std::copyable<C> 
-    && !std::semiregular<typename C::value_type> || std::semiregular<C>
-    && !std::regular<typename C::value_type> || std::regular<C>
+    && strongest_element_property<C, typename C::value_type>
     && requires (C a, C const b) {
         { a.begin() }    -> std::same_as<typename C::iterator>;
         { a.end() }      -> std::same_as<typename C::iterator>;
@@ -272,16 +273,48 @@ concept reversible_container = container<C>
 ///
 ///  ISO/IEC 14882:2020 [sequence.reqmts]
 template <typename C>
-concept sequence_container = container<C>    
-    && std::input_iterator<typename C::iterator>
-    && std::input_iterator<typename C::const_iterator>
+concept sequence_container = container<C>
     && requires (
-        C c, 
-        typename C::iterator i, typename C::const_iterator j,
-        std::initializer_list<typename C::value_type> il
+        C a, C const b
     ) {
-        C { i, j };
-        C { il};
+        { a.front() } -> std::same_as<typename C::reference>;
+        { b.front() } -> std::same_as<typename C::const_reference>;
+
+
+        //C { n, t };
+        //C { i, j };
+        //C { il};
+        //{ a = il } -> std::same_as<C&>;
+
+        //{ a.emplace(p, std::forward<typename C::value_type>(args)) } -> std::same_as<typename C::iterator>;
+
+        /*
+        { a.insert(p, t) } -> std::same_as<typename C::iterator>;
+        { a.insert(p, std::forward<C::value_type>(rv)) } -> std::same_as<typename C::iterator>;
+        { a.insert(p, n, t) } -> std::same_as<typename C::iterator>;
+        { a.insert(p, il) } -> std::same_as<typename C::iterator>;	
+
+        { a.erase(q0) } -> std::same_as<typename C::iterator>;
+        { a.erase(q0, q1) } -> std::same_as<typename C::iterator>;
+
+        { a.clear() } -> std::same_as<void>;
+
+        { a.assign(i, j) } -> std::same_as<void>;
+        { a.assign(il) } -> std::same_as<void>;
+        { a.assign(n, t) } -> std::same_as<void>;
+        */
+    };
+
+template <typename C>
+concept sized_container = container<C>
+    && requires(C const& c) {
+        { c.size() } -> std::same_as<typename C::size_type>;
+    };
+
+template <typename C>
+concept clearable_container = container<C>
+    && requires(C c) {
+        c.clear();
     };
 
 ///  Associative containers provide fast retrieval of data based on keys.
@@ -295,17 +328,23 @@ concept associative_container = container<C> && requires (C container) {
 };
 
 
-
-
-template <typename T>
-concept fixed_nonzero_size = requires {
-    { T{}.size() } -> std::convertible_to<std::size_t>;
-    { T{}.size() > 0 } -> std::convertible_to<bool>;
-    requires T{}.size() > 0;
-};
+//template <typename T>
+//concept fixed_nonzero_size = requires {
+//    { T{}.size() } -> std::convertible_to<std::size_t>;
+//    { T{}.size() > 0 } -> std::convertible_to<bool>;
+//    requires T{}.size() > 0;
+//};
 
 template <typename T>
-concept fixed_size_container = container<T> && fixed_nonzero_size<T>;
+concept fixed_nonzero_size = std::remove_cvref_t<T>{}.size() > 0;
+
+//template <typename T>
+//constexpr bool has_fixed_nonzero_size_v = std::remove_cvref_T<T>{}.size() > 0;
+
+template <typename C>
+concept fixed_size_container = 
+       sized_container<C> 
+    && (std::remove_cvref_t<C>{}.size() > 0);
 
 template <typename C, typename T>
 concept container_of = container<C> && std::same_as<T, typename C::value_type>;
@@ -316,5 +355,4 @@ concept serializable_container =
     || sequence_container<T> 
     || associative_container<T>;
     
-
 } // namespace teg

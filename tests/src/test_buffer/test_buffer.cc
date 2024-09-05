@@ -39,5 +39,4 @@ TEST_CASE("Compute container buffer size") {
         ASSERT_EQ(teg::buffer_size(v1), sizeof(std::size_t) + sizeof(int) * 3);
         ASSERT_EQ(teg::buffer_size(v2), sizeof(std::size_t) + sizeof(double) * 4);
     }
-
 }
