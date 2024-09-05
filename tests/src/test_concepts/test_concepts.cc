@@ -139,23 +139,23 @@ TEST_CASE("Concept teg::fixed_size_container") {
     ASSERT((teg::fixed_size_container<std::array<int, 10>>));
 }
 
-template <typename T> requires teg::fixed_size_container<T>
-auto overload_resolution(T const& c) {
+template<teg::fixed_size_container T>
+constexpr std::string overload_resolution(T const& c) {
     return "fixed_size_container";
 }
 
-template <typename T> requires teg::container<T>
-auto overload_resolution(T const& c) {
+template<teg::container T>
+constexpr std::string overload_resolution(T const& c) {
     return "container";
 }
 
-template <typename T>
-auto overload_resolution(T const& c) {
+template<typename T>
+constexpr std::string overload_resolution(T const& c) {
     return "auto";
 }
 
 TEST_CASE("Overload resolution with concepts") {
-    std::array<int, 3> a0 = std::array<int, 3>{1, 2, 3};
+    constexpr std::array<int, 3> a0 = std::array<int, 3>{1, 2, 3};
     std::vector<int> v0 = std::vector<int>{1, 2, 3};
     std::vector<int> const& v1 = std::vector<int>{1, 2, 3};
     

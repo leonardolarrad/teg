@@ -47,20 +47,23 @@ concept allocator_aware = requires (C container) {
     { container.get_allocator() } -> std::same_as<typename C::allocator_type>;
 };
 
+template <typename C, typename A, typename T>
+concept valid_allocator = 
+    std::same_as<
+        typename C::allocator_type,
+        typename std::allocator_traits<A>::template rebind_alloc<T>>;
+
 template <typename T>
-concept default_constructable =
-requires(T* p) {
+concept default_constructable = requires(T* p) {
     std::construct_at(p);
 };
 
 template <typename C, typename A, typename T>
-concept allocator_constructable = requires(A m, T* p) {
-    requires std::same_as<
-        typename C::allocator_type, 
-        typename std::allocator_traits<A>::rebind_alloc<T>>;
-
-    std::allocator_traits<A>::construct(m, p);
-};
+concept allocator_constructable = 
+       valid_allocator<C, A, T>
+    && requires(A m, T* p) {
+        std::allocator_traits<A>::construct(m, p);
+    };
 
 ///  Specifies that an instance of the type can be default-constructed 
 ///  in-place by a given allocator.
@@ -80,13 +83,11 @@ requires(T* p, T&& rv) {
 };
 
 template <typename C, typename A, typename T>
-concept allocator_move_constructable = requires(A m, T* p, T&& rv) {
-    requires std::same_as<
-        typename C::allocator_type, 
-        typename std::allocator_traits<A>::rebind_alloc<T>>;
-
-    std::allocator_traits<A>::construct(m, p, std::forward<T>(rv));
-};
+concept allocator_move_constructable = 
+       valid_allocator<C, A, T>
+    && requires(A m, T* p, T&& rv) {
+        std::allocator_traits<A>::construct(m, p, std::forward<T>(rv));
+    };
 
 /// Specifies that an object of the type can be constructed into uninitialized
 /// storage from an rvalue of that type by a given allocator.
@@ -106,21 +107,19 @@ requires(T* p, T v) {
 };
 
 template <typename C, typename A, typename T>
-concept allocator_copy_constructable = requires(A m, T* p, T v) {
-    requires std::same_as<
-        typename C::allocator_type, 
-        typename std::allocator_traits<A>::rebind_alloc<T>>;
-
-    std::allocator_traits<A>::construct(m, p, v);
-};
+concept allocator_copy_constructable = 
+       valid_allocator<C, A, T>
+    && requires(A m, T* p, T v) {
+        std::allocator_traits<A>::construct(m, p, v);
+    };
 
 ///  Specifies that an instance of the type can be copy-constructed 
 ///  in-place by a given allocator.
 template <typename C, typename T>
 concept copy_insertable = move_insertable<C, T>
-    && ( basic_string<C>    && default_copy_constructable<T>)
+    && ((basic_string<C>    && default_copy_constructable<T>)
     || (!allocator_aware<C> && default_copy_constructable<T>)
-    || ( allocator_aware<C> && allocator_copy_constructable<C, typename C::allocator_type, T>);
+    || ( allocator_aware<C> && allocator_copy_constructable<C, typename C::allocator_type, T>));
 
 
 
@@ -132,7 +131,7 @@ concept default_emplace_constructable = requires(T* p, T&& args) {
 
 template <typename C, typename A, typename T>
 concept allocator_emplace_constructable = 
-       std::same_as<typename C::allocator_type, typename std::allocator_traits<A>::rebind_alloc<T>>
+       valid_allocator<C, A, T>
     && requires(A m, T* p, T&& args) {
         std::allocator_traits<A>::construct(m, p, std::forward<T>(args), std::forward<T>(args));
     };
@@ -150,14 +149,13 @@ concept default_destroyable = requires(T* p) {
     std::destroy_at(p);
 };
 
-template <typename C, typename A, typename T>
-concept allocator_destroyable = requires(A m, T* p) {
-    requires std::same_as<
-        typename C::allocator_type, 
-        typename std::allocator_traits<A>::rebind_alloc<T>>;
 
-    std::allocator_traits<A>::destroy(m, p);
-};
+template <typename C, typename A, typename T>
+concept allocator_destroyable = 
+       valid_allocator<C, A, T>
+    && requires(A m, T* p) {
+        std::allocator_traits<A>::destroy(m, p);
+    };
 
 ///  Specifies that an object of the type can be destroyed by 
 ///  a given allocator.
@@ -213,11 +211,11 @@ concept container_size_type =
 
 template <typename C, typename T>
 concept strongest_element_property = 
-       !std::equality_comparable<typename C::value_type> || std::equality_comparable<C>
-    && !std::movable<typename C::value_type> || std::movable<C>
-    && !std::copyable<typename C::value_type> || std::copyable<C> 
-    && !std::semiregular<typename C::value_type> || std::semiregular<C>
-    && !std::regular<typename C::value_type> || std::regular<C>;
+       (!std::equality_comparable<typename C::value_type> || std::equality_comparable<C>)
+    && (!std::movable<typename C::value_type> || std::movable<C>)
+    && (!std::copyable<typename C::value_type> || std::copyable<C> )
+    && (!std::semiregular<typename C::value_type> || std::semiregular<C>)
+    && (!std::regular<typename C::value_type> || std::regular<C>);
 
 ///  Containers are objects that store other objects. They control allocation
 ///  and deallocation  of these objects through constructors, destructors,
@@ -233,7 +231,7 @@ concept container =
     && container_element_const_iterator<C, typename C::const_iterator>
     && container_difference_type<C, typename C::difference_type>
     && container_size_type<C, typename C::size_type>
-    && strongest_element_property<C, typename C::value_type>
+    //&& strongest_element_property<C, typename C::value_type>
     && requires (C a, C const b) {
         { a.begin() }    -> std::same_as<typename C::iterator>;
         { a.end() }      -> std::same_as<typename C::iterator>;

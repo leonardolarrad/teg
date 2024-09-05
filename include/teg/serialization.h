@@ -102,7 +102,7 @@ template <typename T>
 concept serializable = fundamental<T> || aggregate<T>;
 
 template <serializable... T>
-[[nodiscard]] inline constexpr 
+[[nodiscard]] inline 
 error serialize(buffer& output_buffer, const T&... objs) {
     if constexpr (sizeof...(objs) == 0) {
         return {};

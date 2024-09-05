@@ -92,7 +92,7 @@ error deserialize_many(buffer_reader& reader, auto& first_obj, auto&... remainin
 
 namespace teg {
 
-[[nodiscard]] inline constexpr 
+[[nodiscard]] inline 
 error deserialize(buffer& input_buffer, auto&... objs) {
     if constexpr (sizeof...(objs) == 0) {
         return {};
