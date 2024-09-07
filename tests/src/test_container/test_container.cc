@@ -1,10 +1,15 @@
 #include <array>
 #include <vector>
-#include <string>
-#include <map>
-#include <unordered_map>
+#include <deque>
+#include <forward_list>
+#include <list>
 #include <set>
 #include <unordered_set>
+#include <map>
+#include <unordered_map>
+#include <stack>
+#include <queue>
+#include <string>
 
 #include "teg/teg.h"
 #include "test/test.h"
@@ -46,6 +51,19 @@ TEST_CASE("De/serialize std::vector") {
         ASSERT_EQ(std::memcmp(v0.data(), v1.data(), sizeof(v0)), 0);
     }
 }
+
+TEST_CASE("De/serialize std::list") {
+    {
+        teg::buffer b;
+        std::list<int> l0 = { 1, 2, 3, 4, 5 };
+        teg::serialize(b, l0).or_throw();
+
+        std::list<int> l1;
+        teg::deserialize(b, l1).or_throw();
+        ASSERT(l0 == l1);
+    }
+}
+
 
 //TEST_CASE("De/serialize std::string") {
 //    {

@@ -276,30 +276,6 @@ concept sequence_container = container<C>
     ) {
         { a.front() } -> std::same_as<typename C::reference>;
         { b.front() } -> std::same_as<typename C::const_reference>;
-
-
-        //C { n, t };
-        //C { i, j };
-        //C { il};
-        //{ a = il } -> std::same_as<C&>;
-
-        //{ a.emplace(p, std::forward<typename C::value_type>(args)) } -> std::same_as<typename C::iterator>;
-
-        /*
-        { a.insert(p, t) } -> std::same_as<typename C::iterator>;
-        { a.insert(p, std::forward<C::value_type>(rv)) } -> std::same_as<typename C::iterator>;
-        { a.insert(p, n, t) } -> std::same_as<typename C::iterator>;
-        { a.insert(p, il) } -> std::same_as<typename C::iterator>;	
-
-        { a.erase(q0) } -> std::same_as<typename C::iterator>;
-        { a.erase(q0, q1) } -> std::same_as<typename C::iterator>;
-
-        { a.clear() } -> std::same_as<void>;
-
-        { a.assign(i, j) } -> std::same_as<void>;
-        { a.assign(il) } -> std::same_as<void>;
-        { a.assign(n, t) } -> std::same_as<void>;
-        */
     };
 
 template <typename C>
@@ -309,7 +285,10 @@ concept sized_container = container<C>
     };
 
 template <typename T>
-concept fixed_nonzero_size = std::remove_cvref_t<T>{}.size() > 0;
+concept fixed_nonzero_size = std::integral_constant<
+        std::size_t,
+        std::remove_cvref_t<T>{}.size()
+    >::value > 0;
 
 template <typename C>
 concept fixed_size_container = sized_container<C> && fixed_nonzero_size<C>;
@@ -373,6 +352,13 @@ concept front_inplace_constructing_container = container<C>
     && requires (C a, C::value_type&& rv) {
         { a.emplace_front() } -> std::same_as<typename C::reference>;
         { a.emplace_front(std::forward<typename C::value_type>(rv)) } -> std::same_as<typename C::reference>;
+    };
+
+template <typename C>
+concept range_constructing_container = container<C>
+    && emplace_constructible<C, typename C::value_type>
+    && requires (C::iterator i, C::iterator j) {
+        C { i, j };
     };
 
 template <typename C, typename T>

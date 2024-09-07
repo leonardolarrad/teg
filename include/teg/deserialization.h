@@ -64,7 +64,7 @@ error deserialize_one(buffer_reader& reader, auto& obj) {
 [[nodiscard]] inline constexpr 
 error deserialize_one(buffer_reader& reader, fixed_size_container auto& obj) {
     // The size is known at compile time; therefore, we don't need to deserialize it.
-    // Deserialize elements.
+    // Deserialize only the elements.
     for (auto& elem : obj) {
         if (auto result = deserialize_one(reader, elem); failure(result)) [[unlikely]] {
             return result;
