@@ -63,12 +63,46 @@ error deserialize_one(buffer_reader& reader, auto& obj) {
 
 [[nodiscard]] inline constexpr 
 error deserialize_one(buffer_reader& reader, fixed_size_container auto& obj) {
-    // the size is know at compile time, therefor we dont need to serialize it
-    // deserialize elements
+    // The size is known at compile time; therefore, we don't need to deserialize it.
+    // Deserialize elements.
     for (auto& elem : obj) {
         if (auto result = deserialize_one(reader, elem); failure(result)) [[unlikely]] {
             return result;
         }
+    }
+    return {};
+}
+
+[[nodiscard]] inline constexpr 
+error deserialize_one(buffer_reader& reader, container auto& obj) {
+    // Deserialize size.
+    using type = std::remove_cvref_t<decltype(obj)>;
+    using size_type = typename type::size_type;
+
+    size_type size;
+    if (auto result = deserialize_one(reader, size); failure(result)) [[unlikely]] {
+        return result;
+    }
+
+    // Deserialize elements.
+    if constexpr (back_inplace_constructing_container<type>) {
+        for (size_type i = 0; i < size; ++i) {
+            if (auto result = deserialize_one(reader, obj.emplace_back()); failure(result)) [[unlikely]] {
+                return result;
+            }
+        }
+        return {};
+    }
+    else if constexpr (front_inplace_constructing_container<type>) {
+        for (size_type i = 0; i < size; ++i) {
+            if (auto result = deserialize_one(reader, obj.emplace_front()); failure(result)) [[unlikely]] {
+                return result;
+            }
+        }
+        return {};
+    }
+    else {
+        return error { std::errc::not_supported };
     }
     return {};
 }

@@ -363,16 +363,16 @@ template <typename C>
 concept back_inplace_constructing_container = container<C>
     && emplace_constructible<C, typename C::value_type>
     && requires (C a, C::value_type&& rv) {
-        a.emplace_back();
-        a.emplace_back(std::forward<typename C::value_type>(rv));
+        { a.emplace_back() } -> std::same_as<typename C::reference>;
+        { a.emplace_back(std::forward<typename C::value_type>(rv)) } -> std::same_as<typename C::reference>;
     };
 
 template <typename C>
 concept front_inplace_constructing_container = container<C>
     && emplace_constructible<C, typename C::value_type>
     && requires (C a, C::value_type&& rv) {
-        a.emplace_front();
-        a.emplace_front(std::forward<typename C::value_type>(rv));
+        { a.emplace_front() } -> std::same_as<typename C::reference>;
+        { a.emplace_front(std::forward<typename C::value_type>(rv)) } -> std::same_as<typename C::reference>;
     };
 
 template <typename C, typename T>

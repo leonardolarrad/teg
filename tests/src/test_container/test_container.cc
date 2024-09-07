@@ -34,3 +34,27 @@ TEST_CASE("De/serialize std::array") {
         ASSERT_EQ(std::memcmp(arr0.data(), arr1.data(), sizeof(arr0)), 0);
     }
 }
+
+TEST_CASE("De/serialize std::vector") {
+    {
+        teg::buffer b;
+        std::vector<int> v0 = { 1, 2, 3, 4, 5 };
+        teg::serialize(b, v0).or_throw();
+
+        std::vector<int> v1;
+        teg::deserialize(b, v1).or_throw();
+        ASSERT_EQ(std::memcmp(v0.data(), v1.data(), sizeof(v0)), 0);
+    }
+}
+
+//TEST_CASE("De/serialize std::string") {
+//    {
+//        teg::buffer b;
+//        std::string s0 = "hello";
+//        teg::serialize(b, s0).or_throw();
+//
+//        std::string s1;
+//        teg::deserialize(b, s1).or_throw();
+//        ASSERT_EQ(s0, s1);
+//    }
+//}

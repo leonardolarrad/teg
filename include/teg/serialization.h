@@ -69,8 +69,35 @@ error serialize_one(buffer_writer& writer, auto const& obj) {
 
 [[nodiscard]] inline constexpr 
 error serialize_one(buffer_writer& writer, fixed_size_container auto const& obj) {
-    // the size is know at compile time, therefor we dont need to serialize it
-    // serialize elements
+    // The size is known at compile time; therefore, we don't need to serialize it.
+    // Serialize elements.
+    for (auto const& elem : obj) {
+        if (auto result = serialize_one(writer, elem); failure(result)) [[unlikely]] {
+            return result;
+        }
+    }
+    return {};
+}
+
+[[nodiscard]] inline constexpr 
+error serialize_one(buffer_writer& writer, container auto const& obj) {
+    using type = std::remove_cvref_t<decltype(obj)>;
+    using size_type = typename type::size_type;
+    
+    // Serialize size.
+    if constexpr (sized_container<type>) {
+        if (auto result = serialize_one(writer, obj.size()); failure(result)) [[unlikely]] {
+            return result;
+        }
+    }
+    else {
+        constexpr size_type size = std::distance(obj.begin(), obj.end());
+        if (auto result = serialize_one(writer, size); failure(result)) [[unlikely]] {
+            return result;
+        }
+    }
+
+    // Serialize elements.
     for (auto const& elem : obj) {
         if (auto result = serialize_one(writer, elem); failure(result)) [[unlikely]] {
             return result;
@@ -99,7 +126,7 @@ error serialize_many(buffer_writer& writer, const auto& first_obj, const auto&..
 namespace teg {	
     
 template <typename T>
-concept serializable = fundamental<T> || aggregate<T>;
+concept serializable = fundamental<T> || aggregate<T> || true;
 
 template <serializable... T>
 [[nodiscard]] inline 
