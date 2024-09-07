@@ -231,7 +231,6 @@ concept container =
     && container_element_const_iterator<C, typename C::const_iterator>
     && container_difference_type<C, typename C::difference_type>
     && container_size_type<C, typename C::size_type>
-    //&& strongest_element_property<C, typename C::value_type>
     && requires (C a, C const b) {
         { a.begin() }    -> std::same_as<typename C::iterator>;
         { a.end() }      -> std::same_as<typename C::iterator>;
@@ -305,15 +304,42 @@ concept sequence_container = container<C>
 
 template <typename C>
 concept sized_container = container<C>
-    && requires(C const& c) {
+    && requires(C const c) {
         { c.size() } -> std::same_as<typename C::size_type>;
     };
 
+template <typename T>
+concept fixed_nonzero_size = std::remove_cvref_t<T>{}.size() > 0;
+
 template <typename C>
-concept clearable_container = container<C>
-    && requires(C c) {
-        c.clear();
+concept fixed_size_container = sized_container<C> && fixed_nonzero_size<C>;
+
+///  A double-ended container that allows indexed access.
+///  Satisfied by array, vector, basic_string and deque.
+template <typename C>
+concept random_access_container = container<C> 
+    && std::random_access_iterator<typename C::iterator>
+    && std::random_access_iterator<typename C::const_iterator>
+    && requires(C a, C const b, typename C::size_type const i) 
+    {
+        { a[i] } -> std::same_as<typename C::reference>;
+        { b[i] } -> std::same_as<typename C::const_reference>;
     };
+
+/// A random access container that stores elements in a contiguous memory region.
+/// Satisfied by array, vector and basic_string.
+template <typename C>
+concept contiguous_container = random_access_container<C>
+    && std::contiguous_iterator<typename C::iterator>
+    && std::contiguous_iterator<typename C::const_iterator>
+    && std::contiguous_iterator<typename C::pointer>
+    && std::contiguous_iterator<typename C::const_pointer>
+    && std::convertible_to<typename C::pointer, typename C::const_pointer>
+    && requires(C a, C const b) {
+        { a.data() } -> std::same_as<typename C::pointer>;
+        { b.data() } -> std::same_as<typename C::const_pointer>;
+    };
+
 
 ///  Associative containers provide fast retrieval of data based on keys.
 ///  The standard library provides four basic kinds of associative containers: 
@@ -325,32 +351,37 @@ concept associative_container = container<C> && requires (C container) {
     typename C::key_type;
 };
 
-
-//template <typename T>
-//concept fixed_nonzero_size = requires {
-//    { T{}.size() } -> std::convertible_to<std::size_t>;
-//    { T{}.size() > 0 } -> std::convertible_to<bool>;
-//    requires T{}.size() > 0;
-//};
-
-template <typename T>
-concept fixed_nonzero_size = std::remove_cvref_t<T>{}.size() > 0;
-
-//template <typename T>
-//constexpr bool has_fixed_nonzero_size_v = std::remove_cvref_T<T>{}.size() > 0;
+template <typename C>
+concept inplace_constructing_container = container<C>
+    && emplace_constructible<C, typename C::value_type>
+    && requires (C a, C::value_type&& rv) {
+        a.emplace();
+        a.emplace(std::forward<typename C::value_type>(rv));
+    };
 
 template <typename C>
-concept fixed_size_container = 
-       sized_container<C> 
-    && (std::remove_cvref_t<C>{}.size() > 0);
+concept back_inplace_constructing_container = container<C>
+    && emplace_constructible<C, typename C::value_type>
+    && requires (C a, C::value_type&& rv) {
+        a.emplace_back();
+        a.emplace_back(std::forward<typename C::value_type>(rv));
+    };
+
+template <typename C>
+concept front_inplace_constructing_container = container<C>
+    && emplace_constructible<C, typename C::value_type>
+    && requires (C a, C::value_type&& rv) {
+        a.emplace_front();
+        a.emplace_front(std::forward<typename C::value_type>(rv));
+    };
 
 template <typename C, typename T>
 concept container_of = container<C> && std::same_as<T, typename C::value_type>;
 
-template <typename T>
-concept serializable_container =
-       fixed_size_container<T> 
-    || sequence_container<T> 
-    || associative_container<T>;
+template <typename C, typename T>
+concept random_access_container_of = random_access_container<C> && std::same_as<T, typename C::value_type>;
+
+template <typename C, typename T>
+concept contiguous_container_of = contiguous_container<C> && std::same_as<T, typename C::value_type>;
     
 } // namespace teg

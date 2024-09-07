@@ -39,11 +39,6 @@ template <typename T>
 concept class_like = std::is_class_v<std::remove_cvref_t<T>>;
 
 template <typename T>
-concept contiguous_container = container<T> && requires(T container) {
-    std::span{ container };  
-};
-
-template <typename T>
 concept span_like = container<T> && requires (T span) {
     T{(typename T::value_type*)nullptr, std::size_t{}};
     span.subspan(std::size_t{}, std::size_t{});
