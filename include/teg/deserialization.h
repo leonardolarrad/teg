@@ -21,6 +21,7 @@
 #include "buffer.h"
 #include "error.h"
 #include "concepts.h"
+#include <iostream>
 
 namespace teg::internal {
 
@@ -62,10 +63,56 @@ error deserialize_one(buffer_reader& reader, auto& obj) {
 }
 
 [[nodiscard]] inline constexpr 
-error deserialize_one(buffer_reader& reader, fixed_size_container auto& obj) {
+error deserialize_one(buffer_reader& reader, contiguous_container auto& container) {
+    using type = std::remove_cvref_t<decltype(container)>;
+    using value_type = typename type::value_type;
+    using size_type = typename type::size_type;
+
+    // Deserialize size.
+    size_type size; 
+    if (auto result = deserialize_one(reader, size); failure(result)) [[unlikely]] {
+        return result;
+    }
+
+    // Deserialize elements.
+    if constexpr (resizable_container<type> && trivially_copyable<value_type>) {
+        // Optimize deserialization of trivially copyable elements.
+        container.resize(size);
+
+        std::byte* data = reinterpret_cast<std::byte*>(container.data());
+        reader.read_bytes(data, size * sizeof(value_type));
+        return {};
+    } 
+    else {
+        // Non-optimized path.
+        if constexpr (back_inplace_constructing_container<type>) {
+            for (size_type i = 0; i < size; ++i) {
+                if (auto result = deserialize_one(reader, container.emplace_back()); failure(result)) [[unlikely]] {
+                    return result;
+                }
+            }
+            return {};
+        }
+        else if constexpr (front_inplace_constructing_container<type>) {
+            for (size_type i = 0; i < size; ++i) {
+                if (auto result = deserialize_one(reader, container.emplace_front()); failure(result)) [[unlikely]] {
+                    return result;
+                }
+            }
+            return {};
+        }
+        else {
+            return error { std::errc::not_supported };
+        }
+    }
+}
+
+
+[[nodiscard]] inline constexpr 
+error deserialize_one(buffer_reader& reader, fixed_size_container auto& container) {
     // The size is known at compile time; therefore, we don't need to deserialize it.
     // Deserialize only the elements.
-    for (auto& elem : obj) {
+    for (auto& elem : container) {
         if (auto result = deserialize_one(reader, elem); failure(result)) [[unlikely]] {
             return result;
         }
@@ -74,11 +121,11 @@ error deserialize_one(buffer_reader& reader, fixed_size_container auto& obj) {
 }
 
 [[nodiscard]] inline constexpr 
-error deserialize_one(buffer_reader& reader, container auto& obj) {
-    // Deserialize size.
-    using type = std::remove_cvref_t<decltype(obj)>;
+error deserialize_one(buffer_reader& reader, container auto& container) {
+    using type = std::remove_cvref_t<decltype(container)>;
     using size_type = typename type::size_type;
 
+    // Deserialize size.
     size_type size;
     if (auto result = deserialize_one(reader, size); failure(result)) [[unlikely]] {
         return result;
@@ -87,7 +134,7 @@ error deserialize_one(buffer_reader& reader, container auto& obj) {
     // Deserialize elements.
     if constexpr (back_inplace_constructing_container<type>) {
         for (size_type i = 0; i < size; ++i) {
-            if (auto result = deserialize_one(reader, obj.emplace_back()); failure(result)) [[unlikely]] {
+            if (auto result = deserialize_one(reader, container.emplace_back()); failure(result)) [[unlikely]] {
                 return result;
             }
         }
@@ -95,7 +142,7 @@ error deserialize_one(buffer_reader& reader, container auto& obj) {
     }
     else if constexpr (front_inplace_constructing_container<type>) {
         for (size_type i = 0; i < size; ++i) {
-            if (auto result = deserialize_one(reader, obj.emplace_front()); failure(result)) [[unlikely]] {
+            if (auto result = deserialize_one(reader, container.emplace_front()); failure(result)) [[unlikely]] {
                 return result;
             }
         }
@@ -104,7 +151,6 @@ error deserialize_one(buffer_reader& reader, container auto& obj) {
     else {
         return error { std::errc::not_supported };
     }
-    return {};
 }
 
 [[nodiscard]] inline constexpr 

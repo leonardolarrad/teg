@@ -129,6 +129,12 @@ template <typename T>
 concept aggregate = std::is_aggregate_v<std::remove_cvref_t<T>>;
 
 template <typename T>
+concept trivial = std::is_trivial_v<std::remove_cvref_t<T>>;
+
+template <typename T>
+concept trivially_copyable = std::is_trivially_copyable_v<std::remove_cvref_t<T>>;
+
+template <typename T>
 concept deserializable = fundamental<T> || aggregate<T>;
 
 template <typename T, typename... A>
@@ -142,8 +148,5 @@ concept trivial_serializable =
 
 template <typename T>
 concept trivial_deserializable = trivial_serializable<T>;
-
-
-
 
 } // namespace teg

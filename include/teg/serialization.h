@@ -68,15 +68,58 @@ error serialize_one(buffer_writer& writer, auto const& obj) {
 }
 
 [[nodiscard]] inline constexpr 
-error serialize_one(buffer_writer& writer, fixed_size_container auto const& obj) {
-    // The size is known at compile time; therefore, we don't need to serialize it.
+error serialize_one(buffer_writer& writer, contiguous_container auto const& container) {
+    using type = std::remove_cvref_t<decltype(container)>;
+    using value_type = typename type::value_type;
+
+    if (auto result = serialize_one(writer, container.size()); failure(result)) [[unlikely]] {
+        return result;
+    }    
+    
     // Serialize elements.
-    for (auto const& elem : obj) {
-        if (auto result = serialize_one(writer, elem); failure(result)) [[unlikely]] {
-            return result;
-        }
+    if constexpr (trivially_copyable<value_type>) {
+        // Optimize serialization of trivially copyable elements.
+        const std::byte* data = reinterpret_cast<const std::byte*>(container.data());
+        std::size_t size = container.size();
+
+        writer.write_bytes(data, size * sizeof(value_type));
+        return {};
     }
-    return {};
+    else {
+        // Non-optimized path.
+        for (auto const& elem : container) {
+            if (auto result = serialize_one(writer, elem); failure(result)) [[unlikely]] {
+                return result;
+            }
+        }
+        return {};
+    }
+}
+
+[[nodiscard]] inline constexpr 
+error serialize_one(buffer_writer& writer, fixed_size_container auto const& container) {
+    using type = std::remove_cvref_t<decltype(container)>;
+    using value_type = typename type::value_type;    
+    
+    // The size is known at compile time; therefore, we don't need to serialize it.    
+    // Serialize only the elements.
+    if constexpr (trivially_copyable<value_type>) {
+        // Optimize serialization of trivially copyable elements.
+        const std::byte* data = reinterpret_cast<const std::byte*>(container.data());
+        std::size_t size = container.size();
+
+        writer.write_bytes(data, size * sizeof(value_type));
+        return {};
+    }
+    else {
+        // Non-optimized path.
+        for (auto const& elem : container) {
+            if (auto result = serialize_one(writer, elem); failure(result)) [[unlikely]] {
+                return result;
+            }
+        }
+        return {};
+    }
 }
 
 [[nodiscard]] inline constexpr 

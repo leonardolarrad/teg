@@ -24,6 +24,7 @@
 #include <utility>
 #include <string>
 
+/// @brief 
 namespace teg {
 
 template <typename T>
@@ -262,45 +263,26 @@ concept reversible_container = container<C>
         { a.crend() }   -> std::same_as<typename C::const_reverse_iterator>;
     };
 
-///  A sequence container organizes a finite set of objects, all of the same type, 
-///  into a strictly linear arrangement. The library provides four basic kinds of 
-///  sequence containers: vector, forward_list, list, and deque. In addition, array
-///  is provided as a sequence container which provides limited sequence operations 
-///  because it has a fixed number of elements.
-///
-///  ISO/IEC 14882:2020 [sequence.reqmts]
-template <typename C>
-concept sequence_container = container<C>
-    && requires (
-        C a, C const b
-    ) {
-        { a.front() } -> std::same_as<typename C::reference>;
-        { b.front() } -> std::same_as<typename C::const_reference>;
-    };
-
 template <typename C>
 concept sized_container = container<C>
-    && requires(C const c) {
-        { c.size() } -> std::same_as<typename C::size_type>;
+    && requires(C const a) {
+        { a.size() } -> std::same_as<typename C::size_type>;
     };
 
-template <typename T>
-concept fixed_nonzero_size = std::integral_constant<
-        std::size_t,
-        std::remove_cvref_t<T>{}.size()
-    >::value > 0;
-
 template <typename C>
-concept fixed_size_container = sized_container<C> && fixed_nonzero_size<C>;
+concept resizable_container = container<C>
+    && requires(C a, typename C::size_type const n) {
+        a.resize(n);
+    };
 
 ///  A double-ended container that allows indexed access.
-///  Satisfied by array, vector, basic_string and deque.
+///  Satisfied by array, vector, deque and basic_string.
 template <typename C>
-concept random_access_container = container<C> 
+concept random_access_container = 
+       reversible_container<C> && sized_container<C>
     && std::random_access_iterator<typename C::iterator>
     && std::random_access_iterator<typename C::const_iterator>
-    && requires(C a, C const b, typename C::size_type const i) 
-    {
+    && requires(C a, C const b, typename C::size_type const i) {
         { a[i] } -> std::same_as<typename C::reference>;
         { b[i] } -> std::same_as<typename C::const_reference>;
     };
@@ -308,7 +290,8 @@ concept random_access_container = container<C>
 /// A random access container that stores elements in a contiguous memory region.
 /// Satisfied by array, vector and basic_string.
 template <typename C>
-concept contiguous_container = random_access_container<C>
+concept contiguous_container = 
+       random_access_container<C>
     && std::contiguous_iterator<typename C::iterator>
     && std::contiguous_iterator<typename C::const_iterator>
     && std::contiguous_iterator<typename C::pointer>
@@ -319,16 +302,20 @@ concept contiguous_container = random_access_container<C>
         { b.data() } -> std::same_as<typename C::const_pointer>;
     };
 
+template <typename T>
+concept fixed_nonzero_size = std::integral_constant<
+        std::size_t,
+        std::remove_cvref_t<T>{}.size()
+    >::value > 0;
 
-///  Associative containers provide fast retrieval of data based on keys.
-///  The standard library provides four basic kinds of associative containers: 
-///  set, multiset, map and multimap.
-///
-///  ISO/IEC 14882:2020 [associative.reqmts]
 template <typename C>
-concept associative_container = container<C> && requires (C container) {
-    typename C::key_type;
-};
+concept fixed_size_container = contiguous_container<C> && fixed_nonzero_size<C>;
+
+//template <typename C>
+//concept not_fixed_size_container = sized_container<C> && (!fixed_nonzero_size<C>);
+
+//template <typename C>
+//concept dynamic_contiguous_container = contiguous_container<C> && not_fixed_size_container<C>;
 
 template <typename C>
 concept inplace_constructing_container = container<C>
@@ -361,6 +348,16 @@ concept range_constructing_container = container<C>
         C { i, j };
     };
 
+///  Associative containers provide fast retrieval of data based on keys.
+///  The standard library provides four basic kinds of associative containers: 
+///  set, multiset, map and multimap.
+///
+///  ISO/IEC 14882:2020 [associative.reqmts]
+template <typename C>
+concept associative_container = container<C> && requires (C container) {
+    typename C::key_type;
+};
+
 template <typename C, typename T>
 concept container_of = container<C> && std::same_as<T, typename C::value_type>;
 
@@ -369,5 +366,21 @@ concept random_access_container_of = random_access_container<C> && std::same_as<
 
 template <typename C, typename T>
 concept contiguous_container_of = contiguous_container<C> && std::same_as<T, typename C::value_type>;
-    
+
+
+///  @brief Concept for associative containers.
+/// 
+///  An associative container is a container that stores its elements in a way
+///  that allows efficient lookup of elements based on a key.
+/// 
+///  The standard library provides four basic kinds of associative containers:
+///  set, multiset, map and multimap.
+/// 
+///  @tparam C The container type.
+///  @tparam T The type of elements stored in the container.
+/// 
+///  @see associative_container
+template <typename C, typename T>
+concept associative_container_of = associative_container<C> && std::same_as<T, typename C::value_type>;
+
 } // namespace teg

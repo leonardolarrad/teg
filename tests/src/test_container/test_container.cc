@@ -11,6 +11,7 @@
 #include <queue>
 #include <string>
 
+#include <iostream>
 #include "teg/teg.h"
 #include "test/test.h"
 
@@ -48,14 +49,26 @@ TEST_CASE("De/serialize std::vector") {
 
         std::vector<int> v1;
         teg::deserialize(b, v1).or_throw();
-        ASSERT_EQ(std::memcmp(v0.data(), v1.data(), sizeof(v0)), 0);
+        ASSERT(v0 == v1);
+    }
+}
+
+TEST_CASE("De/serialize std::string") {
+    {
+        teg::buffer b;
+        std::string s0 = "hello";
+        teg::serialize(b, s0).or_throw();
+
+        std::string s1;
+        teg::deserialize(b, s1).or_throw();
+        ASSERT_EQ(s0, s1);
     }
 }
 
 TEST_CASE("De/serialize std::list") {
     {
         teg::buffer b;
-        std::list<int> l0 = { 1, 2, 3, 4, 5 };
+        std::list<int> l0 = { 1, 2, 3, 4, 5, 6 };
         teg::serialize(b, l0).or_throw();
 
         std::list<int> l1;
@@ -64,15 +77,3 @@ TEST_CASE("De/serialize std::list") {
     }
 }
 
-
-//TEST_CASE("De/serialize std::string") {
-//    {
-//        teg::buffer b;
-//        std::string s0 = "hello";
-//        teg::serialize(b, s0).or_throw();
-//
-//        std::string s1;
-//        teg::deserialize(b, s1).or_throw();
-//        ASSERT_EQ(s0, s1);
-//    }
-//}

@@ -122,25 +122,6 @@ TEST_CASE("Concept teg::reversible_container") {
     ASSERT(!(teg::reversible_container<std::unordered_multimap<int, valid_elem>>));                    // unordered_multimap
 }
 
-TEST_CASE("Concept teg::sequence_container") {
-    // sequence containers
-    ASSERT((teg::sequence_container<std::array<int, 10>>));                                            // array*
-    ASSERT((teg::sequence_container<std::vector<valid_elem>>));                                        // vector
-    ASSERT((teg::sequence_container<std::deque<valid_elem>>));                                         // deque
-    ASSERT((teg::sequence_container<std::forward_list<valid_elem>>));                                  // forward_list
-    ASSERT((teg::sequence_container<std::list<valid_elem>>));                                          // list    
-    ASSERT((teg::sequence_container<std::basic_string<char>>));                                        // basic string*
-    // non sequence containers   
-    ASSERT(!(teg::sequence_container<std::map<int, valid_elem>>));                                     // map
-    ASSERT(!(teg::sequence_container<std::multimap<int, valid_elem>>));                                // multimap
-    ASSERT(!(teg::sequence_container<std::set<valid_elem>>));                                          // set
-    ASSERT(!(teg::sequence_container<std::multiset<valid_elem>>));                                     // multiset
-    ASSERT(!(teg::sequence_container<std::unordered_set<int>>));                                       // unordered_set
-    ASSERT(!(teg::sequence_container<std::unordered_map<int, valid_elem>>));                           // unordered_map
-    ASSERT(!(teg::sequence_container<std::unordered_multiset<int>>));                                  // unordered_multiset
-    ASSERT(!(teg::sequence_container<std::unordered_multimap<int, valid_elem>>));                      // unordered_multimap
-}
-
 TEST_CASE("Concept teg::random_access_container") {
     // random access containers
     ASSERT((teg::random_access_container<std::array<int, 10>>));                                       // array
@@ -265,18 +246,23 @@ TEST_CASE("Concept teg::fixed_size_container") {
     ASSERT((teg::fixed_size_container<std::array<int, 10>>));
 }
 
-template<teg::fixed_size_container T>
-constexpr std::string overload_resolution(T const& c) {
-    return "fixed_size_container";
+template <typename T>
+concept dynamic_contiguous_container = teg::contiguous_container<T> && (!teg::fixed_size_container<T>);
+
+
+constexpr std::string overload_resolution(dynamic_contiguous_container auto const& c) {
+    return "contiguous_container";
 }
 
-template<teg::container T>
-constexpr std::string overload_resolution(T const& c) {
+constexpr std::string overload_resolution(teg::random_access_container auto const& c) {
+    return "random_access_container";
+}
+
+constexpr std::string overload_resolution(teg::container auto const& c) {
     return "container";
 }
 
-template<typename T>
-constexpr std::string overload_resolution(T const& c) {
+constexpr std::string overload_resolution(auto const& c) {
     return "auto";
 }
 
@@ -284,9 +270,10 @@ TEST_CASE("Overload resolution with concepts") {
     constexpr std::array<int, 3> a0 = std::array<int, 3>{1, 2, 3};
     std::vector<int> v0 = std::vector<int>{1, 2, 3};
     std::vector<int> const& v1 = std::vector<int>{1, 2, 3};
-    v0.emplace(v0.end(), 4);
-    ASSERT_EQ(overload_resolution(a0), "fixed_size_container");
-    ASSERT_EQ(overload_resolution(v0), "container");
-    ASSERT_EQ(overload_resolution(v1), "container");
+    std::string s0 = "Hello, World!";
+    ASSERT_EQ(overload_resolution(a0), "random_access_container");
+    ASSERT_EQ(overload_resolution(v0), "contiguous_container");
+    ASSERT_EQ(overload_resolution(v1), "contiguous_container");
+    ASSERT_EQ(overload_resolution(s0), "contiguous_container");
     ASSERT_EQ(overload_resolution(int{}), "auto");
 }
