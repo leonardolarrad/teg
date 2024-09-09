@@ -12,7 +12,7 @@ TEST_CASE("Compute trivial buffer size") {
 }
 
 TEST_CASE("Compute container buffer size") {    
-    // Fixed size containers
+    // Fixed size containers.
     {
         std::array<char, 5> a0;
         std::array<int, 50> a1;
@@ -29,7 +29,7 @@ TEST_CASE("Compute container buffer size") {
         ASSERT_EQ(teg::buffer_size(a4), sizeof(char) * 100 * 99);
 
     }
-    // Contiguos containers
+    // Contiguous containers.
     {
         std::vector<char> v0;
         std::vector<int> v1 = { 1, 2, 3 };

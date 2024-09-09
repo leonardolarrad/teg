@@ -19,7 +19,10 @@ meson test <prueba> -v -C build/
 
 | Prueba | Descripción |
 | --- | --- |
-| `reflection` | Pruebas del módulo de reflección estática (tiempo de compilación). |
-| `fundamental` | Pruebas de serialización y deserialización de tipos fundamentales. |
-| `carray` | Pruebas de serialización y deserialización de arreglos de C. |
-| `container` | Pruebas de serialización y deserialización de contenedores. |
+| `concepts` | Pruebas de conceptos (_C++20 Concepts_) utilizados por la librería para realizar aserciones y resolución de sobrecarga de funciones. |
+| `reflection` | Pruebas de reflección estática (tiempo de compilación). |
+| `buffer` | Computo del tamaño en memoria ocupado por datos serializables. |
+| `fundamental` | Serialización de tipos de datos fundamentales. |
+| `carray` | Serialización de arreglos de C. |
+| `container` | Serialización básica de contenedores de la librería estándar. |
+| `vector` | Serialización detallada del contenedor estándar `std::vector`. |
