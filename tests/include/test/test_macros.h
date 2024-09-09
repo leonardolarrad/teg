@@ -48,6 +48,7 @@
 #define TEST_CASE_G(name, group)            DEFINE_TEST_CASE(UNIQUE_TEST_NAME(), group, BASE_TEST_FIXTURE())
 #define TEST_CASE_GF(name, group, fixture)  DEFINE_TEST_CASE(UNIQUE_TEST_NAME(), group, fixture)
 
+#define SECTION(name)
 
 #define _ASSERT_BINARY(source, a, b, op)                                      \
     do {                                                                      \
