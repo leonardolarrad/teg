@@ -49,6 +49,8 @@ TEST_CASE("De/serialize std::vector") {
 
         std::vector<int> v1;
         teg::deserialize(b, v1).or_throw();
+        
+        ASSERT_EQ(std::memcmp(v0.data(), v1.data(), v0.size() * sizeof(int)), 0);
         ASSERT(v0 == v1);
     }
 }
@@ -56,7 +58,7 @@ TEST_CASE("De/serialize std::vector") {
 TEST_CASE("De/serialize std::string") {
     {
         teg::buffer b;
-        std::string s0 = "hello";
+        std::string s0 = "Hello World!";
         teg::serialize(b, s0).or_throw();
 
         std::string s1;

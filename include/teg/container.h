@@ -270,9 +270,15 @@ concept sized_container = container<C>
     };
 
 template <typename C>
-concept resizable_container = container<C>
+concept resizable_container = sized_container<C>
     && requires(C a, typename C::size_type const n) {
         a.resize(n);
+    };
+
+template <typename C>
+concept reservable_container = sized_container<C>
+    && requires(C a, typename C::size_type const n) {
+        a.reserve(n);
     };
 
 ///  A double-ended container that allows indexed access.

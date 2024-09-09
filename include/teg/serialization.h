@@ -78,7 +78,7 @@ error serialize_one(buffer_writer& writer, contiguous_container auto const& cont
     
     // Serialize elements.
     if constexpr (trivially_copyable<value_type>) {
-        // Optimize serialization of trivially copyable elements.
+        // Optimization: memory copy trivially copyable elements.
         const std::byte* data = reinterpret_cast<const std::byte*>(container.data());
         std::size_t size = container.size();
 
@@ -104,7 +104,7 @@ error serialize_one(buffer_writer& writer, fixed_size_container auto const& cont
     // The size is known at compile time; therefore, we don't need to serialize it.    
     // Serialize only the elements.
     if constexpr (trivially_copyable<value_type>) {
-        // Optimize serialization of trivially copyable elements.
+        // Optimization: memory copy trivially copyable elements.
         const std::byte* data = reinterpret_cast<const std::byte*>(container.data());
         std::size_t size = container.size();
 
@@ -129,11 +129,14 @@ error serialize_one(buffer_writer& writer, container auto const& obj) {
     
     // Serialize size.
     if constexpr (sized_container<type>) {
+        // Optimization: don't need to compute the size; it is already known at runtime.
         if (auto result = serialize_one(writer, obj.size()); failure(result)) [[unlikely]] {
             return result;
         }
     }
     else {
+        // Non-optimized path.
+        // Some containers (like `std::forward_list`) don't have `size()` observer.
         constexpr size_type size = std::distance(obj.begin(), obj.end());
         if (auto result = serialize_one(writer, size); failure(result)) [[unlikely]] {
             return result;

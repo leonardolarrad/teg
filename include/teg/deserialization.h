@@ -76,7 +76,7 @@ error deserialize_one(buffer_reader& reader, contiguous_container auto& containe
 
     // Deserialize elements.
     if constexpr (resizable_container<type> && trivially_copyable<value_type>) {
-        // Optimize deserialization of trivially copyable elements.
+        // Optimization: memory copy trivially copyable elements.
         container.resize(size);
 
         std::byte* data = reinterpret_cast<std::byte*>(container.data());
@@ -84,6 +84,11 @@ error deserialize_one(buffer_reader& reader, contiguous_container auto& containe
         return {};
     } 
     else {
+        if constexpr (reservable_container<type>) {
+            // Optimization: allocate uninitialized memory in advance.
+            container.reserve(size);
+        }
+
         // Non-optimized path.
         if constexpr (back_inplace_constructing_container<type>) {
             for (size_type i = 0; i < size; ++i) {
