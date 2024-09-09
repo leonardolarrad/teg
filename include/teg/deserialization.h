@@ -68,6 +68,13 @@ error deserialize_one(buffer_reader& reader, contiguous_container auto& containe
     using value_type = typename type::value_type;
     using size_type = typename type::size_type;
 
+    if constexpr (clearable_container<type>) {
+        // Pre-condition: the container is empty.
+        // In C++17 and later, aggregates can have user-provided constructors (member initializers),
+        // allowing default-constructed non-empty containers.
+        container.clear();
+    }
+
     // Deserialize size.
     size_type size; 
     if (auto result = deserialize_one(reader, size); failure(result)) [[unlikely]] {
@@ -112,7 +119,6 @@ error deserialize_one(buffer_reader& reader, contiguous_container auto& containe
     }
 }
 
-
 [[nodiscard]] inline constexpr 
 error deserialize_one(buffer_reader& reader, fixed_size_container auto& container) {
     // The size is known at compile time; therefore, we don't need to deserialize it.
@@ -129,6 +135,13 @@ error deserialize_one(buffer_reader& reader, fixed_size_container auto& containe
 error deserialize_one(buffer_reader& reader, container auto& container) {
     using type = std::remove_cvref_t<decltype(container)>;
     using size_type = typename type::size_type;
+
+    if constexpr (clearable_container<type>) {
+        // Pre-condition: the container is empty.
+        // In C++17 and later, aggregates can have user-provided constructors (member initializers),
+        // allowing default-constructed non-empty containers.
+        container.clear();
+    }
 
     // Deserialize size.
     size_type size;

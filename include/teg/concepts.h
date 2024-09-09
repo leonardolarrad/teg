@@ -126,7 +126,13 @@ concept fundamental = std::is_fundamental_v<std::remove_cvref_t<T>>
     || std::is_enum_v<std::remove_cvref_t<T>>;
 
 template <typename T>
+concept standard_layout = std::is_standard_layout_v<std::remove_cvref_t<T>>;
+
+template <typename T>
 concept aggregate = std::is_aggregate_v<std::remove_cvref_t<T>>;
+
+template <typename T>
+concept strict_aggregate = aggregate<T>;
 
 template <typename T>
 concept trivial = std::is_trivial_v<std::remove_cvref_t<T>>;
