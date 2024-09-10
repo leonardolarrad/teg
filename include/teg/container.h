@@ -24,7 +24,6 @@
 #include <utility>
 #include <string>
 
-/// @brief 
 namespace teg {
 
 template <typename T>
@@ -244,7 +243,7 @@ concept container =
     };
 
 ///   If the iterator type of a container belongs to the bidirectional or 
-///   random access iterator categories (23.3), the container is called reversible 
+///   random access iterator categories (23.3), the container is called reversible.
 ///
 ///  ISO/IEC 14882:2020 [container.requirements.general]
 template <typename C>
@@ -270,15 +269,15 @@ concept sized_container = container<C>
     };
 
 template <typename C>
-concept clearable_container = container<C>
-    && requires(C a) {
-        a.clear();
-    };
-
-template <typename C>
 concept resizable_container = sized_container<C>
     && requires(C a, typename C::size_type const n) {
         a.resize(n);
+    };
+
+template <typename C>
+concept clearable_container = container<C>
+    && requires(C a) {
+        a.clear();
     };
 
 template <typename C>
@@ -286,6 +285,12 @@ concept reservable_container = sized_container<C>
     && requires(C a, typename C::size_type const n) {
         a.reserve(n);
     };
+
+template <typename C>
+concept invertible_container = container<C>
+    && requires(C a) {
+        a.reverse();
+    };        
     
 ///  A double-ended container that allows indexed access.
 ///  Satisfied by array, vector, deque and basic_string.

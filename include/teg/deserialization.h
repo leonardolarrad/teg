@@ -63,6 +63,18 @@ error deserialize_one(buffer_reader& reader, auto& obj) {
 }
 
 [[nodiscard]] inline constexpr 
+error deserialize_one(buffer_reader& reader, fixed_size_container auto& container) {
+    // The size is known at compile time; therefore, we don't need to deserialize it.
+    // Deserialize only the elements.
+    for (auto& elem : container) {
+        if (auto result = deserialize_one(reader, elem); failure(result)) [[unlikely]] {
+            return result;
+        }
+    }
+    return {};
+}
+
+[[nodiscard]] inline constexpr 
 error deserialize_one(buffer_reader& reader, contiguous_container auto& container) {
     using type = std::remove_cvref_t<decltype(container)>;
     using value_type = typename type::value_type;
@@ -89,7 +101,7 @@ error deserialize_one(buffer_reader& reader, contiguous_container auto& containe
         std::byte* data = reinterpret_cast<std::byte*>(container.data());
         reader.read_bytes(data, size * sizeof(value_type));
         return {};
-    } 
+    }
     else {
         if constexpr (reservable_container<type>) {
             // Optimization: allocate uninitialized memory in advance.
@@ -111,24 +123,15 @@ error deserialize_one(buffer_reader& reader, contiguous_container auto& containe
                     return result;
                 }
             }
+            if constexpr (invertible_container<type>) {
+                container.reverse();
+            }
             return {};
         }
         else {
             return error { std::errc::not_supported };
         }
     }
-}
-
-[[nodiscard]] inline constexpr 
-error deserialize_one(buffer_reader& reader, fixed_size_container auto& container) {
-    // The size is known at compile time; therefore, we don't need to deserialize it.
-    // Deserialize only the elements.
-    for (auto& elem : container) {
-        if (auto result = deserialize_one(reader, elem); failure(result)) [[unlikely]] {
-            return result;
-        }
-    }
-    return {};
 }
 
 [[nodiscard]] inline constexpr 
@@ -163,6 +166,9 @@ error deserialize_one(buffer_reader& reader, container auto& container) {
             if (auto result = deserialize_one(reader, container.emplace_front()); failure(result)) [[unlikely]] {
                 return result;
             }
+        }
+        if constexpr (invertible_container<type>) {
+            container.reverse();
         }
         return {};
     }

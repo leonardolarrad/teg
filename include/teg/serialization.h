@@ -137,7 +137,7 @@ error serialize_one(buffer_writer& writer, container auto const& obj) {
     else {
         // Non-optimized path.
         // Some containers (like `std::forward_list`) don't have `size()` observer.
-        constexpr size_type size = std::distance(obj.begin(), obj.end());
+        size_type size = std::distance(obj.begin(), obj.end());
         if (auto result = serialize_one(writer, size); failure(result)) [[unlikely]] {
             return result;
         }
