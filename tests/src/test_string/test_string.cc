@@ -93,3 +93,25 @@ TEST_CASE("De/serialize u32string") {
     teg::deserialize(b, s1).or_throw();
     ASSERT(s0 == s1);
 }
+
+TEST_CASE("De/serialize wstring") {
+    teg::buffer b;
+    std::wstring s0 =
+        L"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec " 
+        L"finibus tortor, at egestas mi. Nam blandit lectus scelerisque neque posuere "
+        L"porta. Sed dignissim erat id mollis porttitor. Nam finibus velit at neque "
+        L"mattis viverra at vitae leo. Vestibulum ante ipsum primis in faucibus orci "
+        L"luctus et ultrices posuere cubilia curae; Morbi non erat feugiat, posuere justo "
+        L"et, pulvinar eros. Proin eget ipsum euismod, dapibus tellus vitae, ultricies "
+        L"ligula. Suspendisse potenti. Cras eleifend lacus sit amet tempor egestas. Nulla "
+        L"ac efficitur dui, a bibendum lectus. Cras risus nulla, sodales eu lorem at, "
+        L"sollicitudin posuere lectus. Fusce gravida rhoncus nisl, eget malesuada dui tincidunt "
+        L"quis. Phasellus dictum molestie cursus. Mauris maximus, magna a tempor vehicula, neque "
+        L"turpis interdum tellus, nec semper libero sem a metus. Nam tristique felis non felis "
+        L"rutrum, non consequat arcu porta.";
+    teg::serialize(b, s0).or_throw();
+
+    std::wstring s1;
+    teg::deserialize(b, s1).or_throw();
+    ASSERT(s0 == s1);
+}
