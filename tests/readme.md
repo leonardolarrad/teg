@@ -26,3 +26,4 @@ meson test <prueba> -v -C build/
 | `carray` | Serialización de arreglos de C. |
 | `container` | Serialización básica de contenedores de la librería estándar. |
 | `vector` | Serialización detallada del contenedor estándar `std::vector`. |
+| `string` | Serialización de cadenas de caracteres UTF-8, UTF-16 y UTF-32. |
