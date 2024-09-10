@@ -64,14 +64,26 @@ error deserialize_one(buffer_reader& reader, auto& obj) {
 
 [[nodiscard]] inline constexpr 
 error deserialize_one(buffer_reader& reader, fixed_size_container auto& container) {
+    using type = std::remove_cvref_t<decltype(container)>;
+    using value_type = typename type::value_type;
+    
     // The size is known at compile time; therefore, we don't need to deserialize it.
     // Deserialize only the elements.
-    for (auto& elem : container) {
-        if (auto result = deserialize_one(reader, elem); failure(result)) [[unlikely]] {
-            return result;
-        }
+    if constexpr (trivially_copyable<value_type>) {
+        // Optimization: memory copy trivially copyable elements.
+        std::byte* data = reinterpret_cast<std::byte*>(container.data());
+        reader.read_bytes(data, container.size() * sizeof(value_type));
+        return {};
     }
-    return {};
+    else {
+        // Non-optimized path.
+        for (auto& elem : container) {
+            if (auto result = deserialize_one(reader, elem); failure(result)) [[unlikely]] {
+                return result;
+            }
+        }
+        return {};
+    }
 }
 
 [[nodiscard]] inline constexpr 
