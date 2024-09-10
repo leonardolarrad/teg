@@ -1,9 +1,10 @@
 #include <cstring>
+
 #include "teg/teg.h"
 #include "test/test.h"
 
-TEST_CASE("Serialize and deserialize c arrays") {
-    // array of bool
+TEST_CASE("De/serialize c arrays") {
+    SECTION("C array bool")
     {
         teg::buffer b;
         bool arr0[5] = { true, false, true, false, true };
@@ -13,7 +14,7 @@ TEST_CASE("Serialize and deserialize c arrays") {
         teg::deserialize(b, arr1).or_throw();
         ASSERT_EQ(std::memcmp(arr0, arr1, sizeof(arr0)), 0);
     }
-    // array of int
+    SECTION("C array int")
     {
         teg::buffer b;
         int arr0[5] = { 1, 2, 3, 4, 5 };
@@ -23,7 +24,7 @@ TEST_CASE("Serialize and deserialize c arrays") {
         teg::deserialize(b, arr1).or_throw();
         ASSERT_EQ(std::memcmp(arr0, arr1, sizeof(arr0)), 0);
     }
-    // array of char
+    SECTION("C array char")
     {
         teg::buffer b;
         char arr0[10] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j' };
@@ -33,7 +34,7 @@ TEST_CASE("Serialize and deserialize c arrays") {
         teg::deserialize(b, arr1).or_throw();
         ASSERT_EQ(std::memcmp(arr0, arr1, sizeof(arr0)), 0);
     }
-    // array of float
+    SECTION("C array float")
     {
         teg::buffer b;
         float arr0[30] = { 
@@ -48,7 +49,7 @@ TEST_CASE("Serialize and deserialize c arrays") {
     }    
 }
 
-TEST_CASE("Serialize and deserialize multiple c arrays in the same buffer") {
+TEST_CASE("De/serialize multiple c arrays in the same buffer") {
     teg::buffer b;
 
     bool arr0[5] = { true, false, true, false, true };
@@ -73,7 +74,7 @@ TEST_CASE("Serialize and deserialize multiple c arrays in the same buffer") {
     ASSERT_EQ(std::memcmp(arr3, arr7, sizeof(arr3)), 0);
 }
 
-TEST_CASE("Serialize and deserialize c arrays members") {
+TEST_CASE("De/serialize c arrays members") {
     {
         struct int_arr_2_16 {
             int a[16];
