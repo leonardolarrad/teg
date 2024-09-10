@@ -39,9 +39,10 @@ public:
     buffer_writer(buffer& buffer, std::size_t position = 0) 
         : m_buffer(buffer), m_position(position) {}
 
-    inline void write_bytes(std::byte const* data, std::size_t size) {
+    inline error write_bytes(std::byte const* data, std::size_t size) {
         std::memcpy(m_buffer.data() + m_position, data, size);
         m_position += size;
+        return {};
     }
 
 private:
@@ -54,8 +55,10 @@ error serialize_one(buffer_writer& writer, auto const& obj) {
     using type = std::remove_cvref_t<decltype(obj)>;
 
     if constexpr (trivially_copyable<type>) {
-        writer.write_bytes(reinterpret_cast<const std::byte*>(&obj), sizeof(type));
-        return {};        
+        std::byte const* data = reinterpret_cast<std::byte const*>(&obj);
+        std::size_t size = sizeof(type);
+
+        return writer.write_bytes(data, size);       
     }
     else {
         return visit_members(
@@ -87,8 +90,8 @@ error serialize_one(buffer_writer& writer, contiguous_container auto const& cont
         // Optimization: memory copy elements.
         std::byte const* data = reinterpret_cast<const std::byte*>(container.data());
         std::size_t size = container.size();
-        writer.write_bytes(data, size * sizeof(value_type));
-        return {};
+        
+        return writer.write_bytes(data, size * sizeof(value_type));
     }
     else {
         // Non-optimized path.

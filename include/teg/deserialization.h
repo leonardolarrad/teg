@@ -30,13 +30,14 @@ public:
     buffer_reader(buffer& buffer, std::size_t position = 0) 
         : m_buffer(buffer), m_position(position) {}
 
-    constexpr void read_bytes(std::byte* data, std::size_t size) {
+    constexpr error read_bytes(std::byte* data, std::size_t size) {
         if (m_position + size > m_buffer.size()) [[unlikely]] {
-            return;
+            return error { std::errc::no_buffer_space };
         }
 
         std::memcpy(data, m_buffer.data() + m_position, size);
         m_position += size;
+        return {};
     }
 
 private:
@@ -48,9 +49,11 @@ private:
 error deserialize_one(buffer_reader& reader, auto& obj) {
     using type = std::remove_cvref_t<decltype(obj)>;
 
-    if constexpr (fundamental<type>) {        
-        reader.read_bytes(reinterpret_cast<std::byte*>(&obj), sizeof(type));
-        return {};
+    if constexpr (trivially_copyable<type>) {  
+        std::byte* data = reinterpret_cast<std::byte*>(&obj);
+        std::size_t size = sizeof(type);
+
+        return reader.read_bytes(data, size);
     }
     else {
         return visit_members(
@@ -72,8 +75,7 @@ error deserialize_one(buffer_reader& reader, fixed_size_container auto& containe
     if constexpr (trivially_copyable<value_type>) {
         // Optimization: memory copy elements.
         std::byte* data = reinterpret_cast<std::byte*>(container.data());
-        reader.read_bytes(data, container.size() * sizeof(value_type));
-        return {};
+        return reader.read_bytes(data, container.size() * sizeof(value_type));
     }
     else {
         // Non-optimized path.
@@ -111,8 +113,7 @@ error deserialize_one(buffer_reader& reader, contiguous_container auto& containe
         container.resize(size);
 
         std::byte* data = reinterpret_cast<std::byte*>(container.data());
-        reader.read_bytes(data, size * sizeof(value_type));
-        return {};
+        return reader.read_bytes(data, size * sizeof(value_type));
     }
     else {
         if constexpr (reservable_container<type>) {
