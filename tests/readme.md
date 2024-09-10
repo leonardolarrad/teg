@@ -27,3 +27,4 @@ meson test <prueba> -v -C build/
 | `container` | Serialización básica de contenedores de la librería estándar. |
 | `vector` | Serialización detallada del contenedor estándar `std::vector`. |
 | `string` | Serialización de cadenas de caracteres UTF-8, UTF-16 y UTF-32. |
+| `set` | Serialización de conjuntos `std::set`, `std::unordered_set` y `std::multiset`. |
