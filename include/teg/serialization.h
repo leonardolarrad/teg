@@ -71,6 +71,36 @@ error serialize_one(buffer_writer& writer, auto const& obj) {
 }
 
 [[nodiscard]] inline constexpr 
+error serialize_one(buffer_writer& writer, container auto const& container) {
+    using type = std::remove_cvref_t<decltype(container)>;
+    using size_type = typename type::size_type;
+    
+    // Serialize size.
+    if constexpr (sized_container<type>) {
+        // Optimization: don't need to compute the size; it is already known at runtime.
+        if (auto result = serialize_one(writer, container.size()); failure(result)) [[unlikely]] {
+            return result;
+        }
+    }
+    else {
+        // Non-optimized path.
+        // Some containers (like `std::forward_list`) don't have `size()` observer.
+        size_type size = std::distance(container.begin(), container.end());
+        if (auto result = serialize_one(writer, size); failure(result)) [[unlikely]] {
+            return result;
+        }
+    }
+
+    // Serialize elements.
+    for (auto const& element : container) {
+        if (auto result = serialize_one(writer, element); failure(result)) [[unlikely]] {
+            return result;
+        }
+    }
+    return {};
+}
+
+[[nodiscard]] inline constexpr 
 error serialize_one(buffer_writer& writer, contiguous_container auto const& container) {
     using type = std::remove_cvref_t<decltype(container)>;
     using value_type = typename type::value_type;    
@@ -102,36 +132,6 @@ error serialize_one(buffer_writer& writer, contiguous_container auto const& cont
         }
         return {};
     }
-}
-
-[[nodiscard]] inline constexpr 
-error serialize_one(buffer_writer& writer, container auto const& container) {
-    using type = std::remove_cvref_t<decltype(container)>;
-    using size_type = typename type::size_type;
-    
-    // Serialize size.
-    if constexpr (sized_container<type>) {
-        // Optimization: don't need to compute the size; it is already known at runtime.
-        if (auto result = serialize_one(writer, container.size()); failure(result)) [[unlikely]] {
-            return result;
-        }
-    }
-    else {
-        // Non-optimized path.
-        // Some containers (like `std::forward_list`) don't have `size()` observer.
-        size_type size = std::distance(container.begin(), container.end());
-        if (auto result = serialize_one(writer, size); failure(result)) [[unlikely]] {
-            return result;
-        }
-    }
-
-    // Serialize elements.
-    for (auto const& element : container) {
-        if (auto result = serialize_one(writer, element); failure(result)) [[unlikely]] {
-            return result;
-        }
-    }
-    return {};
 }
 
 [[nodiscard]] inline constexpr 

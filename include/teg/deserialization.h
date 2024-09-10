@@ -109,7 +109,7 @@ error deserialize_one(buffer_reader& reader, contiguous_container auto& containe
 
     // Deserialize elements.
     if constexpr (resizable_container<type> && trivially_copyable<value_type>) {
-        // Optimization: memory copy trivially copyable elements.
+        // Optimization: memory copy elements.
         container.resize(size);
 
         std::byte* data = reinterpret_cast<std::byte*>(container.data());
@@ -124,7 +124,8 @@ error deserialize_one(buffer_reader& reader, contiguous_container auto& containe
         // Non-optimized path.
         if constexpr (back_inplace_constructing_container<type>) {
             for (size_type i = 0; i < size; ++i) {
-                if (auto result = deserialize_one(reader, container.emplace_back()); failure(result)) [[unlikely]] {
+                auto result = deserialize_one(reader, container.emplace_back());
+                if (failure(result)) [[unlikely]] {
                     return result;
                 }
             }
@@ -132,7 +133,8 @@ error deserialize_one(buffer_reader& reader, contiguous_container auto& containe
         }
         else if constexpr (front_inplace_constructing_container<type>) {
             for (size_type i = 0; i < size; ++i) {
-                if (auto result = deserialize_one(reader, container.emplace_front()); failure(result)) [[unlikely]] {
+                auto result = deserialize_one(reader, container.emplace_front());
+                if (failure(result)) [[unlikely]] {
                     return result;
                 }
             }
@@ -150,6 +152,7 @@ error deserialize_one(buffer_reader& reader, contiguous_container auto& containe
 [[nodiscard]] inline constexpr 
 error deserialize_one(buffer_reader& reader, container auto& container) {
     using type = std::remove_cvref_t<decltype(container)>;
+    using value_type = typename type::value_type;
     using size_type = typename type::size_type;
 
     if constexpr (clearable_container<type>) {
@@ -166,9 +169,15 @@ error deserialize_one(buffer_reader& reader, container auto& container) {
     }
 
     // Deserialize elements.
+    if constexpr (reservable_container<type>) {
+        // Optimization: allocate uninitialized memory in advance.
+        container.reserve(size);
+    }
+
     if constexpr (back_inplace_constructing_container<type>) {
         for (size_type i = 0; i < size; ++i) {
-            if (auto result = deserialize_one(reader, container.emplace_back()); failure(result)) [[unlikely]] {
+            auto result = deserialize_one(reader, container.emplace_back());
+            if (failure(result)) [[unlikely]] {
                 return result;
             }
         }
@@ -176,12 +185,24 @@ error deserialize_one(buffer_reader& reader, container auto& container) {
     }
     else if constexpr (front_inplace_constructing_container<type>) {
         for (size_type i = 0; i < size; ++i) {
-            if (auto result = deserialize_one(reader, container.emplace_front()); failure(result)) [[unlikely]] {
+            auto result = deserialize_one(reader, container.emplace_front());
+            if (failure(result)) [[unlikely]] {
                 return result;
             }
         }
         if constexpr (invertible_container<type>) {
             container.reverse();
+        }
+        return {};
+    }
+    else if constexpr (inplace_constructing_container<type>) {
+        value_type element;
+        for (size_type i = 0; i < size; ++i) {
+            auto result = deserialize_one(reader, element);
+            if (failure(result)) [[unlikely]] {
+                return result;
+            }
+            container.emplace(std::move(element));
         }
         return {};
     }

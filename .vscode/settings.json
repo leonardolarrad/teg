@@ -80,8 +80,6 @@
         "xtree": "cpp",
         "forward_list": "cpp",
         "stack": "cpp"
-    },
-    "C_Cpp.errorSquiggles": "disabled",
-    
+    },  
     
 }

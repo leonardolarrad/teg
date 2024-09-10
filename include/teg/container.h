@@ -212,7 +212,7 @@ concept container_size_type =
     && std::in_range<S>(std::numeric_limits<typename C::difference_type>::max());
 
 template <typename C, typename T>
-concept strongest_element_property = 
+concept shared_strongest_property = 
        (!std::equality_comparable<typename C::value_type> || std::equality_comparable<C>)
     && (!std::movable<typename C::value_type> || std::movable<C>)
     && (!std::copyable<typename C::value_type> || std::copyable<C> )
@@ -225,7 +225,8 @@ concept strongest_element_property =
 ///
 ///  ISO/IEC 14882:2020 [container.requirements.general]
 template <typename C>
-concept container = 
+concept container = //shared_strongest_property<C, typename C::value_type> &&
+       //std::regular<C> && 
        container_element<C, typename C::value_type>
     && container_element_reference<C, typename C::reference>
     && container_element_const_reference<C, typename C::const_reference>
@@ -269,6 +270,12 @@ concept sized_container = container<C>
     && requires(C const a) {
         { a.size() } -> std::same_as<typename C::size_type>;
     };
+
+template <typename T>
+concept has_fixed_nonzero_size = std::integral_constant<
+        std::size_t,
+        std::remove_cvref_t<T>{}.size()
+    >::value > 0;
 
 template <typename C>
 concept resizable_container = sized_container<C>
@@ -327,14 +334,8 @@ concept trivial_contiguous_container =
     && resizable_container<C>
     && trivially_copyable<typename C::value_type>;
 
-template <typename T>
-concept fixed_nonzero_size = std::integral_constant<
-        std::size_t,
-        std::remove_cvref_t<T>{}.size()
-    >::value > 0;
-
 template <typename C>
-concept fixed_size_container = contiguous_container<C> && fixed_nonzero_size<C>;
+concept fixed_size_container = contiguous_container<C> && has_fixed_nonzero_size<C>;
 
 template <typename C>
 concept inplace_constructing_container = container<C>
@@ -373,9 +374,23 @@ concept range_constructing_container = container<C>
 ///
 ///  ISO/IEC 14882:2020 [associative.reqmts]
 template <typename C>
-concept associative_container = container<C> && requires (C container) {
-    typename C::key_type;
-};
+concept associative_container = 
+       sized_container<C>
+    && clearable_container<C>
+    && emplace_constructible<C, typename C::value_type> 
+    && requires (C a, typename C::value_type&& rv) {
+        typename C::key_type;
+        a.emplace(std::forward<typename C::value_type>(rv));
+    };
+
+template <typename C>
+concept set = 
+       associative_container<C>
+    && std::same_as<typename C::key_type, typename C::value_type>;
+
+template <typename C>
+concept map = 
+       associative_container<C>;
 
 template <typename C, typename T>
 concept container_of = container<C> && std::same_as<T, typename C::value_type>;
