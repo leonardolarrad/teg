@@ -183,11 +183,15 @@ TEST_CASE("Concept teg::fixed_size_container") {
     ASSERT((teg::fixed_size_container<std::array<int, 10>>));
 }
 
-template <typename T>
-concept dynamic_contiguous_container = teg::contiguous_container<T> && (!teg::fixed_size_container<T>);
+constexpr std::string overload_resolution(teg::trivial_contiguous_container auto const& c) {
+    return "trivial_contiguous_container";
+}
 
+constexpr std::string overload_resolution(teg::fixed_size_container auto const& c) {
+    return "fixed_size_container";
+}
 
-constexpr std::string overload_resolution(dynamic_contiguous_container auto const& c) {
+constexpr std::string overload_resolution(teg::contiguous_container auto const& c) {
     return "contiguous_container";
 }
 
@@ -204,13 +208,14 @@ constexpr std::string overload_resolution(auto const& c) {
 }
 
 TEST_CASE("Overload resolution with concepts") {
-    constexpr std::array<int, 3> a0 = std::array<int, 3>{1, 2, 3};
-    std::vector<int> v0 = std::vector<int>{1, 2, 3};
-    std::vector<int> const& v1 = std::vector<int>{1, 2, 3};
-    std::string s0 = "Hello, World!";
-    ASSERT_EQ(overload_resolution(a0), "random_access_container");
+    std::array<int, 3> a0;
+    std::vector<std::string> v0;
+    std::vector<std::string> const& v1 = v0;
+    std::string s0;
+
+    ASSERT_EQ(overload_resolution(a0), "fixed_size_container");
     ASSERT_EQ(overload_resolution(v0), "contiguous_container");
     ASSERT_EQ(overload_resolution(v1), "contiguous_container");
-    ASSERT_EQ(overload_resolution(s0), "contiguous_container");
+    ASSERT_EQ(overload_resolution(s0), "trivial_contiguous_container");
     ASSERT_EQ(overload_resolution(int{}), "auto");
 }

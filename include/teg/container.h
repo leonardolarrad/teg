@@ -24,6 +24,8 @@
 #include <utility>
 #include <string>
 
+#include "base_concepts.h"
+
 namespace teg {
 
 template <typename T>
@@ -319,6 +321,12 @@ concept contiguous_container =
         { b.data() } -> std::same_as<typename C::const_pointer>;
     };
 
+template <typename C>
+concept trivial_contiguous_container = 
+       contiguous_container<C> 
+    && resizable_container<C>
+    && trivially_copyable<typename C::value_type>;
+
 template <typename T>
 concept fixed_nonzero_size = std::integral_constant<
         std::size_t,
@@ -327,12 +335,6 @@ concept fixed_nonzero_size = std::integral_constant<
 
 template <typename C>
 concept fixed_size_container = contiguous_container<C> && fixed_nonzero_size<C>;
-
-//template <typename C>
-//concept not_fixed_size_container = sized_container<C> && (!fixed_nonzero_size<C>);
-
-//template <typename C>
-//concept dynamic_contiguous_container = contiguous_container<C> && not_fixed_size_container<C>;
 
 template <typename C>
 concept inplace_constructing_container = container<C>

@@ -25,6 +25,7 @@
 #include <vector>
 #include <span>
 
+#include "base_concepts.h"
 #include "container.h"
 
 namespace teg {
@@ -121,24 +122,7 @@ concept optional_like = !expected_like<T> && requires(T optional) {
     optional.operator*();
 };
 
-template <typename T>
-concept fundamental = std::is_fundamental_v<std::remove_cvref_t<T>> 
-    || std::is_enum_v<std::remove_cvref_t<T>>;
 
-template <typename T>
-concept standard_layout = std::is_standard_layout_v<std::remove_cvref_t<T>>;
-
-template <typename T>
-concept aggregate = std::is_aggregate_v<std::remove_cvref_t<T>>;
-
-template <typename T>
-concept strict_aggregate = aggregate<T>;
-
-template <typename T>
-concept trivial = std::is_trivial_v<std::remove_cvref_t<T>>;
-
-template <typename T>
-concept trivially_copyable = std::is_trivially_copyable_v<std::remove_cvref_t<T>>;
 
 template <typename T>
 concept deserializable = fundamental<T> || aggregate<T>;

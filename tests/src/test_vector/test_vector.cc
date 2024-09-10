@@ -62,13 +62,6 @@ TEST_CASE("Non-trivial de/serialization") {
             bool operator==(const non_trivial_b&) const = default;
         };
 
-        constexpr auto cc1 = teg::aggregate<non_trivial_a>;
-        constexpr auto cc2 = teg::aggregate<non_trivial_b>;
-        std::cout << cc1 << " " << cc2 << std::endl;
-
-        constexpr auto cc3 = teg::aggregate<std::array<std::vector<non_trivial_a>, 2>>;
-        constexpr auto cc4 = teg::aggregate<std::vector<non_trivial_a>>;
-
         teg::buffer b;
         std::vector<non_trivial_b> v0 = { non_trivial_b{}, non_trivial_b{} };
         teg::serialize(b, v0).or_throw();

@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Adrian larrad & Leonardo larrad.
+// Copyright (c) 2024 Adrian & Leonardo Larrad.
 // 
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -18,14 +18,16 @@
 
 #pragma once
 
-#include <cstddef>
-#include <vector>
+#include <concepts>
+#include <type_traits>
 
-#include "concepts.h"
+namespace teg {
 
 template <typename T>
-concept fundamental = std::is_fundamental_v<std::remove_cvref_t<T>> 
-    || std::is_enum_v<std::remove_cvref_t<T>>;
+concept fundamental = std::is_fundamental_v<std::remove_cvref_t<T>>;
+
+template <typename T>
+concept is_enum = std::is_enum_v<std::remove_cvref_t<T>>;
 
 template <typename T>
 concept standard_layout = std::is_standard_layout_v<std::remove_cvref_t<T>>;
@@ -41,50 +43,5 @@ concept trivial = std::is_trivial_v<std::remove_cvref_t<T>>;
 
 template <typename T>
 concept trivially_copyable = std::is_trivially_copyable_v<std::remove_cvref_t<T>>;
-
-namespace teg::internal {
-
-inline constexpr 
-std::size_t buffer_size_one(auto const& obj) {
-    return sizeof(obj);
-}
-
-inline constexpr 
-std::size_t buffer_size_one(fixed_size_container auto const& obj) {    
-    std::size_t size = 0;
-    for (auto const& elem : obj) {
-        size += buffer_size_one(elem);
-    }
-    return size;
-}
-
-inline constexpr 
-std::size_t buffer_size_one(container auto const& obj) {
-    using type = std::remove_cvref_t<decltype(obj)>;
-    using size_type = typename type::size_type;
-    
-    auto size = sizeof(size_type);
-    for (auto const& elem : obj) {
-        size += buffer_size_one(elem);
-    }
-    return size;
-}
-
-
-inline constexpr
-std::size_t buffer_size_many(auto const&... objs) {
-    return (buffer_size_one(objs) + ...);
-}
-
-} // namespace teg::internal
-
-namespace teg {
-
-using buffer = std::vector<std::byte>;
-
-[[nodiscard]] inline constexpr 
-std::size_t buffer_size(const auto&... obj) {
-    return internal::buffer_size_many(obj...);
-}
 
 } // namespace teg

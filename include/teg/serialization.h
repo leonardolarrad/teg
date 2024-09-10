@@ -39,7 +39,7 @@ public:
     buffer_writer(buffer& buffer, std::size_t position = 0) 
         : m_buffer(buffer), m_position(position) {}
 
-    inline void write_bytes(const std::byte* data, std::size_t size) {
+    inline void write_bytes(std::byte const* data, std::size_t size) {
         std::memcpy(m_buffer.data() + m_position, data, size);
         m_position += size;
     }
@@ -53,7 +53,7 @@ private:
 error serialize_one(buffer_writer& writer, auto const& obj) {
     using type = std::remove_cvref_t<decltype(obj)>;
 
-    if constexpr (fundamental<type>) {
+    if constexpr (trivially_copyable<type>) {
         writer.write_bytes(reinterpret_cast<const std::byte*>(&obj), sizeof(type));
         return {};        
     }
@@ -70,51 +70,30 @@ error serialize_one(buffer_writer& writer, auto const& obj) {
 [[nodiscard]] inline constexpr 
 error serialize_one(buffer_writer& writer, contiguous_container auto const& container) {
     using type = std::remove_cvref_t<decltype(container)>;
-    using value_type = typename type::value_type;
-
-    if (auto result = serialize_one(writer, container.size()); failure(result)) [[unlikely]] {
-        return result;
-    }    
-    
-    // Serialize elements.
-    if constexpr (trivially_copyable<value_type>) {
-        // Optimization: memory copy trivially copyable elements.
-        const std::byte* data = reinterpret_cast<const std::byte*>(container.data());
-        std::size_t size = container.size();
-
-        writer.write_bytes(data, size * sizeof(value_type));
-        return {};
-    }
-    else {
-        // Non-optimized path.
-        for (auto const& elem : container) {
-            if (auto result = serialize_one(writer, elem); failure(result)) [[unlikely]] {
-                return result;
-            }
-        }
-        return {};
-    }
-}
-
-[[nodiscard]] inline constexpr 
-error serialize_one(buffer_writer& writer, fixed_size_container auto const& container) {
-    using type = std::remove_cvref_t<decltype(container)>;
     using value_type = typename type::value_type;    
     
-    // The size is known at compile time; therefore, we don't need to serialize it.    
-    // Serialize only the elements.
-    if constexpr (trivially_copyable<value_type>) {
-        // Optimization: memory copy trivially copyable elements.
-        const std::byte* data = reinterpret_cast<const std::byte*>(container.data());
-        std::size_t size = container.size();
+    // Serialize size.
+    if constexpr (!fixed_size_container<type>) {
+        // If the container has fixed size the size is known at compile time; 
+        // therefore, we don't need to serialize it.
+        // Otherwise, serialize it.
+        if (auto result = serialize_one(writer, container.size()); failure(result)) [[unlikely]] {
+            return result;
+        }
+    }
 
+    // Serialize elements.
+    if constexpr (trivially_copyable<value_type>) {
+        // Optimization: memory copy elements.
+        std::byte const* data = reinterpret_cast<const std::byte*>(container.data());
+        std::size_t size = container.size();
         writer.write_bytes(data, size * sizeof(value_type));
         return {};
     }
     else {
         // Non-optimized path.
-        for (auto const& elem : container) {
-            if (auto result = serialize_one(writer, elem); failure(result)) [[unlikely]] {
+        for (auto const& element : container) {
+            if (auto result = serialize_one(writer, element); failure(result)) [[unlikely]] {
                 return result;
             }
         }
@@ -123,29 +102,29 @@ error serialize_one(buffer_writer& writer, fixed_size_container auto const& cont
 }
 
 [[nodiscard]] inline constexpr 
-error serialize_one(buffer_writer& writer, container auto const& obj) {
-    using type = std::remove_cvref_t<decltype(obj)>;
+error serialize_one(buffer_writer& writer, container auto const& container) {
+    using type = std::remove_cvref_t<decltype(container)>;
     using size_type = typename type::size_type;
     
     // Serialize size.
     if constexpr (sized_container<type>) {
         // Optimization: don't need to compute the size; it is already known at runtime.
-        if (auto result = serialize_one(writer, obj.size()); failure(result)) [[unlikely]] {
+        if (auto result = serialize_one(writer, container.size()); failure(result)) [[unlikely]] {
             return result;
         }
     }
     else {
         // Non-optimized path.
         // Some containers (like `std::forward_list`) don't have `size()` observer.
-        size_type size = std::distance(obj.begin(), obj.end());
+        size_type size = std::distance(container.begin(), container.end());
         if (auto result = serialize_one(writer, size); failure(result)) [[unlikely]] {
             return result;
         }
     }
 
     // Serialize elements.
-    for (auto const& elem : obj) {
-        if (auto result = serialize_one(writer, elem); failure(result)) [[unlikely]] {
+    for (auto const& element : container) {
+        if (auto result = serialize_one(writer, element); failure(result)) [[unlikely]] {
             return result;
         }
     }
