@@ -139,3 +139,62 @@ TEST_CASE("Serialize and deserialize floating point types") {
         ASSERT_EQ(f0, f1);
     }
 }
+
+enum class enum_8 : std::uint8_t {
+    a = 0, b = 1, c = 2, d = 3
+};
+
+enum class enum_16 : std::uint16_t {
+    a = 0, b = 1, c = 2, d = 3
+};
+
+enum class enum_32 : std::uint32_t {
+    a = 0, b = 1, c = 2, d = 3
+};
+
+enum class enum_64 : std::uint64_t {
+    a = 0, b = 1, c = 2, d = 3
+};
+
+TEST_CASE("Serialize and deserialize enum types") {
+    // enum_8
+    {
+        teg::buffer b;
+        enum_8 e0 = enum_8::a;
+        teg::serialize(b, e0).or_throw();
+        
+        enum_8 e1;
+        teg::deserialize(b, e1).or_throw();
+        ASSERT(e0 == e1);
+    }
+    // enum_16
+    {
+        teg::buffer b;
+        enum_16 e0 = enum_16::b;
+        teg::serialize(b, e0).or_throw();
+        
+        enum_16 e1;
+        teg::deserialize(b, e1).or_throw();
+        ASSERT(e0 == e1);
+    }
+    // enum_32
+    {
+        teg::buffer b;
+        enum_32 e0 = enum_32::c;
+        teg::serialize(b, e0).or_throw();
+        
+        enum_32 e1;
+        teg::deserialize(b, e1).or_throw();
+        ASSERT(e0 == e1);
+    }
+    // enum_64
+    {
+        teg::buffer b;
+        enum_64 e0 = enum_64::d;
+        teg::serialize(b, e0).or_throw();
+        
+        enum_64 e1;
+        teg::deserialize(b, e1).or_throw();
+        ASSERT(e0 == e1);
+    }
+}
