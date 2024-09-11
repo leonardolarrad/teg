@@ -19,12 +19,14 @@ meson test <prueba> -v -C build/
 
 | Prueba | Descripción |
 | --- | --- |
-| `concepts` | Pruebas de conceptos (_C++20 Concepts_) utilizados por la librería para realizar aserciones y resolución de sobrecarga de funciones. |
-| `reflection` | Pruebas de reflección estática (tiempo de compilación). |
+| `concepts` | Pruebas de _Conceptos_ (_C++20 Concepts_) utilizados por la librería. |
+| `reflection` | Pruebas de reflección estática (reflección en tiempo de compilación). |
+| `overload_resolution` | Resolución de sobrecargas de funciones con conceptos. |
 | `buffer` | Computo del tamaño en memoria ocupado por datos serializables. |
 | `fundamental` | Serialización de tipos de datos fundamentales. |
 | `carray` | Serialización de arreglos de C. |
 | `container` | Serialización básica de contenedores de la librería estándar. |
 | `vector` | Serialización detallada del contenedor estándar `std::vector`. |
 | `string` | Serialización de cadenas de caracteres UTF-8, UTF-16 y UTF-32. |
-| `set` | Serialización de conjuntos `std::set`, `std::unordered_set` y `std::multiset`. |
+| `set` | Serialización de conjuntos `std::set`, `std::unordered_set`, `std::multiset` y `std::unordered_multiset`. |
+| `map` | Serialización de mapas `std::map`, `std::unordered_map` y `std::multimap` y `std::unordered_multimap`. |

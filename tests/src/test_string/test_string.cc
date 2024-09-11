@@ -6,6 +6,16 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
+TEST_CASE("De/serialize const string") {
+    teg::buffer b;
+    std::string const s0 = "Hello World!";
+    teg::serialize(b, s0).or_throw();
+
+    std::string s1;
+    teg::deserialize(b, s1).or_throw();
+    ASSERT(s0 == s1);
+}
+
 TEST_CASE("Trivial de/serialization") {    
     teg::buffer b;
     std::string s0 = 
@@ -115,3 +125,4 @@ TEST_CASE("De/serialize wstring") {
     teg::deserialize(b, s1).or_throw();
     ASSERT(s0 == s1);
 }
+
