@@ -28,7 +28,7 @@ namespace teg {
 
 constexpr static auto MAX_VISIT_MEMBERS = 64;
 
-template<aggregate O, typename V>
+template<typename O, typename V>
 constexpr decltype(auto) inline visit_members(O&& obj, V&& visitor) {
     using type = std::remove_cvref_t<O>;
 
