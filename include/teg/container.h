@@ -46,13 +46,13 @@ concept basic_string = is_basic_string_v<T>;
 
 template <typename C>
 concept allocator_aware = requires (C container) {
-    { container.get_allocator() } -> std::same_as<typename C::allocator_type>;
+    { container.get_allocator() } -> std::same_as<typename unqualified<C>::allocator_type>;
 };
 
 template <typename C, typename A, typename T>
 concept valid_allocator = 
     std::same_as<
-        typename C::allocator_type,
+        typename unqualified<C>::allocator_type,
         typename std::allocator_traits<A>::template rebind_alloc<T>>;
 
 template <typename T>
@@ -73,7 +73,7 @@ template <typename C, typename T>
 concept default_insertable = 
        ( basic_string<C>    && default_constructable<T>)
     || (!allocator_aware<C> && default_constructable<T>)
-    || ( allocator_aware<C> && allocator_constructable<C, typename C::allocator_type, T>);
+    || ( allocator_aware<C> && allocator_constructable<C, typename unqualified<C>::allocator_type, T>);
 
 
 
@@ -97,7 +97,7 @@ template <typename C, typename T>
 concept move_insertable = 
        ( basic_string<C>    && default_move_constructable<T>)
     || (!allocator_aware<C> && default_move_constructable<T>)
-    || ( allocator_aware<C> && allocator_move_constructable<C, typename C::allocator_type, T>);
+    || ( allocator_aware<C> && allocator_move_constructable<C, typename unqualified<C>::allocator_type, T>);
 
 
 
@@ -121,7 +121,7 @@ template <typename C, typename T>
 concept copy_insertable = move_insertable<C, T>
     && ((basic_string<C>    && default_copy_constructable<T>)
     || (!allocator_aware<C> && default_copy_constructable<T>)
-    || ( allocator_aware<C> && allocator_copy_constructable<C, typename C::allocator_type, T>));
+    || ( allocator_aware<C> && allocator_copy_constructable<C, typename unqualified<C>::allocator_type, T>));
 
 
 
@@ -142,7 +142,7 @@ template <typename C, typename T>
 concept emplace_constructible = 
        ( basic_string<C>    && default_emplace_constructable<T>)
     || (!allocator_aware<C> && default_emplace_constructable<T>)
-    || ( allocator_aware<C> && allocator_emplace_constructable<C, typename C::allocator_type, T>);
+    || ( allocator_aware<C> && allocator_emplace_constructable<C, typename unqualified<C>::allocator_type, T>);
 
 
 
@@ -165,59 +165,59 @@ template <typename C, typename T>
 concept erasable = 
        ( basic_string<C>    && default_destroyable<T>)
     || (!allocator_aware<C> && default_destroyable<T>)
-    || ( allocator_aware<C> && allocator_destroyable<C, typename C::allocator_type, T>);
+    || ( allocator_aware<C> && allocator_destroyable<C, typename unqualified<C>::allocator_type, T>);
 
 
 
 
 template <typename C, typename T>
 concept container_element =
-       std::same_as<T, typename C::value_type>
+       std::same_as<T, typename unqualified<C>::value_type>
     && erasable<C, T>;
 
 template <typename C, typename R>
 concept container_element_reference = 
-       std::same_as<R, typename C::reference>
-    && std::same_as<R, typename C::value_type&>;
+       std::same_as<R, typename unqualified<C>::reference>
+    && std::same_as<R, typename unqualified<C>::value_type&>;
 
 template <typename C, typename CR>
 concept container_element_const_reference = 
-       std::same_as<CR, typename C::const_reference>
-    && std::same_as<CR, typename C::value_type const&>;    
+       std::same_as<CR, typename unqualified<C>::const_reference>
+    && std::same_as<CR, typename unqualified<C>::value_type const&>;    
 
 template <typename C, typename I>
 concept container_element_iterator = 
-       std::same_as<I, typename C::iterator>
+       std::same_as<I, typename unqualified<C>::iterator>
     && std::forward_iterator<I>
-    && std::same_as<std::iter_value_t<I>, typename C::value_type>
-    && std::convertible_to<I, typename C::const_iterator>;
+    && std::same_as<std::iter_value_t<I>, typename unqualified<C>::value_type>
+    && std::convertible_to<I, typename unqualified<C>::const_iterator>;
 
 template <typename C, typename CI>
 concept container_element_const_iterator = 
-       std::same_as<CI, typename C::const_iterator>
+       std::same_as<CI, typename unqualified<C>::const_iterator>
     && std::forward_iterator<CI>
-    && std::same_as<std::iter_value_t<CI>, typename C::value_type>;
+    && std::same_as<std::iter_value_t<CI>, typename unqualified<C>::value_type>;
 
 template <typename C, typename S>
 concept container_difference_type =
        std::signed_integral<S>
-    && std::same_as<S, typename C::difference_type>
-    && std::same_as<S, typename std::iterator_traits<typename C::iterator>::difference_type>
-    && std::same_as<S, typename std::iterator_traits<typename C::const_iterator>::difference_type>;
+    && std::same_as<S, typename unqualified<C>::difference_type>
+    && std::same_as<S, typename std::iterator_traits<typename unqualified<C>::iterator>::difference_type>
+    && std::same_as<S, typename std::iterator_traits<typename unqualified<C>::const_iterator>::difference_type>;
     
 template <typename C, typename S>
 concept container_size_type = 
        std::unsigned_integral<S>
-    && std::same_as<S, typename C::size_type>
-    && std::in_range<S>(std::numeric_limits<typename C::difference_type>::max());
+    && std::same_as<S, typename unqualified<C>::size_type>
+    && std::in_range<S>(std::numeric_limits<typename unqualified<C>::difference_type>::max());
 
 template <typename C, typename T>
 concept shared_strongest_property = 
-       (!std::equality_comparable<typename C::value_type> || std::equality_comparable<C>)
-    && (!std::movable<typename C::value_type> || std::movable<C>)
-    && (!std::copyable<typename C::value_type> || std::copyable<C> )
-    && (!std::semiregular<typename C::value_type> || std::semiregular<C>)
-    && (!std::regular<typename C::value_type> || std::regular<C>);
+       (!std::equality_comparable<typename unqualified<C>::value_type> || std::equality_comparable<C>)
+    && (!std::movable<typename unqualified<C>::value_type> || std::movable<C>)
+    && (!std::copyable<typename unqualified<C>::value_type> || std::copyable<C> )
+    && (!std::semiregular<typename unqualified<C>::value_type> || std::semiregular<C>)
+    && (!std::regular<typename unqualified<C>::value_type> || std::regular<C>);
 
 ///  Containers are objects that store other objects. They control allocation
 ///  and deallocation  of these objects through constructors, destructors,
@@ -225,23 +225,22 @@ concept shared_strongest_property =
 ///
 ///  ISO/IEC 14882:2020 [container.requirements.general]
 template <typename C>
-concept container = //shared_strongest_property<C, typename C::value_type> &&
-       //std::regular<C> && 
-       container_element<C, typename C::value_type>
-    && container_element_reference<C, typename C::reference>
-    && container_element_const_reference<C, typename C::const_reference>
-    && container_element_iterator<C, typename C::iterator>
-    && container_element_const_iterator<C, typename C::const_iterator>
-    && container_difference_type<C, typename C::difference_type>
-    && container_size_type<C, typename C::size_type>
-    && requires (C a, C const b) {
-        { a.begin() }    -> std::same_as<typename C::iterator>;
-        { a.end() }      -> std::same_as<typename C::iterator>;
-        { b.begin() }    -> std::same_as<typename C::const_iterator>;
-        { b.end() }      -> std::same_as<typename C::const_iterator>;
-        { a.cbegin() }   -> std::same_as<typename C::const_iterator>;
-        { a.cend() }     -> std::same_as<typename C::const_iterator>;    
-        { a.max_size() } -> std::same_as<typename C::size_type>;
+concept container = 
+       container_element<C, typename unqualified<C>::value_type>
+    && container_element_reference<C, typename unqualified<C>::reference>
+    && container_element_const_reference<C, typename unqualified<C>::const_reference>
+    && container_element_iterator<C, typename unqualified<C>::iterator>
+    && container_element_const_iterator<C, typename unqualified<C>::const_iterator>
+    && container_difference_type<C, typename unqualified<C>::difference_type>
+    && container_size_type<C, typename unqualified<C>::size_type>
+    && requires (unqualified<C> a, unqualified<C> const b) {
+        { a.begin() }    -> std::same_as<typename unqualified<C>::iterator>;
+        { a.end() }      -> std::same_as<typename unqualified<C>::iterator>;
+        { b.begin() }    -> std::same_as<typename unqualified<C>::const_iterator>;
+        { b.end() }      -> std::same_as<typename unqualified<C>::const_iterator>;
+        { a.cbegin() }   -> std::same_as<typename unqualified<C>::const_iterator>;
+        { a.cend() }     -> std::same_as<typename unqualified<C>::const_iterator>;    
+        { a.max_size() } -> std::same_as<typename unqualified<C>::size_type>;
         { a.empty() }    -> std::convertible_to<bool>;
     };
 
@@ -251,24 +250,24 @@ concept container = //shared_strongest_property<C, typename C::value_type> &&
 ///  ISO/IEC 14882:2020 [container.requirements.general]
 template <typename C>
 concept reversible_container = container<C>
-    && std::bidirectional_iterator<typename C::iterator>
-    && std::bidirectional_iterator<typename C::const_iterator>
-    && std::bidirectional_iterator<typename C::reverse_iterator>
-    && std::bidirectional_iterator<typename C::const_reverse_iterator>
-    && std::convertible_to<typename C::reverse_iterator, typename C::const_reverse_iterator>
-    && requires(C a, C const b) {
-        { a.rbegin() }  -> std::same_as<typename C::reverse_iterator>;
-        { a.rend() }    -> std::same_as<typename C::reverse_iterator>;
-        { b.rbegin() }  -> std::same_as<typename C::const_reverse_iterator>;
-        { b.rend() }    -> std::same_as<typename C::const_reverse_iterator>;
-        { a.crbegin() } -> std::same_as<typename C::const_reverse_iterator>;
-        { a.crend() }   -> std::same_as<typename C::const_reverse_iterator>;
+    && std::bidirectional_iterator<typename unqualified<C>::iterator>
+    && std::bidirectional_iterator<typename unqualified<C>::const_iterator>
+    && std::bidirectional_iterator<typename unqualified<C>::reverse_iterator>
+    && std::bidirectional_iterator<typename unqualified<C>::const_reverse_iterator>
+    && std::convertible_to<typename unqualified<C>::reverse_iterator, typename unqualified<C>::const_reverse_iterator>
+    && requires(unqualified<C> a, unqualified<C> const b) {
+        { a.rbegin() }  -> std::same_as<typename unqualified<C>::reverse_iterator>;
+        { a.rend() }    -> std::same_as<typename unqualified<C>::reverse_iterator>;
+        { b.rbegin() }  -> std::same_as<typename unqualified<C>::const_reverse_iterator>;
+        { b.rend() }    -> std::same_as<typename unqualified<C>::const_reverse_iterator>;
+        { a.crbegin() } -> std::same_as<typename unqualified<C>::const_reverse_iterator>;
+        { a.crend() }   -> std::same_as<typename unqualified<C>::const_reverse_iterator>;
     };
 
 template <typename C>
 concept sized_container = container<C>
-    && requires(C const a) {
-        { a.size() } -> std::same_as<typename C::size_type>;
+    && requires(unqualified<C> const a) {
+        { a.size() } -> std::same_as<typename unqualified<C>::size_type>;
     };
 
 template <typename T>
@@ -306,11 +305,14 @@ concept invertible_container = container<C>
 template <typename C>
 concept random_access_container = 
        reversible_container<C> && sized_container<C>
-    && std::random_access_iterator<typename C::iterator>
-    && std::random_access_iterator<typename C::const_iterator>
-    && requires(C a, C const b, typename C::size_type const i) {
-        { a[i] } -> std::same_as<typename C::reference>;
-        { b[i] } -> std::same_as<typename C::const_reference>;
+    && std::random_access_iterator<typename unqualified<C>::iterator>
+    && std::random_access_iterator<typename unqualified<C>::const_iterator>
+    && requires(
+        unqualified<C> a, unqualified<C> const b, 
+        typename unqualified<C>::size_type const i
+    ) {
+        { a[i] } -> std::same_as<typename unqualified<C>::reference>;
+        { b[i] } -> std::same_as<typename unqualified<C>::const_reference>;
     };
 
 /// A random access container that stores elements in a contiguous memory region.
@@ -318,53 +320,53 @@ concept random_access_container =
 template <typename C>
 concept contiguous_container = 
        random_access_container<C>
-    && std::contiguous_iterator<typename C::iterator>
-    && std::contiguous_iterator<typename C::const_iterator>
-    && std::contiguous_iterator<typename C::pointer>
-    && std::contiguous_iterator<typename C::const_pointer>
-    && std::convertible_to<typename C::pointer, typename C::const_pointer>
-    && requires(C a, C const b) {
-        { a.data() } -> std::same_as<typename C::pointer>;
-        { b.data() } -> std::same_as<typename C::const_pointer>;
+    && std::contiguous_iterator<typename unqualified<C>::iterator>
+    && std::contiguous_iterator<typename unqualified<C>::const_iterator>
+    && std::contiguous_iterator<typename unqualified<C>::pointer>
+    && std::contiguous_iterator<typename unqualified<C>::const_pointer>
+    && std::convertible_to<typename unqualified<C>::pointer, typename unqualified<C>::const_pointer>
+    && requires(unqualified<C> a, unqualified<C> const b) {
+        { a.data() } -> std::same_as<typename unqualified<C>::pointer>;
+        { b.data() } -> std::same_as<typename unqualified<C>::const_pointer>;
     };
 
 template <typename C>
 concept trivial_contiguous_container = 
        contiguous_container<C> 
     && resizable_container<C>
-    && trivially_copyable<typename C::value_type>;
+    && trivially_copyable<typename unqualified<C>::value_type>;
 
 template <typename C>
 concept fixed_size_container = contiguous_container<C> && has_fixed_nonzero_size<C>;
 
 template <typename C>
 concept inplace_constructing_container = container<C>
-    && emplace_constructible<C, typename C::value_type>
-    && requires (C a, C::value_type&& rv) {
+    && emplace_constructible<C, typename unqualified<C>::value_type>
+    && requires (C a, typename unqualified<C>::value_type&& rv) {
         a.emplace();
-        a.emplace(std::forward<typename C::value_type>(rv));
+        a.emplace(std::forward<typename unqualified<C>::value_type>(rv));
     };
 
 template <typename C>
 concept back_inplace_constructing_container = container<C>
-    && emplace_constructible<C, typename C::value_type>
-    && requires (C a, C::value_type&& rv) {
-        { a.emplace_back() } -> std::same_as<typename C::reference>;
-        { a.emplace_back(std::forward<typename C::value_type>(rv)) } -> std::same_as<typename C::reference>;
+    && emplace_constructible<C, typename unqualified<C>::value_type>
+    && requires (C a, typename unqualified<C>::value_type&& rv) {
+        { a.emplace_back() } -> std::same_as<typename unqualified<C>::reference>;
+        { a.emplace_back(std::forward<typename unqualified<C>::value_type>(rv)) } -> std::same_as<typename unqualified<C>::reference>;
     };
 
 template <typename C>
 concept front_inplace_constructing_container = container<C>
-    && emplace_constructible<C, typename C::value_type>
-    && requires (C a, C::value_type&& rv) {
-        { a.emplace_front() } -> std::same_as<typename C::reference>;
-        { a.emplace_front(std::forward<typename C::value_type>(rv)) } -> std::same_as<typename C::reference>;
+    && emplace_constructible<C, typename unqualified<C>::value_type>
+    && requires (C a, typename unqualified<C>::value_type&& rv) {
+        { a.emplace_front() } -> std::same_as<typename unqualified<C>::reference>;
+        { a.emplace_front(std::forward<typename unqualified<C>::value_type>(rv)) } -> std::same_as<typename unqualified<C>::reference>;
     };
 
 template <typename C>
 concept range_constructing_container = container<C>
-    && emplace_constructible<C, typename C::value_type>
-    && requires (C::iterator i, C::iterator j) {
+    && emplace_constructible<C, typename unqualified<C>::value_type>
+    && requires (typename unqualified<C>::iterator i, typename unqualified<C>::iterator j) {
         C { i, j };
     };
 
@@ -377,29 +379,29 @@ template <typename C>
 concept associative_container = 
        sized_container<C>
     && clearable_container<C>
-    && emplace_constructible<C, typename C::value_type> 
-    && requires (C a, typename C::value_type&& rv) {
-        typename C::key_type;
-        a.emplace(std::forward<typename C::value_type>(rv));
+    && emplace_constructible<C, typename unqualified<C>::value_type> 
+    && requires (unqualified<C> a, typename unqualified<C>::value_type&& rv) {
+        typename unqualified<C>::key_type;
+        a.emplace(std::forward<typename unqualified<C>::value_type>(rv));
     };
 
 template <typename C>
 concept set = 
        associative_container<C>
-    && std::same_as<typename C::key_type, typename C::value_type>;
+    && std::same_as<typename unqualified<C>::key_type, typename unqualified<C>::value_type>;
 
 template <typename C>
 concept map = 
        associative_container<C>;
 
 template <typename C, typename T>
-concept container_of = container<C> && std::same_as<T, typename C::value_type>;
+concept container_of = container<C> && std::same_as<T, typename unqualified<C>::value_type>;
 
 template <typename C, typename T>
-concept random_access_container_of = random_access_container<C> && std::same_as<T, typename C::value_type>;
+concept random_access_container_of = random_access_container<C> && std::same_as<T, typename unqualified<C>::value_type>;
 
 template <typename C, typename T>
-concept contiguous_container_of = contiguous_container<C> && std::same_as<T, typename C::value_type>;
+concept contiguous_container_of = contiguous_container<C> && std::same_as<T, typename unqualified<C>::value_type>;
 
 
 ///  @brief Concept for associative containers.
@@ -415,6 +417,6 @@ concept contiguous_container_of = contiguous_container<C> && std::same_as<T, typ
 /// 
 ///  @see associative_container
 template <typename C, typename T>
-concept associative_container_of = associative_container<C> && std::same_as<T, typename C::value_type>;
+concept associative_container_of = associative_container<C> && std::same_as<T, typename unqualified<C>::value_type>;
 
 } // namespace teg

@@ -24,24 +24,27 @@
 namespace teg {
 
 template <typename T>
-concept fundamental = std::is_fundamental_v<std::remove_cvref_t<T>>;
+using unqualified = std::remove_cvref_t<T>;
 
 template <typename T>
-concept is_enum = std::is_enum_v<std::remove_cvref_t<T>>;
+using decayed = std::decay_t<T>;
 
 template <typename T>
-concept standard_layout = std::is_standard_layout_v<std::remove_cvref_t<T>>;
+concept fundamental = std::is_fundamental_v<unqualified<T>>;
 
 template <typename T>
-concept aggregate = std::is_aggregate_v<std::remove_cvref_t<T>>;
+concept is_enum = std::is_enum_v<unqualified<T>>;
 
 template <typename T>
-concept strict_aggregate = aggregate<T>;
+concept standard_layout = std::is_standard_layout_v<unqualified<T>>;
 
 template <typename T>
-concept trivial = std::is_trivial_v<std::remove_cvref_t<T>>;
+concept aggregate = std::is_aggregate_v<unqualified<T>>;
 
 template <typename T>
-concept trivially_copyable = std::is_trivially_copyable_v<std::remove_cvref_t<T>>;
+concept trivial = std::is_trivial_v<unqualified<T>>;
+
+template <typename T>
+concept trivially_copyable = std::is_trivially_copyable_v<unqualified<T>>;
 
 } // namespace teg

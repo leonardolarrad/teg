@@ -127,16 +127,26 @@ concept optional_like = !expected_like<T> && requires(T optional) {
 template <typename T>
 concept deserializable = fundamental<T> || aggregate<T>;
 
-template <typename T, typename... A>
-concept constructible_from = requires {
-    T{{A{}}...};
-};
-
 template <typename T>
 concept trivial_serializable = 
     fundamental<T> || aggregate<T>;
 
 template <typename T>
 concept trivial_deserializable = trivial_serializable<T>;
+
+
+
+template <typename T, typename... A>
+concept constructible_from = requires {
+    T{{A{}}...};
+};
+
+template <typename T>
+concept tuple_size = requires {
+    std::tuple_size<std::remove_cvref_t<T>>::value;
+};
+
+template <typename T>
+concept structured_bindable = true;
 
 } // namespace teg

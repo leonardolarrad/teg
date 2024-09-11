@@ -90,7 +90,7 @@ error deserialize_one(buffer_reader& reader, fixed_size_container auto& containe
 
 [[nodiscard]] inline constexpr 
 error deserialize_one(buffer_reader& reader, contiguous_container auto& container) {
-    using type = std::remove_cvref_t<decltype(container)>;
+    using type = std::remove_reference_t<decltype(container)>;
     using value_type = typename type::value_type;
     using size_type = typename type::size_type;
 
