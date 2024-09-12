@@ -36,6 +36,10 @@ TEST_CASE("Trivial map de/serialization") {
 }
 
 TEST_CASE("Non-trivial map de/serialization") {
+
+    using nconst_t = std::remove_const_t<const std::pair<std::string const, std::string>>;
+
+
     SECTION("Map") {
         teg::buffer b;
         std::map<std::string, std::string> m0 = { { "a", "a" }, { "b", "b" }, { "c", "c" }, { "d", "d" }, { "e", "e" } };

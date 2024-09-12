@@ -66,11 +66,65 @@ error deserialize_one(buffer_reader& reader, auto& obj) {
 }
 
 [[nodiscard]] inline constexpr 
+error deserialize_one(buffer_reader& reader, associative_container auto& container) {
+    using type = std::remove_reference_t<decltype(container)>;
+    using size_type = typename type::size_type;
+    
+    // Pre-condition: the container is empty.
+    // In C++17 and later, aggregates can have user-provided constructors (member initializers),
+    // allowing default-constructed non-empty containers.
+    container.clear();
+    
+    // Deserialize size.
+    size_type size;
+    auto result = deserialize_one(reader, size);
+    if (failure(result)) [[unlikely]] {
+        return result;
+    }
+
+    // Deserialize elements.
+    if constexpr (reservable_container<type>) {
+        // Optimization: allocate uninitialized memory in advance.
+        container.reserve(size);
+    }
+
+    if constexpr (map_container<type>) {
+        // By default `std::map` uses `std::pair<const key_type, mapped_type>`
+        // as its value_type. We cannot deserialize const-qualified types.
+        // Get rid of the const qualifier.
+        using value_type = std::pair<typename type::key_type, typename type::mapped_type>;
+        value_type element;
+
+        for (size_type i = 0; i < size; ++i) {
+            auto result = deserialize_one(reader, element);
+            if (failure(result)) [[unlikely]] {
+                return result;
+            }
+            container.emplace(std::move(element));
+        }
+        return {};
+    }
+    else {
+        using value_type = typename type::value_type;
+        value_type element;
+
+        for (size_type i = 0; i < size; ++i) {
+            auto result = deserialize_one(reader, element);
+            if (failure(result)) [[unlikely]] {
+                return result;
+            }
+            container.emplace(std::move(element));
+        }
+        return {};
+    }
+}
+
+[[nodiscard]] inline constexpr 
 error deserialize_one(buffer_reader& reader, fixed_size_container auto& container) {
     using type = std::remove_cvref_t<decltype(container)>;
     using value_type = typename type::value_type;
     
-    // The size is known at compile time; therefore, we don't need to deserialize it.
+    // The size is known at compile time; therefore we don't need to deserialize it.
     // Deserialize only the elements.
     if constexpr (trivially_copyable<value_type>) {
         // Optimization: memory copy elements.
@@ -80,7 +134,8 @@ error deserialize_one(buffer_reader& reader, fixed_size_container auto& containe
     else {
         // Non-optimized path.
         for (auto& element : container) {
-            if (auto result = deserialize_one(reader, element); failure(result)) [[unlikely]] {
+            auto result = deserialize_one(reader, element);
+            if (failure(result)) [[unlikely]] {
                 return result;
             }
         }
@@ -102,8 +157,9 @@ error deserialize_one(buffer_reader& reader, contiguous_container auto& containe
     }
 
     // Deserialize size.
-    size_type size; 
-    if (auto result = deserialize_one(reader, size); failure(result)) [[unlikely]] {
+    size_type size;
+    auto result = deserialize_one(reader, size);
+    if (failure(result)) [[unlikely]] {
         return result;
     }
 
@@ -164,7 +220,8 @@ error deserialize_one(buffer_reader& reader, container auto& container) {
 
     // Deserialize size.
     size_type size;
-    if (auto result = deserialize_one(reader, size); failure(result)) [[unlikely]] {
+    auto result = deserialize_one(reader, size);
+    if (failure(result)) [[unlikely]] {
         return result;
     }
 
@@ -197,6 +254,7 @@ error deserialize_one(buffer_reader& reader, container auto& container) {
     }
     else if constexpr (inplace_constructing_container<type>) {
         value_type element;
+
         for (size_type i = 0; i < size; ++i) {
             auto result = deserialize_one(reader, element);
             if (failure(result)) [[unlikely]] {
@@ -211,12 +269,12 @@ error deserialize_one(buffer_reader& reader, container auto& container) {
     }
 }
 
-[[nodiscard]] inline constexpr 
+[[nodiscard]] inline constexpr
 error deserialize_many(buffer_reader& reader) {
     return {};
 }
 
-[[nodiscard]] inline constexpr 
+[[nodiscard]] inline constexpr
 error deserialize_many(buffer_reader& reader, auto& first_obj, auto&... remaining_objs) {
     auto result = deserialize_one(reader, first_obj);
     if (failure(result)) [[unlikely]] {

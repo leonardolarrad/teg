@@ -379,20 +379,22 @@ template <typename C>
 concept associative_container = 
        sized_container<C>
     && clearable_container<C>
-    && emplace_constructible<C, typename unqualified<C>::value_type> 
-    && requires (unqualified<C> a, typename unqualified<C>::value_type&& rv) {
+    && inplace_constructing_container<C> 
+    && requires {
         typename unqualified<C>::key_type;
-        a.emplace(std::forward<typename unqualified<C>::value_type>(rv));
     };
 
 template <typename C>
-concept set = 
+concept set_container = 
        associative_container<C>
     && std::same_as<typename unqualified<C>::key_type, typename unqualified<C>::value_type>;
 
 template <typename C>
-concept map = 
-       associative_container<C>;
+concept map_container = 
+       associative_container<C>
+    && requires {
+        typename unqualified<C>::mapped_type;
+    };
 
 template <typename C, typename T>
 concept container_of = container<C> && std::same_as<T, typename unqualified<C>::value_type>;

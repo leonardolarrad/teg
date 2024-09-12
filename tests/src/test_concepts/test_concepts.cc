@@ -185,19 +185,19 @@ TEST_CASE("Concept teg::associative_container") {
 
 TEST_CASE("Concept teg::set") {
     // Set containers.
-    ASSERT((teg::set<std::set<valid_elem>>));                                                          // set
-    ASSERT((teg::set<std::multiset<valid_elem>>));                                                     // multiset
-    ASSERT((teg::set<std::unordered_set<int>>));                                                       // unordered_set
-    ASSERT((teg::set<std::unordered_multiset<int>>));                                                  // unordered_multiset
+    ASSERT((teg::set_container<std::set<valid_elem>>));                                                          // set
+    ASSERT((teg::set_container<std::multiset<valid_elem>>));                                                     // multiset
+    ASSERT((teg::set_container<std::unordered_set<int>>));                                                       // unordered_set
+    ASSERT((teg::set_container<std::unordered_multiset<int>>));                                                  // unordered_multiset
     // Non set containers.                  
-    ASSERT(!(teg::set<std::map<int, valid_elem>>));                                                    // map
-    ASSERT(!(teg::set<std::multimap<int, valid_elem>>));                                               // multimap
-    ASSERT(!(teg::set<std::unordered_map<int, valid_elem>>));                                          // unordered_map
-    ASSERT(!(teg::set<std::unordered_multimap<int, valid_elem>>));                                     // unordered_multimap
-    ASSERT(!(teg::set<std::vector<valid_elem>>));                                                      // vector
-    ASSERT(!(teg::set<std::array<int, 10>>));                                                          // array
-    ASSERT(!(teg::set<std::deque<valid_elem>>));                                                       // deque
-    ASSERT(!(teg::set<std::list<valid_elem>>));                                                        // list    
-    ASSERT(!(teg::set<std::forward_list<valid_elem>>));                                                // forward_list
-    ASSERT(!(teg::set<std::basic_string<char>>));                                                      // basic string
+    ASSERT(!(teg::set_container<std::map<int, valid_elem>>));                                                    // map
+    ASSERT(!(teg::set_container<std::multimap<int, valid_elem>>));                                               // multimap
+    ASSERT(!(teg::set_container<std::unordered_map<int, valid_elem>>));                                          // unordered_map
+    ASSERT(!(teg::set_container<std::unordered_multimap<int, valid_elem>>));                                     // unordered_multimap
+    ASSERT(!(teg::set_container<std::vector<valid_elem>>));                                                      // vector
+    ASSERT(!(teg::set_container<std::array<int, 10>>));                                                          // array
+    ASSERT(!(teg::set_container<std::deque<valid_elem>>));                                                       // deque
+    ASSERT(!(teg::set_container<std::list<valid_elem>>));                                                        // list    
+    ASSERT(!(teg::set_container<std::forward_list<valid_elem>>));                                                // forward_list
+    ASSERT(!(teg::set_container<std::basic_string<char>>));                                                      // basic string
 }
