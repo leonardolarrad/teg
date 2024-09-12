@@ -33,6 +33,16 @@ TEST_CASE("Trivial set de/serialization") {
         teg::deserialize(b, s1).or_throw();
         ASSERT(s0 == s1);
     }
+    SECTION("Unordered multiset") {
+        teg::buffer b;
+        std::unordered_multiset<int> s0 = { 1, 1, 2, 2, 5 };
+
+        teg::serialize(b, s0).or_throw();
+
+        std::unordered_multiset<int> s1;
+        teg::deserialize(b, s1).or_throw();
+        ASSERT(s0 == s1);
+    }
 }
 
 TEST_CASE("Non-trivial set de/serialization") {
@@ -60,6 +70,15 @@ TEST_CASE("Non-trivial set de/serialization") {
         teg::serialize(b, s0).or_throw();
 
         std::unordered_set<std::string> s1;
+        teg::deserialize(b, s1).or_throw();
+        ASSERT(s0 == s1);
+    }
+    SECTION("Unordered multiset") {
+        teg::buffer b;
+        std::unordered_multiset<std::string> s0 = { "a", "b", "c", "d", "e" };
+        teg::serialize(b, s0).or_throw();
+
+        std::unordered_multiset<std::string> s1;
         teg::deserialize(b, s1).or_throw();
         ASSERT(s0 == s1);
     }
