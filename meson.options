@@ -3,3 +3,8 @@ option('enable_tests',
   value : true,
   description : 'Enables tests.'
 )
+option('enable_benchmarking',
+  type : 'boolean',
+  value : true,
+  description : 'Enables benchmarking.'
+)

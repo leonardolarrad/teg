@@ -4,3 +4,5 @@ benchmark_dep = declare_dependency(
   compile_args : [],
   include_directories : benchmark_inc
 )
+
+subdir('src/benchmark_teg')

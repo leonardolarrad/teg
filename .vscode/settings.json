@@ -80,7 +80,15 @@
         "xtree": "cpp",
         "forward_list": "cpp",
         "stack": "cpp",
-        "codecvt": "cpp"
+        "codecvt": "cpp",
+        "chrono": "cpp",
+        "fstream": "cpp",
+        "iomanip": "cpp",
+        "ratio": "cpp",
+        "sstream": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp"
     },  
     
 }

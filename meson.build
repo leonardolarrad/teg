@@ -20,3 +20,8 @@ teg_dep = declare_dependency(
 if get_option('enable_tests')
   subdir('tests')
 endif
+
+# Build benchmarks
+if get_option('enable_benchmarking')
+  subdir('benchmark')
+endif
