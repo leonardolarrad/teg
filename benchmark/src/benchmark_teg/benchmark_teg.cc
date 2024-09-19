@@ -2,36 +2,27 @@
 #include "benchmark/benchmark.h"
 #include "benchmark/data.h"
 
-#include <atomic>
-#include <thread>
-
-
-
 namespace bm = benchmarking;
 
-static void xplusplus() {
-    uint64_t x = 1;
+static void benchmark_serialization() {    
+    std::vector<bm::ecommerce_page> test_data_1024b = bm::generate_benchmark_data(8, 1024);
+    
+    teg::buffer b;
     bm::benchmark()
-        .warmup(100)
-        .iterations(896000000)
-        .repetitions(1)
-        .run("sleep", [&]() {
-            //std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            //ankerl::nanobench::doNotOptimizeAway(x += 1);
-            bm::dont_optimize_away(x += 1);
+        .warmup(10)
+        .iterations(100000)
+        .repetitions(100)
+        .run("teg serialization:buffer_raii", [&test_data_1024b](){
+            teg::buffer b;
+            teg::serialize(b, test_data_1024b).or_throw();
+        })
+        .run("teg serialization:buffer_clear", [&](){
+            b.clear();
+            teg::serialize(b, test_data_1024b).or_throw();
         });
 }
 
 int main() {
-    std::seed_seq seed { 99, 5, 11 };
-    std::mt19937 rng { seed };
-
-    std::string str = bm::random_string(rng, 2048);
-    auto user = bm::random_user_data(rng, 2048);
-    std::cout<< teg::buffer_size(str) << std::endl;
-
-    std::cout << str << std::endl;
-    
-    xplusplus();
+    benchmark_serialization();
     return 0;    
 }

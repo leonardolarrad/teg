@@ -10,7 +10,7 @@
             "args": [
                 "compile",
                 "-C",
-                "${workspaceFolder}/build",
+                "${workspaceFolder}/build/debug",
             ],
             "group": {
                 "kind": "build",
