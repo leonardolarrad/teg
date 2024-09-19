@@ -26,26 +26,32 @@
 #include <cmath>
 #include <algorithm>
 #include <format>
+#include <numeric>
 
 namespace benchmarking {
 
+using measured_time = double;
+
+struct measured_result {
+    measured_time real_time;
+    measured_time cpu_time;
+    std::size_t iterations;
+};
+
 struct stats {
-    std::chrono::nanoseconds real_time;
-    std::chrono::nanoseconds cpu_time;
-    // cpu usage
-    // ram usage
+    measured_time mean;
+    measured_time median;
+    measured_time stddev;
+    double cv;
+
+    stats() = default;
 };
 
 struct config {
     std::string benchmark_name;
     std::size_t warmup = 10;
     std::size_t iterations = 1;
-
-    bool is_relative = false;
-    bool auto_determine_iterations = true;
-    std::size_t min_epoch_iterations = 1;
-    std::chrono::nanoseconds max_epoch_time = std::chrono::milliseconds(100);
-    std::chrono::nanoseconds min_epoch_time = std::chrono::milliseconds(1);
+    std::size_t repetitions = 1;
 };
 
 class benchmark {
@@ -71,6 +77,11 @@ public:
         return *this;
     }
 
+    benchmark& repetitions(std::size_t repetitions) {
+        m_config.repetitions = repetitions;
+        return *this;
+    }
+
     template <typename Func>
     benchmark& run(std::string benchmark_name, Func&& benchmark_func) {
         name(benchmark_name);
@@ -85,47 +96,123 @@ public:
         }
 
         // Benchmark.
-        //std::vector<stats> results;
-        std::size_t iterations = std::max(m_config.iterations, std::size_t(1));
-
-        auto const start = std::chrono::steady_clock::now();
-        for (std::size_t i = 0; i < iterations; ++i) {
-            benchmark_func();
-        }
-        auto const end = std::chrono::steady_clock::now();
+        std::size_t repetitions = std::max(m_config.repetitions, std::size_t(1));
         
-        auto const duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-        double const real_time = duration.count() / double(iterations);
-        double const cpu_time = duration.count() / double(iterations);
+        std::vector<measured_result> repetitions_results;
+        repetitions_results.reserve(repetitions);
+        std::vector<measured_time> real_time_results;
+        real_time_results.reserve(repetitions);
+        std::vector<measured_time> cpu_time_results;
+        cpu_time_results.reserve(repetitions);
+
+        for (std::size_t i = 0; i < repetitions; ++i) {
+            std::size_t iterations = std::max(m_config.iterations, std::size_t(1));
+
+            auto const start = std::chrono::high_resolution_clock::now();
+            for (std::size_t i = 0; i < iterations; ++i) {
+                benchmark_func();
+            }
+            auto const end = std::chrono::high_resolution_clock::now();
+            
+            auto const duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+            measured_time const real_time = duration.count() / double(iterations);
+            measured_time const cpu_time = duration.count() / double(iterations);
+
+            repetitions_results.emplace_back(real_time, cpu_time, iterations);
+            real_time_results.emplace_back(real_time);
+            cpu_time_results.emplace_back(cpu_time);
+        }
+
+        // Stats    
+        stats const real_time_stats = compute_stats(real_time_results);
+        //stats const cpu_time_stats = compute_stats(cpu_time_results);
 
         // Output.
-        std::cout << "Benchmark: " << m_config.benchmark_name << std::endl;
-        std::cout << std::format("Real time: {:.3f} ns", real_time) << std::endl;
-        std::cout << std::format("CPU time: {:.3f} ns", cpu_time) << std::endl;
+        report_header();
+        report_repetitions(repetitions_results);
 
-
-        /*
-        // Statistics.
-        double total_execution_time = 0.0;
-        double mean = 0.0;
-        double stddev = 0.0;
-        for (auto const& r : results) {
-            total_execution_time += r.real_time.count();
-            mean += r.real_time.count();
+        if (repetitions > 1) {
+            report_stats(real_time_stats);
         }
-        mean /= results.size();
-        for (auto const& r : results) {
-            stddev += (r.real_time.count() - mean) * (r.real_time.count() - mean);
-        }
-        stddev = std::sqrt(stddev / results.size());
 
-        // Output.
-        std::cout << "Benchmark: " << m_config.benchmark_name << std::endl;
-        std::cout << std::format("Total execution time: {:.3f} ns", total_execution_time) << std::endl;
-        std::cout << std::format("Mean execution time: {:.3f} ns", mean) << std::endl;
-        std::cout << std::format("Standard deviation: {:.3f} ns", stddev) << std::endl;
-        */
         return *this;       
+    }
+
+    stats compute_stats(std::vector<measured_time> times) {
+        stats stats;        
+        // Compute mean
+        stats.mean = std::accumulate(times.begin(), times.end(), 0.0) / times.size();
+
+        // Compute median
+        std::sort(times.begin(), times.end());
+        stats.median = times[times.size() / 2];        
+        
+        // Compute stddev
+        double sum = 0.0;
+        for (auto time : times) {
+            sum += (time - stats.mean) * (time - stats.mean);
+        }
+        stats.stddev = std::sqrt(sum / times.size());
+
+        // Compute coefficient of variation
+        stats.cv = stats.stddev / stats.mean;
+        
+        return stats;
+    }
+
+    void report_header() {
+        std::cout << "\n";
+        std::cout << "| benchmark                              ";
+        std::cout << "|       real time (ns/op)";
+        std::cout << "|        cpu time (ns/op)";
+        std::cout << "|              iterations";
+        std::cout << "|\n";
+
+        std::cout << "|----------------------------------------";
+        std::cout << "|------------------------";
+        std::cout << "|------------------------";
+        std::cout << "|------------------------";
+        std::cout << "|\n";
+    }
+
+    void report_repetitions(std::vector<measured_result> const& repetitions) {
+        for (std::size_t i = 0; i < repetitions.size(); ++i) {
+            if (repetitions.size() == 1) {
+                std::cout << "| " << std::format("{:39}", m_config.benchmark_name);
+            }
+            else {
+                std::cout << std::format("| {:39}", std::format("{}:{}", m_config.benchmark_name, i));
+            }
+
+            std::cout << std::format("| {:23.3f}", repetitions[i].real_time);
+            std::cout << std::format("| {:23.3f}", repetitions[i].cpu_time);
+            std::cout << std::format("| {:23}", repetitions[i].iterations);
+            std::cout << "|\n";
+        }
+    }
+
+    void report_stats(stats const& stats) {
+        std::cout << "\n";
+        std::cout << "| benchmark                              ";
+        std::cout << "|    mean (ns/op)";
+        std::cout << "|  median (ns/op)";
+        std::cout << "|  stddev (ns/op)";
+        std::cout << "|  cv (%)";
+        std::cout << "|\n";
+
+        std::cout << "|----------------------------------------";
+        std::cout << "|----------------";
+        std::cout << "|----------------";
+        std::cout << "|----------------";
+        std::cout << "|--------";
+        std::cout << "|\n";
+
+        std::cout << "| " << std::format("{:39}", m_config.benchmark_name);
+        std::cout << std::format("| {:15.3f}", stats.mean);
+        std::cout << std::format("| {:15.3f}", stats.median);
+        std::cout << std::format("| {:15.3f}", stats.stddev);
+        std::cout << std::format("| {:7.2f}", stats.cv*100);
+        std::cout << "|\n";
     }
 
 private:
@@ -166,7 +253,6 @@ void _dont_optimize_away(T& val) {
 }
 
 #endif
-
 
 } // namespace
 

@@ -22,32 +22,29 @@
 #include <vector>
 
 #include "concepts.h"
-
-template <typename T>
-concept fundamental = std::is_fundamental_v<std::remove_cvref_t<T>> 
-    || std::is_enum_v<std::remove_cvref_t<T>>;
-
-template <typename T>
-concept standard_layout = std::is_standard_layout_v<std::remove_cvref_t<T>>;
-
-template <typename T>
-concept aggregate = std::is_aggregate_v<std::remove_cvref_t<T>>;
-
-template <typename T>
-concept strict_aggregate = aggregate<T>;
-
-template <typename T>
-concept trivial = std::is_trivial_v<std::remove_cvref_t<T>>;
-
-template <typename T>
-concept trivially_copyable = std::is_trivially_copyable_v<std::remove_cvref_t<T>>;
+#include "visitor.h"
 
 namespace teg::internal {
 
 inline constexpr 
-std::size_t buffer_size_one(auto const& obj) {
-    return sizeof(obj);
+std::size_t buffer_size_one(fixed_size_container auto const& obj);
+
+inline constexpr 
+std::size_t buffer_size_one(container auto const& obj);
+
+inline constexpr 
+std::size_t buffer_size_one(auto const& obj);
+
+inline constexpr
+std::size_t buffer_size_many() {
+    return 0;
 }
+
+inline constexpr
+std::size_t buffer_size_many(auto const& first_obj, auto const&... remaining_objs) {
+    return buffer_size_one(first_obj) + buffer_size_many(remaining_objs...);
+}
+
 
 inline constexpr 
 std::size_t buffer_size_one(fixed_size_container auto const& obj) {    
@@ -70,11 +67,24 @@ std::size_t buffer_size_one(container auto const& obj) {
     return size;
 }
 
-
-inline constexpr
-std::size_t buffer_size_many(auto const&... objs) {
-    return (buffer_size_one(objs) + ...);
+inline constexpr 
+std::size_t buffer_size_one(auto const& obj) {
+    using type = std::remove_cvref_t<decltype(obj)>;
+    
+    if constexpr (fundamental<type> || is_enum<type>) {
+        return sizeof(type);
+    }
+    else {
+        return visit_members(
+            obj, 
+            [](auto&&... objs) constexpr {
+                return buffer_size_many(objs...);
+            }
+        );
+    }
 }
+
+
 
 } // namespace teg::internal
 
