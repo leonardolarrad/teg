@@ -6,3 +6,4 @@ benchmark_dep = declare_dependency(
 )
 
 subdir('src/benchmark_teg')
+subdir('src/benchmark_zppbits')

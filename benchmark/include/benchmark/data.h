@@ -202,6 +202,12 @@ ecommerce_page random_page_data(random_number_engine auto& rng, std::size_t byte
     return page;
 }
     
+ecommerce_page generate_benchmark_data(std::size_t bytes) {
+    std::seed_seq seed{99, 5, 11};
+    std::mt19937_64 engine {seed};
+    return random_page_data(engine, bytes);
+}
+
 std::vector<ecommerce_page> generate_benchmark_data(std::size_t samples, std::size_t bytes) {
     std::vector<ecommerce_page> pages;
 

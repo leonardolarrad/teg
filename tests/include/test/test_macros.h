@@ -47,6 +47,7 @@
 #define TEST_CASE_F(name, fixture)          DEFINE_TEST_CASE(UNIQUE_TEST_NAME(), global, fixture)
 #define TEST_CASE_G(name, group)            DEFINE_TEST_CASE(UNIQUE_TEST_NAME(), group, BASE_TEST_FIXTURE())
 #define TEST_CASE_GF(name, group, fixture)  DEFINE_TEST_CASE(UNIQUE_TEST_NAME(), group, fixture)
+#define SKIP_TEST_CASE(name)                void UNIQUE_TEST_NAME()()
 
 #define SECTION(name)
 
