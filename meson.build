@@ -3,7 +3,7 @@ project(
     'cpp',
     version: '0.1.0',
     license: 'zlib',
-    subproject_dir: 'external',
+    subproject_dir: 'benchmark/deps',
     default_options: ['cpp_std=c++20'],
 )
 

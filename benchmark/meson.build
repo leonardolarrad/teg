@@ -5,5 +5,8 @@ benchmark_dep = declare_dependency(
   include_directories : benchmark_inc
 )
 
+subproject('abseil-cpp')
+subproject('protobuf')
+
 subdir('src/benchmark_teg')
 subdir('src/benchmark_zppbits')
