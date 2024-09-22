@@ -5,6 +5,6 @@ option('enable_tests',
 )
 option('enable_benchmarking',
   type : 'boolean',
-  value : true,
+  value : false,
   description : 'Enables benchmarking.'
 )
