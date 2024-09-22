@@ -6,7 +6,9 @@ benchmark_dep = declare_dependency(
 )
 
 subproject('abseil-cpp')
-subproject('protobuf')
+protobuf_proj = subproject('protobuf')
+protobuf_dep = protobuf_proj.get_variable('protobuf_dep')
 
 subdir('src/benchmark_teg')
+subdir('src/benchmark_protobuf')
 subdir('src/benchmark_zppbits')
