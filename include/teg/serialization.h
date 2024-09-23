@@ -17,20 +17,18 @@
 // 3. This notice may not be removed or altered from any source distribution.
 
 #pragma once
-
-#include <vector>
-#include <cstddef>
+#include <algorithm>
 #include <concepts>
-#include <algorithm>
-#include <variant>
-#include <algorithm>
+#include <cstddef>
 #include <cstring>
+#include <variant>
+#include <vector>
 
-#include "concepts.h"
-#include "member_count.h"
-#include "error.h"
-#include "visitor.h"
 #include "buffer.h"
+#include "concepts.h"
+#include "error.h"
+#include "member_count.h"
+#include "visitor.h"
 
 namespace teg::internal {
 
@@ -50,6 +48,7 @@ private:
     std::size_t m_position;
 };
 
+
 [[nodiscard]] inline constexpr 
 error serialize_one(buffer_writer& writer, auto const& obj) {
     using type = std::remove_cvref_t<decltype(obj)>;
@@ -67,6 +66,15 @@ error serialize_one(buffer_writer& writer, auto const& obj) {
                 return serialize_many(writer, objs...);
             }
         );
+    }
+}
+
+[[nodiscard]] inline constexpr 
+error serialize_one(buffer_writer& writer, teg::optional auto const& optional)  {
+    if (!optional.has_value()) [[unlikely]] {
+        return serialize_one(writer, optional.has_value());
+    } else {
+        return serialize_many(writer, optional.has_value(), *optional);
     }
 }
 

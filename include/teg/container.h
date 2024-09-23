@@ -29,6 +29,15 @@
 namespace teg {
 
 template <typename T>
+concept optional = requires(unqualified<T> a) {
+    typename unqualified<T>::value_type;
+    a.value();
+    a.has_value();
+    a.operator bool();
+    a.operator*();
+};
+
+template <typename T>
 struct is_basic_string : std::false_type {};
 
 template <typename C, typename T, typename A>
@@ -225,7 +234,7 @@ concept shared_strongest_property =
 ///
 ///  ISO/IEC 14882:2020 [container.requirements.general]
 template <typename C>
-concept container = 
+concept container = !optional<C> &&
        container_element<C, typename unqualified<C>::value_type>
     && container_element_reference<C, typename unqualified<C>::reference>
     && container_element_const_reference<C, typename unqualified<C>::const_reference>

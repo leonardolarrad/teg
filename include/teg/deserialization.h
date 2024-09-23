@@ -66,6 +66,34 @@ error deserialize_one(buffer_reader& reader, auto& obj) {
 }
 
 [[nodiscard]] inline constexpr 
+error deserialize_one(buffer_reader& reader, optional auto& optional) {
+    using type = std::remove_reference_t<decltype(optional)>;
+    using value_type = typename type::value_type;
+    
+    // Deserialize `has_value` flag.
+    std::byte has_value;    
+    if (auto result = deserialize_one(reader, has_value); failure(result)) [[unlikely]] {
+        return result;
+    }
+
+    // Check if there is a value to deserialize.
+    if (!bool(has_value)) {
+        optional = std::nullopt;
+        return {};
+    }
+
+    // Deserialize value.
+    if (!optional.has_value()) {
+        optional = value_type{};
+    }
+
+    if (auto result = deserialize_one(reader, *optional); failure(result)) [[unlikely]] {
+        return result;
+    }
+    return {};
+}
+
+[[nodiscard]] inline constexpr 
 error deserialize_one(buffer_reader& reader, associative_container auto& container) {
     using type = std::remove_reference_t<decltype(container)>;
     using size_type = typename type::size_type;
@@ -90,7 +118,7 @@ error deserialize_one(buffer_reader& reader, associative_container auto& contain
 
     if constexpr (map_container<type>) {
         // By default `std::map` uses `std::pair<const key_type, mapped_type>`
-        // as its value_type. We cannot deserialize const-qualified types.
+        // as its value_type. We can not deserialize const-qualified types.
         // Get rid of the const qualifier.
         using value_type = std::pair<typename type::key_type, typename type::mapped_type>;
         value_type element;
@@ -205,7 +233,7 @@ error deserialize_one(buffer_reader& reader, contiguous_container auto& containe
     }
 }
 
-[[nodiscard]] inline constexpr 
+[[nodiscard]] inline constexpr
 error deserialize_one(buffer_reader& reader, container auto& container) {
     using type = std::remove_cvref_t<decltype(container)>;
     using value_type = typename type::value_type;

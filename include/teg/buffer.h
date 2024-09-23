@@ -26,6 +26,10 @@
 
 namespace teg::internal {
 
+
+inline constexpr 
+std::size_t buffer_size_one(optional auto const& obj);
+
 inline constexpr 
 std::size_t buffer_size_one(fixed_size_container auto const& obj);
 
@@ -43,6 +47,16 @@ std::size_t buffer_size_many() {
 inline constexpr
 std::size_t buffer_size_many(auto const& first_obj, auto const&... remaining_objs) {
     return buffer_size_one(first_obj) + buffer_size_many(remaining_objs...);
+}
+
+inline constexpr 
+std::size_t buffer_size_one(optional auto const& optional) {    
+    if (optional.has_value()) {
+        return sizeof(std::byte) + buffer_size_one(optional.value());
+    }
+    else {
+        return sizeof(std::byte);
+    }
 }
 
 
