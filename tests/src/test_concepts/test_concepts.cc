@@ -10,12 +10,17 @@
 #include <stack>
 #include <queue>
 #include <string>
-#include <iostream>
+#include <optional>
 
 #include "teg/teg.h"
 #include "test/test.h"
 
 struct valid_elem {};
+
+TEST_CASE("Concept teg::optional") {
+    ASSERT((teg::optional<std::optional<int>>));
+    ASSERT((teg::optional<std::optional<int> const&>));
+}
 
 TEST_CASE("Concept teg::container") {
     ASSERT((teg::container<std::array<int, 10>>));                                                    // array  

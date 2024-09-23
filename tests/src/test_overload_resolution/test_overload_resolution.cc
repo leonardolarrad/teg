@@ -10,7 +10,7 @@
 #include <stack>
 #include <queue>
 #include <string>
-#include <iostream>
+#include <optional>
 
 #include "teg/teg.h"
 #include "test/test.h"
@@ -61,6 +61,7 @@ TEST_CASE("Prove that we should std::remove_cvref_t concepts with member types")
 /// Library tests.
 ///
 
+
 template <typename T> 
 std::string overload(T&& t) requires teg::contiguous_container<T>
 {
@@ -78,10 +79,19 @@ std::string overload(T&& t) {
     return "auto";
 }
 
+template <typename T>
+std::string overload(T&& t) requires teg::optional<T> {
+    return "optional";
+}
+
 TEST_CASE("Overload resolution with concepts") {
     SECTION("auto") {
         int i;
         ASSERT(overload(i) == "auto");
+    }
+    SECTION("optional") {
+        std::optional<int> opt0;
+        ASSERT(overload(opt0) == "optional");
     }
     SECTION("container") {
         std::forward_list<int> fl;
