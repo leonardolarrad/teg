@@ -25,6 +25,7 @@ meson test <prueba> -v -C build/
 | `buffer` | Computo del tamaño en memoria ocupado por datos serializables. |
 | `fundamental` | Serialización de tipos de datos fundamentales. |
 | `carray` | Serialización de arreglos de C. |
+| `optional` | Serialización de tipos de datos opcionales. |
 | `container` | Serialización básica de contenedores de la librería estándar. |
 | `vector` | Serialización detallada del contenedor estándar `std::vector`. |
 | `string` | Serialización de cadenas de caracteres UTF-8, UTF-16 y UTF-32. |
