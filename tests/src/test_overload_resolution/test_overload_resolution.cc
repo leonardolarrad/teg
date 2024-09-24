@@ -63,15 +63,18 @@ TEST_CASE("Prove that we should std::remove_cvref_t concepts with member types")
 
 
 template <typename T> 
-std::string overload(T&& t) requires teg::contiguous_container<T>
-{
+std::string overload(T&& t) requires teg::contiguous_container<T> {
     return "contiguous_container";
 }
 
 template <typename T> 
-std::string overload(T&& t) requires teg::container<T>
-{
+std::string overload(T&& t) requires teg::container<T> {
     return "container";
+}
+
+template <typename T>
+std::string overload(T&& t) requires teg::owning_pointer<T> {
+    return "owning_pointer";
 }
 
 template <typename T>
@@ -107,5 +110,9 @@ TEST_CASE("Overload resolution with concepts") {
         using const_string = std::string const;
         const_string s1 = s0;
         ASSERT(overload(s1) == "contiguous_container");
+    }
+    SECTION("owning pointer") {
+        std::unique_ptr<int> up = std::make_unique<int>(0);
+        ASSERT_EQ(overload(up), "owning_pointer");
     }
 }

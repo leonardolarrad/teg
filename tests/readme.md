@@ -31,3 +31,4 @@ meson test <prueba> -v -C build/
 | `string` | Serialización de cadenas de caracteres UTF-8, UTF-16 y UTF-32. |
 | `set` | Serialización de conjuntos `std::set`, `std::unordered_set`, `std::multiset` y `std::unordered_multiset`. |
 | `map` | Serialización de mapas `std::map`, `std::unordered_map` y `std::multimap` y `std::unordered_multimap`. |
+| `owning_pointer` | Serialización de punteros propietarios `std::unique_ptr` y `std::shared_ptr`. |
