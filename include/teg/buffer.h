@@ -34,6 +34,9 @@ inline constexpr
 std::size_t buffer_size_one(owning_pointer auto const& obj);
 
 inline constexpr 
+std::size_t buffer_size_one(variant auto const& obj);
+
+inline constexpr 
 std::size_t buffer_size_one(fixed_size_container auto const& obj);
 
 inline constexpr 
@@ -63,12 +66,25 @@ std::size_t buffer_size_one(optional auto const& optional) {
 }
 
 inline constexpr 
-std::size_t buffer_size_one(owning_pointer auto const& obj) {
-    if (obj == nullptr) {
+std::size_t buffer_size_one(owning_pointer auto const& pointer) {
+    if (pointer == nullptr) {
         return 0;
     }
-    return buffer_size_one(*obj);
+    return buffer_size_one(*pointer);
 }
+
+inline constexpr 
+std::size_t buffer_size_one(variant auto const& var) {
+   std::size_t index_size = sizeof(var.index());
+   std::size_t element_size = std::visit(
+        [](auto&& var) constexpr {
+            return buffer_size_one(var);
+        },
+        var
+    );
+    return index_size + element_size;
+}
+
 
 inline constexpr 
 std::size_t buffer_size_one(fixed_size_container auto const& obj) {    

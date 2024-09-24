@@ -1,16 +1,16 @@
 #include <array>
-#include <vector>
 #include <deque>
 #include <forward_list>
 #include <list>
-#include <set>
-#include <unordered_set>
 #include <map>
-#include <unordered_map>
-#include <stack>
-#include <queue>
-#include <string>
 #include <optional>
+#include <queue>
+#include <set>
+#include <stack>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "teg/teg.h"
 #include "test/test.h"
@@ -73,8 +73,18 @@ std::string overload(T&& t) requires teg::container<T> {
 }
 
 template <typename T>
+std::string overload(T&& t) requires teg::optional<T> {
+    return "optional";
+}
+
+template <typename T>
 std::string overload(T&& t) requires teg::owning_pointer<T> {
     return "owning_pointer";
+}
+
+template <typename T>
+std::string overload(T&& t) requires teg::variant<T> {
+    return "variant";
 }
 
 template <typename T>
@@ -82,37 +92,36 @@ std::string overload(T&& t) {
     return "auto";
 }
 
-template <typename T>
-std::string overload(T&& t) requires teg::optional<T> {
-    return "optional";
-}
-
 TEST_CASE("Overload resolution with concepts") {
     SECTION("auto") {
         int i;
-        ASSERT(overload(i) == "auto");
+        ASSERT_EQ(overload(i), "auto");
     }
     SECTION("optional") {
         std::optional<int> opt0;
-        ASSERT(overload(opt0) == "optional");
+        ASSERT_EQ(overload(opt0), "optional");
     }
     SECTION("container") {
         std::forward_list<int> fl;
-        ASSERT(overload(fl) == "container");
+        ASSERT_EQ(overload(fl), "container");
     }
     SECTION("cv-qualified container") {
         using const_vector = std::vector<int> const;
         const_vector v;
-        ASSERT(overload(v) == "contiguous_container");
+        ASSERT_EQ(overload(v), "contiguous_container");
 
         std::string s0 = "hello";
 
         using const_string = std::string const;
         const_string s1 = s0;
-        ASSERT(overload(s1) == "contiguous_container");
+        ASSERT_EQ(overload(s1), "contiguous_container");
     }
     SECTION("owning pointer") {
         std::unique_ptr<int> up = std::make_unique<int>(0);
         ASSERT_EQ(overload(up), "owning_pointer");
+    }
+    SECTION("variant") {
+        std::variant<int, std::string> v0 = 0;
+        ASSERT_EQ(overload(v0), "variant");
     }
 }

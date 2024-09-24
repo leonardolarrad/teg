@@ -11,6 +11,7 @@
 #include <queue>
 #include <string>
 #include <optional>
+#include <any>
 
 #include "teg/teg.h"
 #include "test/test.h"
@@ -210,4 +211,12 @@ TEST_CASE("Concept teg::set") {
 TEST_CASE("Owning pointers") {
     ASSERT((teg::owning_pointer<std::unique_ptr<valid_elem>>));
     ASSERT((teg::owning_pointer<std::shared_ptr<valid_elem>>));
+    ASSERT(!(teg::owning_pointer<std::weak_ptr<valid_elem>>));
+    ASSERT(!(teg::owning_pointer<valid_elem*>));
+    ASSERT(!(teg::owning_pointer<valid_elem const*>));
+}
+
+TEST_CASE("Variant") {
+    ASSERT((teg::variant<std::variant<int, float>>));
+    ASSERT(!(teg::variant<std::any>));
 }

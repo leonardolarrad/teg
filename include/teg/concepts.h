@@ -25,6 +25,7 @@
 #include <vector>
 #include <span>
 #include <memory>
+#include <variant>
 
 #include "base_concepts.h"
 #include "container.h"
@@ -179,5 +180,15 @@ concept shared_ptr = is_shared_ptr_v<T>;
 
 template <typename T>
 concept owning_pointer = unique_ptr<unqualified<T>> || shared_ptr<unqualified<T>>;
+
+
+template <typename T>
+constexpr inline bool is_variant_v = false;
+
+template <typename... T>
+constexpr inline bool is_variant_v<std::variant<T...>> = true;
+
+template <typename T>
+concept variant = is_variant_v<unqualified<T>>;
 
 } // namespace teg

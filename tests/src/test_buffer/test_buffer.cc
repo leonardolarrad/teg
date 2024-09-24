@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <vector>
 #include <array>
+#include <variant>
 
 #include "teg/teg.h"
 #include "test/test.h"
@@ -12,7 +13,7 @@ TEST_CASE("Compute trivial buffer size") {
 }
 
 TEST_CASE("Compute container buffer size") {    
-    // Fixed size containers.
+    SECTION("Fixed  size containers")
     {
         std::array<char, 5> a0;
         std::array<int, 50> a1;
@@ -29,7 +30,7 @@ TEST_CASE("Compute container buffer size") {
         ASSERT_EQ(teg::buffer_size(a4), sizeof(char) * 100 * 99);
 
     }
-    // Contiguous containers.
+    SECTION("Contiguous containers")
     {
         std::vector<char> v0;
         std::vector<int> v1 = { 1, 2, 3 };
@@ -39,4 +40,14 @@ TEST_CASE("Compute container buffer size") {
         ASSERT_EQ(teg::buffer_size(v1), sizeof(std::size_t) + sizeof(int) * 3);
         ASSERT_EQ(teg::buffer_size(v2), sizeof(std::size_t) + sizeof(double) * 4);
     }
+}
+
+TEST_CASE("Variant") {
+    std::variant<int, double, std::string> v0 = 100;
+    std::variant<int, double, std::string> v1 = 100.0;
+    std::variant<int, double, std::string> v2 = "100";
+
+    ASSERT_EQ(teg::buffer_size(v0), sizeof(std::size_t) + sizeof(int));
+    ASSERT_EQ(teg::buffer_size(v1), sizeof(std::size_t) + sizeof(double));
+    ASSERT_EQ(teg::buffer_size(v2), 2 * sizeof(std::size_t) +  (3 * sizeof(char)));
 }
