@@ -24,6 +24,7 @@
 #include <type_traits>
 #include <vector>
 #include <span>
+#include <memory>
 
 #include "base_concepts.h"
 #include "container.h"
@@ -122,8 +123,6 @@ concept optional_like = !expected_like<T> && requires(T optional) {
     optional.operator*();
 };
 
-
-
 template <typename T>
 concept deserializable = fundamental<T> || aggregate<T>;
 
@@ -133,8 +132,6 @@ concept trivial_serializable =
 
 template <typename T>
 concept trivial_deserializable = trivial_serializable<T>;
-
-
 
 template <typename T, typename... A>
 concept constructible_from = requires {
@@ -148,5 +145,39 @@ concept tuple_size = requires {
 
 template <typename T>
 concept structured_bindable = true;
+
+
+
+
+template <typename T>
+struct is_unique_ptr 
+    : std::false_type {};
+
+template <typename T>
+struct is_unique_ptr<std::unique_ptr<T, std::default_delete<T>>>
+    : std::true_type {};
+
+template <typename T>
+constexpr bool is_unique_ptr_v = is_unique_ptr<T>::value;
+
+template <typename T>
+concept unique_ptr = is_unique_ptr_v<T>;
+
+template <typename T>
+struct is_shared_ptr 
+    : std::false_type {};
+
+template <typename T>
+struct is_shared_ptr<std::shared_ptr<T>> 
+    : std::true_type {};
+
+template <typename T>
+constexpr bool is_shared_ptr_v = is_shared_ptr<T>::value;
+
+template <typename T>
+concept shared_ptr = is_shared_ptr_v<T>;
+
+template <typename T>
+concept owning_pointer = unique_ptr<unqualified<T>> || shared_ptr<unqualified<T>>;
 
 } // namespace teg

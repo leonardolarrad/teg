@@ -24,6 +24,12 @@
 namespace teg {
 
 template <typename T>
+using ref_unqualified = std::remove_reference_t<T>;
+
+template <typename T>
+using cv_unqualified = std::remove_cv_t<T>;
+
+template <typename T>
 using unqualified = std::remove_cvref_t<T>;
 
 template <typename T>

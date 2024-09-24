@@ -297,6 +297,24 @@ error deserialize_one(buffer_reader& reader, container auto& container) {
     }
 }
 
+[[nodiscard]] inline constexpr 
+error deserialize_one(buffer_reader& reader, owning_pointer auto& pointer) {
+    using type = ref_unqualified<decltype(pointer)>;
+    using element_type = typename type::element_type;
+
+    // Deserialize element.
+    auto data = std::make_unique<element_type>();
+
+    auto result = deserialize_one(reader, *data);
+    if (failure(result)) [[unlikely]] {
+        return result;
+    }
+
+    // Transfer ownership.
+    pointer.reset(data.release());
+    return {};
+}
+
 [[nodiscard]] inline constexpr
 error deserialize_many(buffer_reader& reader) {
     return {};

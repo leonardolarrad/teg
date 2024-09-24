@@ -31,6 +31,9 @@ inline constexpr
 std::size_t buffer_size_one(optional auto const& obj);
 
 inline constexpr 
+std::size_t buffer_size_one(owning_pointer auto const& obj);
+
+inline constexpr 
 std::size_t buffer_size_one(fixed_size_container auto const& obj);
 
 inline constexpr 
@@ -59,6 +62,13 @@ std::size_t buffer_size_one(optional auto const& optional) {
     }
 }
 
+inline constexpr 
+std::size_t buffer_size_one(owning_pointer auto const& obj) {
+    if (obj == nullptr) {
+        return 0;
+    }
+    return buffer_size_one(*obj);
+}
 
 inline constexpr 
 std::size_t buffer_size_one(fixed_size_container auto const& obj) {    

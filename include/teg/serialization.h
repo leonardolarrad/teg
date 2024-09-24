@@ -70,11 +70,11 @@ error serialize_one(buffer_writer& writer, auto const& obj) {
 }
 
 [[nodiscard]] inline constexpr 
-error serialize_one(buffer_writer& writer, teg::optional auto const& optional)  {
+error serialize_one(buffer_writer& writer, optional auto const& optional)  {
     if (!optional.has_value()) [[unlikely]] {
-        return serialize_one(writer, optional.has_value());
+        return serialize_one(writer, std::byte(false));
     } else {
-        return serialize_many(writer, optional.has_value(), *optional);
+        return serialize_many(writer, std::byte(true), *optional);
     }
 }
 
@@ -140,6 +140,15 @@ error serialize_one(buffer_writer& writer, contiguous_container auto const& cont
         }
         return {};
     }
+}
+
+[[nodiscard]] inline constexpr 
+error serialize_one(buffer_writer& writer, owning_pointer auto const& pointer)  {
+    if (pointer == nullptr) [[unlikely]] {
+        return std::errc::invalid_argument;
+    }
+
+    return serialize_one(writer, *pointer);
 }
 
 [[nodiscard]] inline constexpr 
