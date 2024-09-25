@@ -4,11 +4,11 @@
 
 namespace bm = benchmarking;
 
-static std::vector<bm::ecommerce_page> data_in_10_1024b = bm::generate_benchmark_data(10, 2048);
+static std::vector<bm::ecommerce_page> data_in_10_2048b = bm::generate_benchmark_data(10, 2048);
 
 static bool test_lib() {
     teg::buffer b;
-    bm::ecommerce_page t0 = data_in_10_1024b[0];
+    bm::ecommerce_page t0 = data_in_10_2048b[0];
     auto r0 = teg::serialize(b, t0);
     if (teg::failure(r0)) {
         return false;
@@ -25,19 +25,20 @@ static bool test_lib() {
 
 static void benchmark() {
     teg::buffer buffer;
-    std::vector<bm::ecommerce_page> data_out_10_1024b;
+    std::vector<bm::ecommerce_page> data_out_10_2048bb;
 
     bm::benchmark()
-        .warmup(64)
-        .iterations(102400)
+        .warmup(0)
+        .iterations(746667)
         .repetitions(10)
-        .run("teg:serialization:10_1024b", [&](){
+        .run("teg:serialization:10_2048b", [&](){
             buffer.clear();
-            teg::serialize(buffer, data_in_10_1024b).or_throw();
+            teg::serialize(buffer, data_in_10_2048b).or_throw();
         })
-        .run("teg:deserialization:10_1024b", [&](){
-            teg::deserialize(buffer, data_out_10_1024b).or_throw();
-        });
+        //.run("teg:deserialization:10_1024b", [&](){
+        //    teg::deserialize(buffer, data_out_10_1024b).or_throw();
+        //})
+        ;
 }
 
 int main() {

@@ -79,6 +79,27 @@ error serialize_one(buffer_writer& writer, optional auto const& optional)  {
 }
 
 [[nodiscard]] inline constexpr 
+error serialize_one(buffer_writer& writer, variant auto const& variant)  {
+    // Check valueless by exception.
+    if (variant.valueless_by_exception()) [[unlikely]] {
+        return error { std::errc::invalid_argument };
+    }
+
+    // Serialize index.
+    if (auto result = serialize_one(writer, variant.index()); failure(result)) [[unlikely]] {
+        return result;        
+    }    
+
+    // Serialize value.
+    return std::visit(
+        [&writer](auto&& value) constexpr {
+            return serialize_one(writer, value);
+        },
+        variant
+    );
+}
+
+[[nodiscard]] inline constexpr 
 error serialize_one(buffer_writer& writer, container auto const& container) {
     using type = std::remove_cvref_t<decltype(container)>;
     using size_type = typename type::size_type;

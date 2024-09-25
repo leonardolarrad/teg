@@ -21,6 +21,8 @@
 #include "buffer.h"
 #include "error.h"
 #include "concepts.h"
+#include "index_table.h"
+
 #include <iostream>
 
 namespace teg::internal {
@@ -313,6 +315,38 @@ error deserialize_one(buffer_reader& reader, owning_pointer auto& pointer) {
     // Transfer ownership.
     pointer.reset(data.release());
     return {};
+}
+
+[[nodiscard]] inline constexpr 
+error deserialize_one(buffer_reader& reader, variant auto& variant) {
+    using comptime_type = ref_unqualified<decltype(variant)>;
+
+    // Deserialize index.
+    std::size_t index;
+    auto result = deserialize_one(reader, index);
+    if (failure(result)) [[unlikely]] {
+        return result;
+    }
+
+    // Deserialize element.
+    constexpr std::size_t table_size = std::variant_size_v<comptime_type>;
+
+    if (index >= table_size) {
+        return error { std::errc::invalid_argument };
+    }
+    
+    return index_table_lookup<table_size>(index, [&](auto comptime_index) {
+        /// Using an index table we transform a runtime index into 
+        /// a compile-time index. With this technique we can then deserialize
+        /// the variant alternative (based on the index) at runtime.
+        std::variant_alternative_t<comptime_index, comptime_type> element;        
+        if (result = deserialize_one(reader, element); failure(result)) [[unlikely]] {
+            return result;
+        }
+
+        variant.template emplace<comptime_index>(std::move(element));
+        return teg::error {};
+    });
 }
 
 [[nodiscard]] inline constexpr
