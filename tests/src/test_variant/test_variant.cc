@@ -44,3 +44,28 @@ TEST_CASE("Trivial de/serialization") {
         ASSERT(std::get<std::string>(v1) == "100");
     }
 }
+
+TEST_CASE("Aggregate de/serialization") {
+    SECTION("Index 0") {
+        teg::buffer b;
+        std::variant<std::variant<int, float>, std::string> v0 = 100;
+        teg::serialize(b, v0).or_throw();
+
+        std::variant<std::variant<int, float>, std::string> v1;
+        teg::deserialize(b, v1).or_throw();
+
+        ASSERT((std::holds_alternative<std::variant<int, float>>(v1)));
+        ASSERT((std::get<int>(std::get<std::variant<int, float>>(v1)) == 100));
+    }
+    SECTION("Index 1") {
+        teg::buffer b;
+        std::variant<std::variant<int, float>, std::string> v0 = "100";
+        teg::serialize(b, v0).or_throw();
+
+        std::variant<std::variant<int, float>, std::string> v1;
+        teg::deserialize(b, v1).or_throw();
+
+        ASSERT((std::holds_alternative<std::string>(v1)));
+        ASSERT((std::get<std::string>(v1) == "100"));
+    }
+}
