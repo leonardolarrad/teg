@@ -45,12 +45,12 @@
 
 #pragma once
 #include <cassert>
+#include <cstdint>
 #include <type_traits>
 #include <utility>
 #include "unreachable.h"
 
-namespace teg {
-namespace internal {
+namespace teg::internal {
 
 template<std::size_t N> struct index_table
 {
@@ -410,10 +410,12 @@ struct index_table<16>
     }
 };
 
-} // namespace internal
+} // namespace teg::internal
+
+namespace teg {
 
 template<std::size_t N, typename F> 
-inline constexpr auto index_table_lookup(std::size_t i, F && f)
+inline constexpr auto index_table_lookup(std::size_t i, F&& f)
     -> decltype(std::declval<F>()(std::declval<std::integral_constant<std::size_t, 0>>()))
 {
     assert(i < N);
