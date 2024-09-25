@@ -36,10 +36,19 @@ template <typename T>
 concept int_like = std::is_integral_v<std::remove_cvref_t<T>>;
 
 template <typename T>
+concept integral = std::integral<unqualified<T>>;
+
+template <typename T>
+concept floating_point = std::floating_point<unqualified<T>>;
+
+template <typename T>
 concept float_like = std::is_floating_point_v<std::remove_cvref_t<T>>;
 
 template <typename T>
 concept class_like = std::is_class_v<std::remove_cvref_t<T>>;
+
+template <typename T>
+concept is_class = std::is_class_v<unqualified<T>>;
 
 template <typename T>
 concept span_like = container<T> && requires (T span) {
@@ -61,7 +70,7 @@ concept array_like = container<T> && requires(T array) {
 
 template <class T>
 concept c_array = std::is_array_v<T> 
-    && std::extent_v<std::remove_cvref_t<T>> > 0;
+    && std::extent_v<unqualified<T>> > 0;
 
 template <typename T>
 concept map_like = container<T> && requires(T map) {
