@@ -25,3 +25,4 @@
 #include "deserialization.h"
 #include "visitor.h"
 #include "buffer.h"
+#include "fixed_string.h"

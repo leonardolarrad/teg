@@ -280,7 +280,7 @@ concept sized_container = container<C>
     };
 
 template <typename T>
-concept has_fixed_nonzero_size = std::integral_constant<
+concept fixed_nonzero_size = std::integral_constant<
         std::size_t,
         std::remove_cvref_t<T>{}.size()
     >::value > 0;
@@ -346,7 +346,7 @@ concept trivial_contiguous_container =
     && trivially_copyable<typename unqualified<C>::value_type>;
 
 template <typename C>
-concept fixed_size_container = contiguous_container<C> && has_fixed_nonzero_size<C>;
+concept fixed_size_container = contiguous_container<C> && fixed_nonzero_size<C>;
 
 template <typename C>
 concept inplace_constructing_container = container<C>

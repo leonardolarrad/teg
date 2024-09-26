@@ -101,6 +101,16 @@ constexpr bool char_like =
     || std::is_same_v<T, char32_t>;
 
 template <typename T>
+concept character = 
+       std::is_same_v<T, char> 
+    || std::is_same_v<T, signed char> 
+    || std::is_same_v<T, unsigned char> 
+    || std::is_same_v<T, wchar_t> 
+    || std::is_same_v<T, char8_t>
+    || std::is_same_v<T, char16_t> 
+    || std::is_same_v<T, char32_t>;
+
+template <typename T>
 concept string_like = container<T> && requires(T string) {
     requires char_like<typename std::remove_cvref_t<T>::value_type>;
     string.length();
@@ -110,27 +120,6 @@ concept string_like = container<T> && requires(T string) {
 template <typename T>
 concept string_view_like = string_like<T> && !requires(T string_view) {
     string_view.resize(std::size_t{});
-};
-
-template <typename T>
-concept expected_like = requires(T expected) {
-    typename std::remove_cvref_t<T>::value_type;
-    typename std::remove_cvref_t<T>::error_type;
-    typename std::remove_cvref_t<T>::unexpected_type;
-    expected.has_value();
-    expected.error();
-    requires std::is_same_v<void, typename std::remove_cvref_t<T>::value_type> ||
-    requires(T expected) {  
-        expected.value();
-    };
-};
-
-template <typename T>
-concept optional_like = !expected_like<T> && requires(T optional) {
-    typename std::remove_cvref_t<T>::value_type;
-    optional.value();
-    optional.has_value();
-    optional.operator*();
 };
 
 template <typename T>

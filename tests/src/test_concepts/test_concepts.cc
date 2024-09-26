@@ -1,17 +1,17 @@
+#include <any>
 #include <array>
-#include <vector>
 #include <deque>
 #include <forward_list>
 #include <list>
-#include <set>
-#include <unordered_set>
 #include <map>
-#include <unordered_map>
-#include <stack>
-#include <queue>
-#include <string>
 #include <optional>
-#include <any>
+#include <queue>
+#include <set>
+#include <stack>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "teg/teg.h"
 #include "test/test.h"
@@ -32,7 +32,7 @@ TEST_CASE("Concept teg::container") {
     ASSERT((teg::container<std::multimap<int, valid_elem>>));                                         // multimap
     ASSERT((teg::container<std::set<valid_elem>>));                                                   // set
     ASSERT((teg::container<std::multiset<valid_elem>>));                                              // multiset
-    ASSERT((teg::container<std::basic_string<char>>));                                                // basic string
+    ASSERT((teg::container<std::basic_string<char>>));                                                // basic_string
     ASSERT((teg::container<std::forward_list<valid_elem>>));                                          // forward_list
     ASSERT((teg::container<std::unordered_set<int>>));                                                // unordered_set
     ASSERT((teg::container<std::unordered_map<int, valid_elem>>));                                    // unordered_map
@@ -43,6 +43,9 @@ TEST_CASE("Concept teg::container") {
     ASSERT(!(teg::container<std::stack<valid_elem>>));                                                // stack
     ASSERT(!(teg::container<std::queue<valid_elem>>));                                                // queue
     ASSERT(!(teg::container<std::priority_queue<valid_elem>>));                                       // priority_queue
+
+    // Compile-time string.
+    ASSERT((teg::container<teg::basic_fixed_string<char, 10>>));                                      // basic_fixed_string                             
 }
 
 
@@ -56,7 +59,8 @@ TEST_CASE("Concept teg::reversible_container") {
     ASSERT((teg::reversible_container<std::multimap<int, valid_elem>>));                               // multimap
     ASSERT((teg::reversible_container<std::set<valid_elem>>));                                         // set
     ASSERT((teg::reversible_container<std::multiset<valid_elem>>));                                    // multiset
-    ASSERT((teg::reversible_container<std::basic_string<char>>));                                      // basic string
+    ASSERT((teg::reversible_container<std::basic_string<char>>));                                      // basic_string
+    ASSERT((teg::reversible_container<teg::basic_fixed_string<char, 10>>));                            // basic_fixed_string
     // Non reversible containers.
     ASSERT(!(teg::reversible_container<std::forward_list<valid_elem>>));                               // forward_list
     ASSERT(!(teg::reversible_container<std::unordered_set<int>>));                                     // unordered_set
@@ -70,7 +74,8 @@ TEST_CASE("Concept teg::random_access_container") {
     ASSERT((teg::random_access_container<std::array<int, 10>>));                                       // array
     ASSERT((teg::random_access_container<std::vector<valid_elem>>));                                   // vector
     ASSERT((teg::random_access_container<std::deque<valid_elem>>));                                    // deque
-    ASSERT((teg::random_access_container<std::basic_string<char>>));                                   // basic string
+    ASSERT((teg::random_access_container<std::basic_string<char>>));                                   // basic_string
+    ASSERT((teg::random_access_container<teg::basic_fixed_string<char, 10>>));                         // basic_fixed_string
     // Non random access containe.
     ASSERT(!(teg::random_access_container<std::forward_list<valid_elem>>));                            // forward_list
     ASSERT(!(teg::random_access_container<std::list<valid_elem>>));                                    // list    
@@ -91,7 +96,9 @@ TEST_CASE("Concept teg::contiguous_container") {
     // Random access containers.
     ASSERT((teg::contiguous_container<std::array<int, 10>>));                                          // array
     ASSERT((teg::contiguous_container<std::vector<valid_elem>>));                                      // vector
-    ASSERT((teg::contiguous_container<std::basic_string<char>>));                                      // basic string
+    ASSERT((teg::contiguous_container<std::basic_string<char>>));                                      // basic_string
+    ASSERT((teg::contiguous_container<teg::basic_fixed_string<char, 10>>));                            // basic_fixed_string
+    
     // Non random access containers.
     ASSERT(!(teg::contiguous_container<std::deque<valid_elem>>));                                      // deque
     ASSERT(!(teg::contiguous_container<std::forward_list<valid_elem>>));                               // forward_list
@@ -122,7 +129,7 @@ TEST_CASE("Concept teg::inplace_constructing_container") {
     // Non inplace constructing containers.
     ASSERT(!(teg::inplace_constructing_container<std::array<int, 10>>));                               // array
     ASSERT(!(teg::inplace_constructing_container<std::vector<valid_elem>>));                           // vector
-    ASSERT(!(teg::inplace_constructing_container<std::basic_string<char>>));                           // basic string
+    ASSERT(!(teg::inplace_constructing_container<std::basic_string<char>>));                           // basic_string
     ASSERT(!(teg::inplace_constructing_container<std::deque<valid_elem>>));                            // deque
     ASSERT(!(teg::inplace_constructing_container<std::forward_list<valid_elem>>));                     // forward_list
     ASSERT(!(teg::inplace_constructing_container<std::list<valid_elem>>));                             // list    
@@ -135,7 +142,7 @@ TEST_CASE("Concept teg::back_inplace_constructing_container") {
     ASSERT((teg::back_inplace_constructing_container<std::list<valid_elem>>));                         // list    
     // Non back inplace constructing containers.
     ASSERT(!(teg::back_inplace_constructing_container<std::array<int, 10>>));                          // array
-    ASSERT(!(teg::back_inplace_constructing_container<std::basic_string<char>>));                      // basic string
+    ASSERT(!(teg::back_inplace_constructing_container<std::basic_string<char>>));                      // basic_string
     ASSERT(!(teg::back_inplace_constructing_container<std::forward_list<valid_elem>>));                // forward_list
     ASSERT(!(teg::back_inplace_constructing_container<std::set<valid_elem>>));                         // set
     ASSERT(!(teg::back_inplace_constructing_container<std::map<int, valid_elem>>));                    // map
@@ -155,7 +162,7 @@ TEST_CASE("Concept teg::front_inplace_constructing_container") {
     // Non back inplace constructing containers
     ASSERT(!(teg::front_inplace_constructing_container<std::vector<valid_elem>>));                     // vector
     ASSERT(!(teg::front_inplace_constructing_container<std::array<int, 10>>));                         // array
-    ASSERT(!(teg::front_inplace_constructing_container<std::basic_string<char>>));                     // basic string
+    ASSERT(!(teg::front_inplace_constructing_container<std::basic_string<char>>));                     // basic_string
     ASSERT(!(teg::front_inplace_constructing_container<std::set<valid_elem>>));                        // set
     ASSERT(!(teg::front_inplace_constructing_container<std::map<int, valid_elem>>));                   // map
     ASSERT(!(teg::front_inplace_constructing_container<std::multiset<valid_elem>>));                   // multiset
@@ -166,11 +173,12 @@ TEST_CASE("Concept teg::front_inplace_constructing_container") {
     ASSERT(!(teg::front_inplace_constructing_container<std::unordered_multimap<int, valid_elem>>));    // unordered_multimap
 }
 
-TEST_CASE("Concept teg::fixed_size_container") {
-    ASSERT((teg::fixed_size_container<std::array<int, 10>>));
+TEST_CASE("Fixed size containers") {
+    ASSERT((teg::fixed_size_container<std::array<int, 10>>));                                          // array
+    ASSERT((teg::fixed_size_container<teg::basic_fixed_string<char, 10>>));                            // basic_fixed_string
 }
 
-TEST_CASE("Concept teg::associative_container") {
+TEST_CASE("Associative containers") {
     // Associative containers.
     ASSERT((teg::associative_container<std::set<valid_elem>>));                                        // set
     ASSERT((teg::associative_container<std::map<int, valid_elem>>));                                   // map
@@ -186,10 +194,10 @@ TEST_CASE("Concept teg::associative_container") {
     ASSERT(!(teg::associative_container<std::deque<valid_elem>>));                                     // deque
     ASSERT(!(teg::associative_container<std::list<valid_elem>>));                                      // list    
     ASSERT(!(teg::associative_container<std::forward_list<valid_elem>>));                              // forward_list
-    ASSERT(!(teg::associative_container<std::basic_string<char>>));                                    // basic string
+    ASSERT(!(teg::associative_container<std::basic_string<char>>));                                    // basic_string
 }
 
-TEST_CASE("Concept teg::set") {
+TEST_CASE("Sets") {
     // Set containers.
     ASSERT((teg::set_container<std::set<valid_elem>>));                                                // set
     ASSERT((teg::set_container<std::multiset<valid_elem>>));                                           // multiset
@@ -205,7 +213,7 @@ TEST_CASE("Concept teg::set") {
     ASSERT(!(teg::set_container<std::deque<valid_elem>>));                                             // deque
     ASSERT(!(teg::set_container<std::list<valid_elem>>));                                              // list    
     ASSERT(!(teg::set_container<std::forward_list<valid_elem>>));                                      // forward_list
-    ASSERT(!(teg::set_container<std::basic_string<char>>));                                            // basic string
+    ASSERT(!(teg::set_container<std::basic_string<char>>));                                            // basic_string
 }
 
 TEST_CASE("Owning pointers") {

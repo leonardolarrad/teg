@@ -39,13 +39,17 @@ enum class type_id : std::uint8_t {
     id_char32    = 31,
     id_float32   = 132,
     id_float64   = 164,
-    id_class     = 127,
-    id_struct    = id_class,
-    id_union_t   = id_class,
     id_container = 128,
     id_optional = 129,
     id_owning_pointer = 130,
-    id_variant  = 131
+    id_variant  = 131,
+
+
+    id_class       = 250,
+    id_struct      = id_class,
+    id_union_t     = id_class,
+    id_class_begin = id_class + 1,
+    id_class_end   = id_class + 2,
 };
 
 template <integral T> 
