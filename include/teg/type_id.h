@@ -21,6 +21,8 @@
 #include <concepts>
 #include "concepts.h"
 
+#include "fixed_string.h"
+
 namespace teg {
 
 enum class type_id : std::uint8_t {
@@ -39,11 +41,15 @@ enum class type_id : std::uint8_t {
     id_char32    = 31,
     id_float32   = 132,
     id_float64   = 164,
-    id_container = 128,
-    id_optional = 129,
-    id_owning_pointer = 130,
-    id_variant  = 131,
-
+        
+    id_optional  = 70,
+    id_owning_pointer = 71,
+    id_variant  = 72,
+    
+    id_fixed_container = 99,
+    id_container = 100,
+    id_associative_container = 101,
+    id_map_container = 102,
 
     id_class       = 250,
     id_struct      = id_class,
@@ -99,5 +105,7 @@ constexpr type_id get_type_id()
     // Unreachable.
     else static_assert(!sizeof(T), "Unsupported type.");
 }
+
+
 
 } // namespace teg

@@ -17,14 +17,15 @@
 ///  3. This notice may not be removed or altered from any source distribution.
 
 #pragma once
+#include <type_traits>
+#include "unreachable.h"
 
-#include "concepts.h"
-#include "error.h"
-#include "member_count.h"
-#include "serialization.h"
-#include "deserialization.h"
-#include "visitor.h"
-#include "buffer.h"
-#include "fixed_string.h"
-#include "type_id.h"
-#include "tuple.h"
+namespace teg {
+
+template <class T>
+[[noreturn]]
+constexpr std::add_rvalue_reference_t<T> comptime_declval() noexcept {
+    unreachable();
+}
+
+} // namespace teg

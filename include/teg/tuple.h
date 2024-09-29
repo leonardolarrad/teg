@@ -18,13 +18,38 @@
 
 #pragma once
 
+#include <tuple>
+#include <utility>
 #include "concepts.h"
-#include "error.h"
-#include "member_count.h"
-#include "serialization.h"
-#include "deserialization.h"
 #include "visitor.h"
-#include "buffer.h"
-#include "fixed_string.h"
-#include "type_id.h"
-#include "tuple.h"
+#include "declval.h"
+
+namespace teg {
+
+template <typename T>
+consteval auto as_tuple() {
+    using type = unqualified<T>;
+
+    if constexpr(
+        fundamental<type> || is_enum<type> || c_array<type> || 
+        optional<type> || owning_pointer<type> || container<type>
+    ) {
+        return comptime_declval<std::tuple<type>>();
+    }    
+    else if constexpr (tuple<type>) {
+        return comptime_declval<type>();
+    }
+    else if constexpr (aggregate<type>) {
+        return visit_members(
+            comptime_declval<type>(),
+            [](auto &&... args) {
+                return comptime_declval<std::tuple<unqualified<decltype(args)>...>>();
+            }
+        );
+    }
+    else {
+        static_assert(!sizeof(type), "Unsupported type");
+    }
+}
+
+} // namespace teg

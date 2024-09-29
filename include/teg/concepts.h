@@ -142,11 +142,27 @@ concept tuple_size = requires {
     std::tuple_size<std::remove_cvref_t<T>>::value;
 };
 
+template<class T, std::size_t I>
+concept tuple_element = requires(T t) {
+        typename std::tuple_element_t<I, std::remove_const_t<T>>;
+        { get<I>(t) } -> std::convertible_to<const std::tuple_element_t<I, T>&>;
+    };
+
+template<class T>
+concept tuple = !std::is_reference_v<T> 
+    && requires(T t) {
+        typename std::tuple_size<T>::type; 
+    } 
+    && std::derived_from<
+        std::tuple_size<T>, 
+        std::integral_constant<std::size_t, std::tuple_size_v<T>>
+    >
+    && []<std::size_t... I>(std::index_sequence<I...>) { 
+        return (tuple_element<T, I> && ...); 
+    }(std::make_index_sequence<std::tuple_size_v<T>>());
+
 template <typename T>
-concept structured_bindable = true;
-
-
-
+concept structure_bindable = aggregate<T> || tuple<T>;
 
 template <typename T>
 struct is_unique_ptr 

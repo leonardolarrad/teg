@@ -4,6 +4,8 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
+#include "teg/tuple.h"
+
 struct int_2 {
     int x, y;
 };
@@ -113,7 +115,7 @@ TEST_CASE("Visit members") {
     {
         auto r = teg::visit_members(
             string_2 { "hello", "world" },
-            [](auto x, auto y) {
+            [](auto& x, auto& y) {
                 ASSERT_EQ(x, "hello");
                 ASSERT_EQ(y, "world");
                 return x + " " + y;
@@ -121,4 +123,9 @@ TEST_CASE("Visit members") {
         );
         ASSERT_EQ(r, "hello world");
     }
+}
+
+TEST_CASE("Type as tuple") {
+    ASSERT((std::is_same_v<std::tuple<int>, decltype(teg::as_tuple<int>())>));
+    ASSERT((std::is_same_v<std::tuple<int, int, int>, decltype(teg::as_tuple<std::tuple<int, int, int>>())>));
 }

@@ -18,12 +18,12 @@
 
 struct valid_elem {};
 
-TEST_CASE("Concept teg::optional") {
+TEST_CASE("Optional types") {
     ASSERT((teg::optional<std::optional<int>>));
     ASSERT((teg::optional<std::optional<int> const&>));
 }
 
-TEST_CASE("Concept teg::container") {
+TEST_CASE("Containers") {
     ASSERT((teg::container<std::array<int, 10>>));                                                    // array  
     ASSERT((teg::container<std::vector<valid_elem>>));                                                // vector
     ASSERT((teg::container<std::deque<valid_elem>>));                                                 // deque
@@ -48,8 +48,7 @@ TEST_CASE("Concept teg::container") {
     ASSERT((teg::container<teg::basic_fixed_string<char, 10>>));                                      // basic_fixed_string                             
 }
 
-
-TEST_CASE("Concept teg::reversible_container") {
+TEST_CASE("Reversible containers") {
     // Reversible containers.
     ASSERT((teg::reversible_container<std::array<int, 10>>));                                          // array  
     ASSERT((teg::reversible_container<std::vector<valid_elem>>));                                      // vector
@@ -69,7 +68,7 @@ TEST_CASE("Concept teg::reversible_container") {
     ASSERT(!(teg::reversible_container<std::unordered_multimap<int, valid_elem>>));                    // unordered_multimap
 }
 
-TEST_CASE("Concept teg::random_access_container") {
+TEST_CASE("Random access containers") {
     // Random access containers.
     ASSERT((teg::random_access_container<std::array<int, 10>>));                                       // array
     ASSERT((teg::random_access_container<std::vector<valid_elem>>));                                   // vector
@@ -92,7 +91,7 @@ TEST_CASE("Concept teg::random_access_container") {
     ASSERT(!(teg::random_access_container<std::priority_queue<valid_elem>>));                          // priority_queue
 }
 
-TEST_CASE("Concept teg::contiguous_container") {
+TEST_CASE("Contiguous containers") {
     // Random access containers.
     ASSERT((teg::contiguous_container<std::array<int, 10>>));                                          // array
     ASSERT((teg::contiguous_container<std::vector<valid_elem>>));                                      // vector
@@ -116,8 +115,8 @@ TEST_CASE("Concept teg::contiguous_container") {
     ASSERT(!(teg::contiguous_container<std::priority_queue<valid_elem>>));                             // priority_queue
 }
 
-TEST_CASE("Concept teg::inplace_constructing_container") {
-    // Inplace constructing containers.
+TEST_CASE("In-place constructing containers") {
+    // In-place constructing containers.
     ASSERT((teg::inplace_constructing_container<std::set<valid_elem>>));                               // set
     ASSERT((teg::inplace_constructing_container<std::multiset<valid_elem>>));                          // multiset
     ASSERT((teg::inplace_constructing_container<std::unordered_set<int>>));                            // unordered_set
@@ -126,7 +125,7 @@ TEST_CASE("Concept teg::inplace_constructing_container") {
     ASSERT((teg::inplace_constructing_container<std::unordered_map<int, valid_elem>>));                // unordered_map
     ASSERT((teg::inplace_constructing_container<std::unordered_multiset<int>>));                       // unordered_multiset
     ASSERT((teg::inplace_constructing_container<std::unordered_multimap<int, valid_elem>>));           // unordered_multimap
-    // Non inplace constructing containers.
+    // Non in-place constructing containers.
     ASSERT(!(teg::inplace_constructing_container<std::array<int, 10>>));                               // array
     ASSERT(!(teg::inplace_constructing_container<std::vector<valid_elem>>));                           // vector
     ASSERT(!(teg::inplace_constructing_container<std::basic_string<char>>));                           // basic_string
@@ -135,7 +134,7 @@ TEST_CASE("Concept teg::inplace_constructing_container") {
     ASSERT(!(teg::inplace_constructing_container<std::list<valid_elem>>));                             // list    
 }
 
-TEST_CASE("Concept teg::back_inplace_constructing_container") {
+TEST_CASE("Back in-place constructing containers") {
     // Back inplace constructing containers.
     ASSERT((teg::back_inplace_constructing_container<std::vector<valid_elem>>));                       // vector
     ASSERT((teg::back_inplace_constructing_container<std::deque<valid_elem>>));                        // deque
@@ -154,7 +153,7 @@ TEST_CASE("Concept teg::back_inplace_constructing_container") {
     ASSERT(!(teg::back_inplace_constructing_container<std::unordered_multimap<int, valid_elem>>));     // unordered_multimap
 }
 
-TEST_CASE("Concept teg::front_inplace_constructing_container") {
+TEST_CASE("Front in-place constructing containers") {
     // Back inplace constructing containers.
     ASSERT((teg::front_inplace_constructing_container<std::deque<valid_elem>>));                       // deque
     ASSERT((teg::front_inplace_constructing_container<std::list<valid_elem>>));                        // list    
@@ -224,7 +223,15 @@ TEST_CASE("Owning pointers") {
     ASSERT(!(teg::owning_pointer<valid_elem const*>));
 }
 
-TEST_CASE("Variant") {
+TEST_CASE("Variants") {
     ASSERT((teg::variant<std::variant<int, float>>));
     ASSERT(!(teg::variant<std::any>));
+}
+
+TEST_CASE("Tuples") {
+    ASSERT((teg::tuple<std::tuple<int, float>>));
+    ASSERT((teg::tuple<std::tuple<int, float, char>>));
+
+    // Pairs are tuple as well.
+    ASSERT((teg::tuple<std::pair<int, float>>));
 }

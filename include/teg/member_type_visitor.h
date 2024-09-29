@@ -18,13 +18,7 @@
 
 #pragma once
 
-#include "concepts.h"
-#include "error.h"
-#include "member_count.h"
-#include "serialization.h"
-#include "deserialization.h"
-#include "visitor.h"
-#include "buffer.h"
-#include "fixed_string.h"
-#include "type_id.h"
-#include "tuple.h"
+namespace teg {
+
+
+} // namespace teg
