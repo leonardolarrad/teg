@@ -19,9 +19,11 @@
 #pragma once
 #include <cstdint>
 #include <concepts>
-#include "concepts.h"
 
+#include "concepts.h"
+#include "visitor.h"
 #include "fixed_string.h"
+#include "declval.h"
 
 namespace teg {
 
@@ -56,6 +58,8 @@ enum class type_id : std::uint8_t {
     id_union_t     = id_class,
     id_class_begin = id_class + 1,
     id_class_end   = id_class + 2,
+
+    id_separator = 92
 };
 
 template <integral T> 
@@ -93,19 +97,38 @@ constexpr type_id float_type_id()
 template <typename T>
 constexpr type_id get_type_id() 
 {
-    if constexpr      (std::is_integral_v<T>)            return int_type_id<T>();
-    else if constexpr (std::is_floating_point_v<T>)      return float_type_id<T>();
-    else if constexpr (c_array<T>)                       return type_id::id_carray;
-    else if constexpr (optional<T>)                      return type_id::id_optional;
-    else if constexpr (owning_pointer<T>)                return type_id::id_owning_pointer;
-    else if constexpr (container<T>)                     return type_id::id_container;
-    else if constexpr (variant<T>)                       return type_id::id_variant;
-    else if constexpr (is_class<T>)                      return type_id::id_class;
+    if constexpr      (std::is_integral_v<T>)         return int_type_id<T>();
+    else if constexpr (std::is_floating_point_v<T>)   return float_type_id<T>();
+    else if constexpr (c_array<T>)                    return type_id::id_carray;
+    else if constexpr (optional<T>)                   return type_id::id_optional;
+    else if constexpr (owning_pointer<T>)             return type_id::id_owning_pointer;
+    else if constexpr (container<T>)                  return type_id::id_container;
+    else if constexpr (variant<T>)                    return type_id::id_variant;
+    else if constexpr (is_class<T>)                   return type_id::id_class;
     
     // Unreachable.
     else static_assert(!sizeof(T), "Unsupported type.");
 }
 
-
+//template <typename T>
+//constexpr decltype(auto) get_type_code() {
+//    constexpr auto separator = fixed_string<1>{(char) type_id::id_separator};
+//    constexpr auto id = get_type_id<T>();
+//
+//    if constexpr (id != type_id::id_class) {
+//        return fixed_string<1>{ (char)id } + separator;
+//    }
+//    else {
+//        return 
+//            fixed_string<1>{ (char)type_id::id_class_begin } 
+//            + visit_members(
+//                comptime_declval<T>(), 
+//                [](auto &&... members) {
+//                    return (get_type_code<decltype(members)>() + ...);
+//                })
+//            + fixed_string<1>{(char)type_id::id_class_end}
+//            + separator;            
+//    }
+//}
 
 } // namespace teg

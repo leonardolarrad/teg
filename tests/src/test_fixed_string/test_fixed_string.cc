@@ -6,6 +6,10 @@ TEST_CASE("Fixed string interface") {
     constexpr teg::fixed_string<6> str1 = "World!";
     constexpr teg::fixed_string<9> str2 {"Moonlight"};
     
+    SECTION("Constructors") {
+        constexpr teg::fixed_string<1> str3 = (char)55;
+        ASSERT(str3 == "7");
+    }
     SECTION("Capacity") {
         ASSERT(str0.size() == 5);
         ASSERT(str1.size() == 6);
