@@ -27,39 +27,39 @@
 
 namespace teg {
 
-enum class type_id : std::uint8_t {
-    id_bool      = 1,
-    id_carray    = 2,
-    id_int8      = 8,
-    id_int16     = 16,
-    id_int32     = 32,
-    id_int64     = 64,
-    id_uint8     = 9,
-    id_uint16    = 17,
-    id_uint32    = 33,
-    id_uint64    = 65,
-    id_char8     = 7,
-    id_char16    = 15,
-    id_char32    = 31,
-    id_float32   = 132,
-    id_float64   = 164,
+enum class type_id : char {
+    id_bool = 1,
+    id_carray,
+    id_int8,
+    id_int16,
+    id_int32,
+    id_int64,
+    id_uint8,
+    id_uint16,
+    id_uint32,
+    id_uint64,
+    id_char8,
+    id_char16,
+    id_char32,
+    id_float32,
+    id_float64,
         
-    id_optional  = 70,
-    id_owning_pointer = 71,
-    id_variant  = 72,
+    id_optional,
+    id_owning_pointer,
+    id_variant,
     
-    id_fixed_container = 99,
-    id_container = 100,
-    id_associative_container = 101,
-    id_map_container = 102,
+    id_fixed_container,
+    id_container,
+    id_associative_container,
+    id_map_container,
 
-    id_class       = 250,
+    id_class,
     id_struct      = id_class,
     id_union_t     = id_class,
-    id_class_begin = id_class + 1,
-    id_class_end   = id_class + 2,
+    id_class_begin,
+    id_class_end,
 
-    id_separator = 92
+    id_separator
 };
 
 template <integral T> 
@@ -110,25 +110,28 @@ constexpr type_id get_type_id()
     else static_assert(!sizeof(T), "Unsupported type.");
 }
 
-//template <typename T>
-//constexpr decltype(auto) get_type_code() {
-//    constexpr auto separator = fixed_string<1>{(char) type_id::id_separator};
-//    constexpr auto id = get_type_id<T>();
-//
-//    if constexpr (id != type_id::id_class) {
-//        return fixed_string<1>{ (char)id } + separator;
-//    }
-//    else {
-//        return 
-//            fixed_string<1>{ (char)type_id::id_class_begin } 
-//            + visit_members(
-//                comptime_declval<T>(), 
-//                [](auto &&... members) {
-//                    return (get_type_code<decltype(members)>() + ...);
-//                })
-//            + fixed_string<1>{(char)type_id::id_class_end}
-//            + separator;            
-//    }
-//}
+template <class T>
+constexpr decltype(auto) get_type_code() 
+{
+    using type = std::remove_cvref_t<T>;
+    constexpr auto separator = fixed_string<1>{ (char)type_id::id_separator };
+    constexpr auto id = get_type_id<type>();
+
+    if constexpr (id != type_id::id_class) {
+        return fixed_string<1>{ (char)id } + separator;
+    }
+    else {
+        return 
+            fixed_string<1>{ (char)type_id::id_class_begin }
+            + visit_members(
+                type{},
+                [&](auto&&... members) {
+                    return ((get_type_code<decltype(members)>()) + ...);
+                }
+            )
+            + fixed_string<1>{ (char)type_id::id_class_end }
+            + separator;            
+    }
+}
 
 } // namespace teg

@@ -7,7 +7,7 @@ TEST_CASE("Fixed string interface") {
     constexpr teg::fixed_string<9> str2 {"Moonlight"};
     
     SECTION("Constructors") {
-        constexpr teg::fixed_string<1> str3 = (char)55;
+        constexpr teg::fixed_string<1> str3 = {{ (char)55 }};
         ASSERT(str3 == "7");
     }
     SECTION("Capacity") {
@@ -40,6 +40,24 @@ TEST_CASE("Fixed string interface") {
 
         constexpr auto str4 = str0 + str1;
         ASSERT(str4 == "HelloWorld!");
+    }
+    SECTION("Concatenation of comptime fixed strings with runtime fixed strings") {
+        teg::fixed_string<5> str5 = "Hello";
+        constexpr teg::fixed_string<6> str6 = "World!";
+        auto str7 = str5 + str6;
+        auto str8 = str6 + teg::fixed_string<1> {{(char)33}};
+
+        auto l = [](int i) {
+            return teg::fixed_string<1> {{(char)i}};
+        };
+
+        auto str9 = str6 + l(33) + l(33);
+
+        ASSERT(str5 == "Hello");
+        ASSERT(str6 == "World!");
+        ASSERT(str7 == "HelloWorld!");
+        ASSERT(str8 == "World!!");
+        ASSERT(str9 == "World!!!");
     }
 }
 

@@ -54,6 +54,8 @@ public:
 
     // Constructors, copy, move, and destructor.
     constexpr basic_fixed_string() noexcept = default;
+    constexpr basic_fixed_string(basic_fixed_string&& other) noexcept = default;    
+    constexpr basic_fixed_string& operator=(basic_fixed_string&& other) noexcept = default;
 
     constexpr basic_fixed_string(const value_type (&str)[N+1]) noexcept {
         std::copy(std::begin(str), std::end(str), std::begin(m_data));
@@ -63,6 +65,7 @@ public:
         m_data[0] = c;
         m_data[1] = '\0';
     }
+
 
     constexpr basic_fixed_string(std::basic_string_view<value_type, type_traits> view) noexcept {
         std::copy(std::begin(view), std::end(view), std::begin(m_data));

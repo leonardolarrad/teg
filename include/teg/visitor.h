@@ -20,16 +20,17 @@
 #include <type_traits>
 #include <variant>
 #include <concepts>
+#include <utility>
 
 #include "member_count.h"
 #include "concepts.h"
 
 namespace teg {
 
-constexpr static auto MAX_VISIT_MEMBERS = 64;
+constexpr static auto max_visit_members = 64;
 
 template<typename O, typename V>
-constexpr decltype(auto) inline visit_members(O&& obj, V&& visitor) {
+constexpr inline decltype(auto) visit_members(O&& obj, V&& visitor) {
     using type = std::remove_cvref_t<O>;
 
     constexpr auto members_count = teg::members_count<type>;
@@ -37,7 +38,7 @@ constexpr decltype(auto) inline visit_members(O&& obj, V&& visitor) {
         && !std::is_same_v<type, std::monostate>) {
         static_assert(!sizeof(type), "Unsupported type");   
     }
-    static_assert(members_count <= MAX_VISIT_MEMBERS, "Exceed max visit members");
+    static_assert(members_count <= max_visit_members, "Exceed max visit members");
 
     if constexpr (members_count == 0) {
         return visitor();
@@ -564,5 +565,42 @@ constexpr decltype(auto) inline visit_members(O&& obj, V&& visitor) {
                         e62, e63, e64);
     }
 }
+
+template<class T, class F>
+constexpr inline decltype(auto) visit_members_types(F&& f) 
+    requires structure_bindable<T> && (members_count<T> <= max_visit_members) 
+{   
+    using type = std::remove_cvref_t<T>;
+    constexpr auto n = members_count<T>;
+
+    if constexpr (n == 0) {
+        return f();
+    }
+    if constexpr (n == 1) {
+        auto l = [&](auto&& obj) {
+            auto&& [e1] = obj;
+            return f.template operator()<decltype(e1)>();
+        };
+        return decltype(l(std::declval<type>()))();
+    }
+    else if constexpr (n == 2) {
+        auto l = [&](auto&& obj) {
+            auto&& [e1, e2] = obj;
+            return f.template operator()<decltype(e1), decltype(e2)>();
+        };
+        return decltype(l(std::declval<type>()))();
+    }
+    else if constexpr (n == 3) {
+        auto l = [&](auto&& obj) {
+            auto&& [e1, e2, e3] = obj;
+            return f.template operator()<decltype(e1), decltype(e2), decltype(e3)>();
+        };
+        return decltype(l(std::declval<type>()))();
+    }
+    else {
+        static_assert(!sizeof(type), "Too many members");
+    }
+}
+
 
 } // namespace teg
