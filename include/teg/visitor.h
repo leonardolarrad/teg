@@ -566,41 +566,4 @@ constexpr inline decltype(auto) visit_members(O&& obj, V&& visitor) {
     }
 }
 
-template<class T, class F>
-constexpr inline decltype(auto) visit_members_types(F&& f) 
-    requires structure_bindable<T> && (members_count<T> <= max_visit_members) 
-{   
-    using type = std::remove_cvref_t<T>;
-    constexpr auto n = members_count<T>;
-
-    if constexpr (n == 0) {
-        return f();
-    }
-    if constexpr (n == 1) {
-        auto l = [&](auto&& obj) {
-            auto&& [e1] = obj;
-            return f.template operator()<decltype(e1)>();
-        };
-        return decltype(l(std::declval<type>()))();
-    }
-    else if constexpr (n == 2) {
-        auto l = [&](auto&& obj) {
-            auto&& [e1, e2] = obj;
-            return f.template operator()<decltype(e1), decltype(e2)>();
-        };
-        return decltype(l(std::declval<type>()))();
-    }
-    else if constexpr (n == 3) {
-        auto l = [&](auto&& obj) {
-            auto&& [e1, e2, e3] = obj;
-            return f.template operator()<decltype(e1), decltype(e2), decltype(e3)>();
-        };
-        return decltype(l(std::declval<type>()))();
-    }
-    else {
-        static_assert(!sizeof(type), "Too many members");
-    }
-}
-
-
 } // namespace teg

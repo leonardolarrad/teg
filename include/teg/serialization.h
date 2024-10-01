@@ -21,6 +21,7 @@
 #include <concepts>
 #include <cstddef>
 #include <cstring>
+#include <tuple>
 #include <variant>
 #include <vector>
 
@@ -76,6 +77,17 @@ error serialize_one(buffer_writer& writer, optional auto const& optional)  {
     } else {
         return serialize_many(writer, std::byte(true), *optional);
     }
+}
+
+template <class T> requires tuple<T> && (!container<T>)
+[[nodiscard]] inline constexpr 
+error serialize_one(buffer_writer& writer, T const& tuple) {    
+    return std::apply(
+        [&writer](auto&&... elements) constexpr {
+            return serialize_many(writer, elements...);
+        },
+        tuple
+    );
 }
 
 [[nodiscard]] inline constexpr 

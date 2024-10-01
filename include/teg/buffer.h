@@ -20,18 +20,27 @@
 
 #include <cstddef>
 #include <vector>
+#include <tuple>
+#include <memory>
+#include <concepts>
+#include <type_traits>
+#include <optional>
+#include <variant>
 
 #include "concepts.h"
 #include "visitor.h"
 
 namespace teg::internal {
 
-
 inline constexpr 
 std::size_t buffer_size_one(optional auto const& obj);
 
 inline constexpr 
 std::size_t buffer_size_one(owning_pointer auto const& obj);
+
+template <class T> requires tuple<T> && (!container<T>)
+inline constexpr 
+std::size_t buffer_size_one(T const& obj);
 
 inline constexpr 
 std::size_t buffer_size_one(variant auto const& obj);
@@ -42,7 +51,7 @@ std::size_t buffer_size_one(fixed_size_container auto const& obj);
 inline constexpr 
 std::size_t buffer_size_one(container auto const& obj);
 
-inline constexpr 
+inline constexpr
 std::size_t buffer_size_one(auto const& obj);
 
 inline constexpr
@@ -53,6 +62,17 @@ std::size_t buffer_size_many() {
 inline constexpr
 std::size_t buffer_size_many(auto const& first_obj, auto const&... remaining_objs) {
     return buffer_size_one(first_obj) + buffer_size_many(remaining_objs...);
+}
+
+template <class T> requires tuple<T> && (!container<T>)
+inline constexpr 
+std::size_t buffer_size_one(T const& tuple) {    
+    return std::apply(
+        [](auto&&... elements) constexpr {
+            return buffer_size_many(elements...);
+        },
+        tuple
+    );
 }
 
 inline constexpr 

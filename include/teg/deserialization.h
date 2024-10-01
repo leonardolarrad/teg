@@ -336,9 +336,9 @@ error deserialize_one(buffer_reader& reader, variant auto& variant) {
     }
     
     return index_table_lookup<table_size>(index, [&](auto comptime_index) {
-        /// Using an index table we can transform a runtime index into 
-        /// a compile-time index. With this technique we can then deserialize
-        /// the variant alternative (based on the index) at runtime.
+        // Using an index table we can transform a runtime index into 
+        // a compile-time index. With this technique we can then deserialize
+        // the variant alternative (based on the index) at runtime.
         std::variant_alternative_t<comptime_index, comptime_type> element;        
         if (result = deserialize_one(reader, element); failure(result)) [[unlikely]] {
             return result;
@@ -347,6 +347,17 @@ error deserialize_one(buffer_reader& reader, variant auto& variant) {
         variant.template emplace<comptime_index>(std::move(element));
         return teg::error {};
     });
+}
+
+template <class T> requires tuple<T> && (!container<T>)
+[[nodiscard]] inline constexpr 
+error deserialize_one(buffer_reader& reader, T& tuple) {
+    return std::apply(
+        [&reader](auto&&... elements) {
+            return deserialize_many(reader, elements...);
+        },
+        tuple
+    );
 }
 
 [[nodiscard]] inline constexpr

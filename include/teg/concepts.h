@@ -149,8 +149,7 @@ concept tuple_element = requires(T t) {
     };
 
 template<class T>
-concept tuple = !std::is_reference_v<T> 
-    && requires(T t) {
+concept tuple_impl =  requires(T t) {
         typename std::tuple_size<T>::type; 
     } 
     && std::derived_from<
@@ -160,6 +159,15 @@ concept tuple = !std::is_reference_v<T>
     && []<std::size_t... I>(std::index_sequence<I...>) { 
         return (tuple_element<T, I> && ...); 
     }(std::make_index_sequence<std::tuple_size_v<T>>());
+
+template <class T>
+concept tuple = tuple_impl<std::remove_cvref_t<T>>;
+
+template <class T>
+concept pair_impl = tuple<T> && std::tuple_size_v<T> == 2;
+
+template <class T>
+concept pair = pair_impl<std::remove_cvref_t<T>>;
 
 template <typename T>
 concept structure_bindable = aggregate<T> || tuple<T>;
