@@ -42,6 +42,11 @@ TEST_CASE("Compute container buffer size") {
     }
 }
 
+TEST_CASE("Tuple") {
+    std::tuple<int, double> t0 = { 100, 100.0 };
+    ASSERT_EQ(teg::buffer_size(t0), sizeof(int) + sizeof(double));
+}
+
 TEST_CASE("Variant") {
     std::variant<int, double, std::string> v0 = 100;
     std::variant<int, double, std::string> v1 = 100.0;
@@ -51,3 +56,4 @@ TEST_CASE("Variant") {
     ASSERT_EQ(teg::buffer_size(v1), sizeof(std::size_t) + sizeof(double));
     ASSERT_EQ(teg::buffer_size(v2), 2 * sizeof(std::size_t) +  (3 * sizeof(char)));
 }
+

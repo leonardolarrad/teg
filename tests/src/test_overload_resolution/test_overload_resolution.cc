@@ -61,6 +61,10 @@ TEST_CASE("Prove that we should std::remove_cvref_t concepts with member types")
 /// Library tests.
 ///
 
+template <typename T> 
+std::string overload(T&& t) requires teg::fixed_size_container<T> {
+    return "fixed_size_container";
+}
 
 template <typename T> 
 std::string overload(T&& t) requires teg::contiguous_container<T> {
@@ -83,6 +87,11 @@ std::string overload(T&& t) requires teg::owning_pointer<T> {
 }
 
 template <typename T>
+std::string overload(T&& t) requires teg::tuple<std::remove_cvref_t<T>> && (!teg::container<T>) {
+    return "tuple";
+}
+
+template <typename T>
 std::string overload(T&& t) requires teg::variant<T> {
     return "variant";
 }
@@ -93,19 +102,23 @@ std::string overload(T&& t) {
 }
 
 TEST_CASE("Overload resolution with concepts") {
-    SECTION("auto") {
+    SECTION("Auto") {
         int i;
         ASSERT_EQ(overload(i), "auto");
     }
-    SECTION("optional") {
+    SECTION("Optional") {
         std::optional<int> opt0;
         ASSERT_EQ(overload(opt0), "optional");
     }
-    SECTION("container") {
+    SECTION("Container") {
         std::forward_list<int> fl;
         ASSERT_EQ(overload(fl), "container");
     }
-    SECTION("cv-qualified container") {
+    SECTION("Fixed size container") {
+        std::array<int, 10> a;
+        ASSERT_EQ(overload(a), "fixed_size_container");
+    }
+    SECTION("CV-Qualified container") {
         using const_vector = std::vector<int> const;
         const_vector v;
         ASSERT_EQ(overload(v), "contiguous_container");
@@ -116,11 +129,15 @@ TEST_CASE("Overload resolution with concepts") {
         const_string s1 = s0;
         ASSERT_EQ(overload(s1), "contiguous_container");
     }
-    SECTION("owning pointer") {
+    SECTION("Owning pointer") {
         std::unique_ptr<int> up = std::make_unique<int>(0);
         ASSERT_EQ(overload(up), "owning_pointer");
     }
-    SECTION("variant") {
+    SECTION("Tuple") {
+        std::tuple<int, std::string> t0 = { 0, "hello" };
+        ASSERT_EQ(overload(t0), "tuple");
+    }
+    SECTION("Variant") {
         std::variant<int, std::string> v0 = 0;
         ASSERT_EQ(overload(v0), "variant");
     }

@@ -232,6 +232,10 @@ TEST_CASE("Tuples") {
     ASSERT((teg::tuple<std::tuple<int, float>>));
     ASSERT((teg::tuple<std::tuple<int, float, char>>));
 
+
+    // Arrays are tupples?
+    ASSERT((teg::tuple<std::array<int, 10>>));
+
     // Pairs are tuple as well.
     ASSERT((teg::tuple<std::pair<int, float>>));
 }

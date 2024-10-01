@@ -36,30 +36,3 @@ TEST_CASE("Type code") {
         std::cout << std::endl;
     }
 }
-
-struct vec3 {
-    int x;
-    float y;
-    float z;
-};
-
-template<std::integral T>
-std::string func() {
-    std::cout << "int" << std::endl;
-    return "int";
-}
-
-template <std::floating_point T>
-std::string func() {
-    std::cout << "float" << std::endl;
-    return "float";
-}
-
-TEST_CASE("Visit members types") {
-    int i = teg::visit_members_types<vec3>(
-        []<class... M>() {            
-            return 55;            
-        }
-    );
-    std::cout << i << std::endl;
-}

@@ -32,4 +32,5 @@ meson test <prueba> -v -C build/
 | `set` | Serialización de conjuntos `std::set`, `std::unordered_set`, `std::multiset` y `std::unordered_multiset`. |
 | `map` | Serialización de mapas `std::map`, `std::unordered_map` y `std::multimap` y `std::unordered_multimap`. |
 | `owning_pointer` | Serialización de punteros propietarios `std::unique_ptr` y `std::shared_ptr`. |
+| `tuple` | Serialización de tuplas `std::tuple` y `std::pair`. |
 | `variant` | Serialización de variantes (unión discriminada de tipos de datos) `std::variant`. |
