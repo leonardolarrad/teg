@@ -1,7 +1,7 @@
-#include <string>
 #include <concepts>
-#include <type_traits>
 #include <iostream>
+#include <string>
+#include <type_traits>
 
 #include "teg/teg.h"
 #include "test/test.h"

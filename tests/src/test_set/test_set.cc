@@ -1,11 +1,11 @@
 #include <set>
-#include <unordered_set>
 #include <string>
+#include <unordered_set>
 
 #include "teg/teg.h"
 #include "test/test.h"
 
-TEST_CASE("Trivial set de/serialization") {
+TEST_CASE("Trivial de/serialization") {
     SECTION("Set") {
         teg::buffer b;
         std::set<int> s0 = { 1, 2, 3, 4, 5 };
@@ -45,7 +45,7 @@ TEST_CASE("Trivial set de/serialization") {
     }
 }
 
-TEST_CASE("Non-trivial set de/serialization") {
+TEST_CASE("Aggregate de/serialization") {
     SECTION("Set") {
         teg::buffer b;
         std::set<std::string> s0 = { "a", "b", "c", "d", "e" };

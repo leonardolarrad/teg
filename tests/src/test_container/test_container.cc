@@ -1,16 +1,16 @@
 #include <array>
-#include <vector>
 #include <deque>
 #include <forward_list>
-#include <list>
-#include <set>
-#include <unordered_set>
-#include <map>
-#include <unordered_map>
-#include <stack>
-#include <queue>
-#include <string>
 #include <iostream>
+#include <list>
+#include <map>
+#include <queue>
+#include <set>
+#include <stack>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "teg/teg.h"
 #include "test/test.h"

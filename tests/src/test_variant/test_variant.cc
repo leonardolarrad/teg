@@ -1,11 +1,10 @@
 #include <array>
+#include <bitset>
+#include <cstdint>
 #include <string>
 #include <variant>
 #include <vector>
-#include <bitset>
-#include <cstdint>
 
-#include "teg/index_table.h"
 #include "teg/teg.h"
 #include "test/test.h"
 

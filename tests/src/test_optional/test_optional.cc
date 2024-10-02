@@ -1,8 +1,8 @@
-#include <vector>
-#include <string>
 #include <array>
 #include <map>
 #include <optional>
+#include <string>
+#include <vector>
 
 #include "teg/teg.h"
 #include "test/test.h"
@@ -28,7 +28,7 @@ TEST_CASE("Trivial de/serialization") {
     }    
 }
 
-TEST_CASE("Non-trivial de/serialization") {
+TEST_CASE("Aggregate de/serialization") {
     SECTION("Optional string") {
         teg::buffer b;
         std::optional<std::string> opt0 = "hello";

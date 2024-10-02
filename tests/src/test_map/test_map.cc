@@ -5,7 +5,7 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
-TEST_CASE("Trivial map de/serialization") {
+TEST_CASE("Trivial de/serialization") {
     SECTION("Map") {
         teg::buffer b;
         std::map<int, int> m0 = { { 1, 1 }, { 2, 2 }, { 3, 3 }, { 4, 4 }, { 5, 5 } };
@@ -44,7 +44,7 @@ TEST_CASE("Trivial map de/serialization") {
     }
 }
 
-TEST_CASE("Non-trivial map de/serialization") {    
+TEST_CASE("Aggregate de/serialization") {    
     SECTION("Map") {
         teg::buffer b;
         std::map<std::string, std::string> m0 = { 

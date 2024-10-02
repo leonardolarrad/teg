@@ -1,13 +1,12 @@
-#include <vector>
-#include <string>
 #include <array>
+#include <string>
+#include <vector>
 
-#include <iostream>
 #include "teg/teg.h"
 #include "test/test.h"
 
 TEST_CASE("Unique pointer de/serialization") {    
-    SECTION("Trivial") {
+    SECTION("Trivial de/serialization") {
         teg::buffer b;
         std::unique_ptr<int> p0 = std::make_unique<int>(100);
         teg::serialize(b, p0).or_throw();
@@ -16,7 +15,7 @@ TEST_CASE("Unique pointer de/serialization") {
         teg::deserialize(b, p1).or_throw();
         ASSERT(*p0 == *p1);        
     }
-    SECTION("Non-trivial") {
+    SECTION("Aggregate de/serialization") {
         teg::buffer b;
         std::unique_ptr<std::vector<int>> p0 = 
             std::make_unique<std::vector<int>>(std::vector<int>{ 1, 2, 3, 4, 5 });

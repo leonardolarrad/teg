@@ -1,10 +1,10 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
-#include "teg/teg.h"
-#include "test/test.h"
 
+#include "teg/teg.h"
 #include "teg/tuple.h"
+#include "test/test.h"
 
 struct int_2 {
     int x, y;

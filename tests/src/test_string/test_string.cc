@@ -1,8 +1,5 @@
 #include <string>
-#include <codecvt>
-#include <locale>
 
-#include <iostream>
 #include "teg/teg.h"
 #include "test/test.h"
 

@@ -1,6 +1,6 @@
-#include <vector>
-#include <string>
 #include <array>
+#include <string>
+#include <vector>
 
 #include <iostream>
 #include "teg/teg.h"
@@ -18,7 +18,7 @@ TEST_CASE("Trivial de/serialization") {
     ASSERT(v0 == v1);
 }
 
-TEST_CASE("Non-trivial de/serialization") {
+TEST_CASE("Aggregate de/serialization") {
     SECTION("Vector of vectors") {
         teg::buffer b;
         std::vector<std::vector<int>> v0 = { { 1, 2, 3, 4, 5 }, { 6, 7, 8, 9, 10 } };
