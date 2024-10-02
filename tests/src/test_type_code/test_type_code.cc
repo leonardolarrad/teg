@@ -28,7 +28,7 @@ TEST_CASE("Type code") {
             float x, y;
         };
 
-        auto code = teg::get_type_code<vec2>();
+        constexpr auto code = teg::get_type_code<vec2>();
 
         for (auto c : code) {
             std::cout << int(c) << " ";

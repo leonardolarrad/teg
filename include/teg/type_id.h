@@ -111,25 +111,25 @@ constexpr type_id get_type_id()
 }
 
 template <class T>
-constexpr decltype(auto) get_type_code() 
+constexpr auto get_type_code() 
 {
     using type = std::remove_cvref_t<T>;
-    constexpr auto separator = fixed_string<1>{ (char)type_id::id_separator };
+    constexpr auto separator = fixed_string<1> {{ (char)type_id::id_separator }};
     constexpr auto id = get_type_id<type>();
 
     if constexpr (id != type_id::id_class) {
-        return fixed_string<1>{ (char)id } + separator;
+        return fixed_string<1>{{ (char)id }} + separator;
     }
     else {
         return 
-            fixed_string<1>{ (char)type_id::id_class_begin }
+            fixed_string<1>{{ (char)type_id::id_class_begin }}
             + visit_members(
                 type{},
                 [&](auto&&... members) {
                     return ((get_type_code<decltype(members)>()) + ...);
                 }
             )
-            + fixed_string<1>{ (char)type_id::id_class_end }
+            + fixed_string<1>{{ (char)type_id::id_class_end }}
             + separator;            
     }
 }
