@@ -16,8 +16,11 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-///  This file is a rewrite of the original `boost::mp_with_index` source code,
-///  originally authored by Peter Dimov. Distributed under the following license:
+///  This file is a rewrite of `boost::mp_with_index` source code, originally 
+///  authored by Peter Dimov.
+///
+///  Copyright 2017 Peter Dimov.
+///  Distributed under the Boost Software License, Version 1.0.
 ///
 ///  Boost Software License - Version 1.0 - August 17th, 2003
 ///  
