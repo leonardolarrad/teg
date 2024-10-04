@@ -16,7 +16,9 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-#pragma once
+#ifndef TEG_FIXED_STRING_H
+#define TEG_FIXED_STRING_H
+
 #include <array>
 #include <iterator>
 #include <cstddef>
@@ -27,11 +29,9 @@
 #include <utility>
 #include <compare>
 
-#include "concepts.h"
-
 namespace teg {
 
-template<character C, std::size_t N, typename TT = std::char_traits<C>>
+template<class C, std::size_t N, typename TT = std::char_traits<C>>
 class basic_fixed_string {
 public:
     // Member types.
@@ -50,15 +50,22 @@ public:
     using string_view_type = std::basic_string_view<value_type, type_traits>;
 
     // Construct/copy/move.
-    constexpr basic_fixed_string() noexcept = default;
-    
+    constexpr basic_fixed_string() noexcept = default;    
+    constexpr basic_fixed_string(basic_fixed_string&&) = default;
+    constexpr basic_fixed_string(basic_fixed_string const&) = default;
+    constexpr basic_fixed_string& operator=(basic_fixed_string&&) = default;
+    constexpr basic_fixed_string& operator=(basic_fixed_string const&) = default;
+
+    constexpr basic_fixed_string(std::initializer_list<value_type> l) noexcept {
+        std::copy(std::begin(l), std::end(l), std::begin(m_data));
+    }
+
     constexpr basic_fixed_string(const value_type (&str)[N+1]) noexcept {
         std::copy(std::begin(str), std::end(str), std::begin(m_data));
     }
 
     constexpr basic_fixed_string(std::basic_string_view<value_type, type_traits> view) noexcept {
         std::copy(std::begin(view), std::end(view), std::begin(m_data));
-        m_data[N] = '\0';
     }
 
     constexpr basic_fixed_string& operator=(const value_type (&str)[N+1]) noexcept {
@@ -193,3 +200,5 @@ template <std::size_t N>
 using fixed_wstring = basic_fixed_string<wchar_t, N>;
 
 } // namespace teg
+
+#endif // TEG_FIXED_STRING_H
