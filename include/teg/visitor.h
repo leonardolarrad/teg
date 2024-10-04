@@ -33,7 +33,7 @@ template<typename O, typename V>
 constexpr inline decltype(auto) visit_members(O&& obj, V&& visitor) {
     using type = std::remove_cvref_t<O>;
 
-    constexpr auto members_count = teg::members_count<type>;
+    constexpr auto members_count = teg::members_count_v<type>;
     if constexpr (members_count == 0 && std::is_class_v<type> 
         && !std::is_same_v<type, std::monostate>) {
         static_assert(!sizeof(type), "Unsupported type");   
