@@ -24,17 +24,49 @@ meson test <prueba> -v -C build/debug/
 
 | Prueba | Descripción |
 | --- | --- |
-| `concepts` | Pruebas de Conceptos (C++20 Concepts) utilizados por la librería. |
+| `concepts` | Pruebas de Conceptos (C++20 _Concepts_) utilizados por la librería. |
 | `reflection` | Pruebas de reflección estática (reflección en tiempo de compilación). |
 | `overload_resolution` | Resolución de sobrecarga de funciones a través de Conceptos. |
 | `fundamental` | Serialización de tipos de datos fundamentales (ej. `bool`, `char`, `unsigned int`, etc.) |
-| `carray` | Serialización de arreglos de C. |
-| `optional` | Serialización de tipos de datos opcionales (ej. `std::optional`). |
-| `container` | Serialización básica de contenedores de la librería estándar. |
+| `carray` | De/serialización de arreglos tipo C. |
+| `optional` | De/serialización de tipos de datos opcionales (específicamente `std::optional`). |
+| `container` | De/serialización básica de contenedores. |
 | `vector` | De/serialización detallada del contenedor estándar `std::vector`. |
 | `string` | De/serialización de cadenas de caracteres (ej. `std::string`, `std::u16string`, `std::u32string`, etc.). |
-| `set` | Serialización de conjuntos `std::set`, `std::unordered_set`, `std::multiset` y `std::unordered_multiset`. |
-| `map` | Serialización de mapas `std::map`, `std::unordered_map` y `std::multimap` y `std::unordered_multimap`. |
-| `owning_pointer` | Serialización de punteros propietarios (específicamente `std::unique_ptr` y `std::shared_ptr`). |
-| `tuple` | Serialización de tuplas (específicamente `std::tuple` y `std::pair`). |
-| `variant` | Serialización de variantes; unión discriminada de tipos de datos (específicamente `std::variant`). |
+| `set` | De/serialización de conjuntos `std::set`, `std::unordered_set`, `std::multiset` y `std::unordered_multiset`. |
+| `map` | De/serialización de tablas hash `std::map`, `std::unordered_map` y `std::multimap` y `std::unordered_multimap`. |
+| `owning_pointer` | De/serialización de punteros propietarios (específicamente `std::unique_ptr` y `std::shared_ptr`). |
+| `tuple` | De/serialización de tuplas (específicamente `std::tuple` y `std::pair`). |
+| `variant` | De/serialización de variantes; unión discriminada de tipos de datos (específicamente `std::variant`). |
+| `aggregates` | De/serialización de agregados. Pruebas de integración de serialización por componentes. |
+
+### RESULTADOS
+
+Si todas las pruebas han sido exitosas, la salida del terminal se mostrará de la siguiente manera:
+
+```
+ 1/17 reflection                  OK              0.03s
+ 2/17 overload_resolution         OK              0.02s
+ 3/17 concepts                    OK              0.05s
+ 4/17 type_code                   OK              0.03s
+ 5/17 fundamental                 OK              0.02s
+ 6/17 optional                    OK              0.02s
+ 7/17 carray                      OK              0.03s
+ 8/17 vector                      OK              0.02s
+ 9/17 container                   OK              0.04s
+10/17 string                      OK              0.03s
+11/17 fixed_string                OK              0.02s
+12/17 map                         OK              0.02s
+13/17 set                         OK              0.03s
+14/17 owning_pointer              OK              0.02s
+15/17 tuple                       OK              0.02s
+16/17 aggregates                  OK              0.02s
+17/17 variant                     OK              0.01s
+
+Ok:                 17
+Expected Fail:      0
+Fail:               0
+Unexpected Pass:    0
+Skipped:            0
+Timeout:            0
+```

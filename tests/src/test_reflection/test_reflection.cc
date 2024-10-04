@@ -76,19 +76,19 @@ struct string_2 {
 
 TEST_CASE("Reflect members count") {
     // c arrays
-    ASSERT_EQ(teg::members_count<std::int32_t[5]>, 5);
-    ASSERT_EQ(teg::members_count<std::int32_t[125]>, 125);
-    ASSERT_EQ(teg::members_count<std::int32_t[125][5]>, 125);
+    ASSERT_EQ(teg::members_count_v<std::int32_t[5]>, 5);
+    ASSERT_EQ(teg::members_count_v<std::int32_t[125]>, 125);
+    ASSERT_EQ(teg::members_count_v<std::int32_t[125][5]>, 125);
     // classes
-    ASSERT_EQ(teg::members_count<int_2>, 2);
-    ASSERT_EQ(teg::members_count<int_3>, 3);
-    ASSERT_EQ(teg::members_count<int_64>, 64);
-    ASSERT_EQ(teg::members_count<int_100>, 100);
-    ASSERT_EQ(teg::members_count<int_2_2>, 2);
-    ASSERT_EQ(teg::members_count<mix_12>, 12);
-    ASSERT_EQ(teg::members_count<int_arr_2_16>, 2);
-    ASSERT_EQ(teg::members_count<char_arr_2_32>, 2);       
-    ASSERT_EQ(teg::members_count<string_2>, 2);
+    ASSERT_EQ(teg::members_count_v<int_2>, 2);
+    ASSERT_EQ(teg::members_count_v<int_3>, 3);
+    ASSERT_EQ(teg::members_count_v<int_64>, 64);
+    ASSERT_EQ(teg::members_count_v<int_100>, 100);
+    ASSERT_EQ(teg::members_count_v<int_2_2>, 2);
+    ASSERT_EQ(teg::members_count_v<mix_12>, 12);
+    ASSERT_EQ(teg::members_count_v<int_arr_2_16>, 2);
+    ASSERT_EQ(teg::members_count_v<char_arr_2_32>, 2);       
+    ASSERT_EQ(teg::members_count_v<string_2>, 2);
 }
 
 TEST_CASE("Visit members") {
