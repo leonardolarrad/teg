@@ -7,6 +7,7 @@ test_dep = declare_dependency(
 
 subdir('src/test_concepts')
 subdir('src/test_reflection')
+subdir('src/test_md5')
 subdir('src/test_overload_resolution')
 subdir('src/test_type_code')
 subdir('src/test_fundamental')
