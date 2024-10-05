@@ -29,3 +29,4 @@
 #include "tuple.h"
 #include "type_id.h"
 #include "visitor.h"
+#include "md5.h"
