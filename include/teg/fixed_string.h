@@ -126,6 +126,11 @@ public:
     value_type m_data[N+1] = {};
 };
 
+template <class C, std::size_t N>
+constexpr basic_fixed_string<C, N-1> make_fixed_string(const C (&str)[N]) noexcept {
+    return basic_fixed_string<C, N-1>(str);
+}
+
 template <typename C, std::size_t N1, std::size_t N2, typename TT>
 [[nodiscard]] constexpr bool operator==(basic_fixed_string<C, N1, TT> const& l, basic_fixed_string<C, N2, TT> const& r) noexcept
 {
