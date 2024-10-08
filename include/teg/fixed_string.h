@@ -20,14 +20,15 @@
 #define TEG_FIXED_STRING_H
 
 #include <array>
-#include <iterator>
+#include <compare>
 #include <cstddef>
 #include <cstring>
+#include <iterator>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <type_traits>
 #include <utility>
-#include <compare>
 
 namespace teg {
 
