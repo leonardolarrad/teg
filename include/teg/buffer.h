@@ -32,40 +32,43 @@
 
 namespace teg::internal {
 
-inline constexpr 
+constexpr inline 
 std::size_t buffer_size_one(optional auto const& obj);
 
-inline constexpr 
+constexpr inline 
 std::size_t buffer_size_one(owning_pointer auto const& obj);
 
 template <class T> requires tuple<T> && (!container<T>)
-inline constexpr 
+constexpr inline 
 std::size_t buffer_size_one(T const& obj);
 
-inline constexpr 
+constexpr inline 
 std::size_t buffer_size_one(variant auto const& obj);
 
-inline constexpr 
+constexpr inline 
 std::size_t buffer_size_one(fixed_size_container auto const& obj);
 
-inline constexpr 
+constexpr inline 
 std::size_t buffer_size_one(container auto const& obj);
 
-inline constexpr
+constexpr inline 
+std::size_t buffer_size_one(c_array auto const& obj);
+
+constexpr inline
 std::size_t buffer_size_one(auto const& obj);
 
-inline constexpr
+constexpr inline
 std::size_t buffer_size_many() {
     return 0;
 }
 
-inline constexpr
+constexpr inline
 std::size_t buffer_size_many(auto const& first_obj, auto const&... remaining_objs) {
     return buffer_size_one(first_obj) + buffer_size_many(remaining_objs...);
 }
 
 template <class T> requires tuple<T> && (!container<T>)
-inline constexpr 
+constexpr inline 
 std::size_t buffer_size_one(T const& tuple) {    
     return std::apply(
         [](auto&&... elements) constexpr {
@@ -75,7 +78,7 @@ std::size_t buffer_size_one(T const& tuple) {
     );
 }
 
-inline constexpr 
+constexpr inline 
 std::size_t buffer_size_one(optional auto const& optional) {    
     if (optional.has_value()) {
         return sizeof(std::byte) + buffer_size_one(optional.value());
@@ -85,7 +88,7 @@ std::size_t buffer_size_one(optional auto const& optional) {
     }
 }
 
-inline constexpr 
+constexpr inline 
 std::size_t buffer_size_one(owning_pointer auto const& pointer) {
     if (pointer == nullptr) {
         return 0;
@@ -93,7 +96,7 @@ std::size_t buffer_size_one(owning_pointer auto const& pointer) {
     return buffer_size_one(*pointer);
 }
 
-inline constexpr 
+constexpr inline 
 std::size_t buffer_size_one(variant auto const& var) {
    std::size_t index_size = sizeof(var.index());
    std::size_t element_size = std::visit(
@@ -106,7 +109,7 @@ std::size_t buffer_size_one(variant auto const& var) {
 }
 
 
-inline constexpr 
+constexpr inline 
 std::size_t buffer_size_one(fixed_size_container auto const& obj) {    
     std::size_t size = 0;
     for (auto const& elem : obj) {
@@ -115,7 +118,7 @@ std::size_t buffer_size_one(fixed_size_container auto const& obj) {
     return size;
 }
 
-inline constexpr 
+constexpr inline 
 std::size_t buffer_size_one(container auto const& obj) {
     using type = std::remove_cvref_t<decltype(obj)>;
     using size_type = typename type::size_type;
@@ -127,7 +130,12 @@ std::size_t buffer_size_one(container auto const& obj) {
     return size;
 }
 
-inline constexpr 
+constexpr inline 
+std::size_t buffer_size_one(c_array auto const& arr) {
+    return std::size(arr) * buffer_size_one(arr[0]);
+}
+
+constexpr inline 
 std::size_t buffer_size_one(auto const& obj) {
     using type = std::remove_cvref_t<decltype(obj)>;
     
@@ -144,15 +152,13 @@ std::size_t buffer_size_one(auto const& obj) {
     }
 }
 
-
-
 } // namespace teg::internal
 
 namespace teg {
 
 using buffer = std::vector<std::byte>;
 
-[[nodiscard]] inline constexpr 
+[[nodiscard]] constexpr inline 
 std::size_t buffer_size(const auto&... obj) {
     return internal::buffer_size_many(obj...);
 }

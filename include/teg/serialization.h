@@ -50,7 +50,7 @@ private:
 };
 
 
-[[nodiscard]] inline constexpr 
+[[nodiscard]] constexpr inline 
 error serialize_one(buffer_writer& writer, auto const& obj) {
     using type = std::remove_cvref_t<decltype(obj)>;
 
@@ -70,7 +70,7 @@ error serialize_one(buffer_writer& writer, auto const& obj) {
     }
 }
 
-[[nodiscard]] inline constexpr 
+[[nodiscard]] constexpr inline 
 error serialize_one(buffer_writer& writer, optional auto const& optional)  {
     if (!optional.has_value()) [[unlikely]] {
         return serialize_one(writer, std::byte(false));
@@ -80,7 +80,7 @@ error serialize_one(buffer_writer& writer, optional auto const& optional)  {
 }
 
 template <class T> requires tuple<T> && (!container<T>)
-[[nodiscard]] inline constexpr 
+[[nodiscard]] constexpr inline 
 error serialize_one(buffer_writer& writer, T const& tuple) {    
     return std::apply(
         [&writer](auto&&... elements) constexpr {
@@ -90,7 +90,7 @@ error serialize_one(buffer_writer& writer, T const& tuple) {
     );
 }
 
-[[nodiscard]] inline constexpr 
+[[nodiscard]] constexpr inline 
 error serialize_one(buffer_writer& writer, variant auto const& variant)  {
     // Check valueless by exception.
     if (variant.valueless_by_exception()) [[unlikely]] {
@@ -111,7 +111,7 @@ error serialize_one(buffer_writer& writer, variant auto const& variant)  {
     );
 }
 
-[[nodiscard]] inline constexpr 
+[[nodiscard]] constexpr inline 
 error serialize_one(buffer_writer& writer, container auto const& container) {
     using type = std::remove_cvref_t<decltype(container)>;
     using size_type = typename type::size_type;
@@ -141,7 +141,7 @@ error serialize_one(buffer_writer& writer, container auto const& container) {
     return {};
 }
 
-[[nodiscard]] inline constexpr 
+[[nodiscard]] constexpr inline 
 error serialize_one(buffer_writer& writer, contiguous_container auto const& container) {
     using type = std::remove_cvref_t<decltype(container)>;
     using value_type = typename type::value_type;    
@@ -175,7 +175,30 @@ error serialize_one(buffer_writer& writer, contiguous_container auto const& cont
     }
 }
 
-[[nodiscard]] inline constexpr 
+[[nodiscard]] constexpr inline 
+error serialize_one(buffer_writer& writer, c_array auto const& array) {
+    using type = std::remove_cvref_t<decltype(array)>;
+    
+    // Serialize elements.
+    if constexpr (trivially_copyable<type>) {
+        // Optimization: memory copy elements.
+        std::byte const* data = reinterpret_cast<const std::byte*>(&array);
+        std::size_t size = sizeof(array);
+        
+        return writer.write_bytes(data, size);
+    }
+    else {
+        // Non-optimized path.
+        for (auto const& element : array) {
+            if (auto result = serialize_one(writer, element); failure(result)) [[unlikely]] {
+                return result;
+            }
+        }
+        return {};
+    }
+}
+
+[[nodiscard]] constexpr inline 
 error serialize_one(buffer_writer& writer, owning_pointer auto const& pointer)  {
     if (pointer == nullptr) [[unlikely]] {
         return std::errc::invalid_argument;
@@ -184,12 +207,12 @@ error serialize_one(buffer_writer& writer, owning_pointer auto const& pointer)  
     return serialize_one(writer, *pointer);
 }
 
-[[nodiscard]] inline constexpr 
+[[nodiscard]] constexpr inline 
 error serialize_many(buffer_writer& writer) {
     return {};
 }
 
-[[nodiscard]] inline constexpr 
+[[nodiscard]] constexpr inline 
 error serialize_many(buffer_writer& writer, const auto& first_obj, const auto&... remaining_objs) {
     auto result = serialize_one(writer, first_obj);
     if (failure(result)) [[unlikely]] {

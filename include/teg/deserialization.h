@@ -106,15 +106,14 @@ error deserialize_one(buffer_reader& reader, associative_container auto& contain
     using type = std::remove_reference_t<decltype(container)>;
     using size_type = typename type::size_type;
     
-    // Pre-condition: the container is empty.
+    // Pre-condition: the container should be empty.
     // In C++17 and later, aggregates can have user-provided constructors (member initializers),
     // allowing default-constructed non-empty containers.
     container.clear();
     
     // Deserialize size.
-    size_type size;
-    auto result = deserialize_one(reader, size);
-    if (failure(result)) [[unlikely]] {
+    size_type size;    
+    if (auto result = deserialize_one(reader, size); failure(result)) [[unlikely]] {
         return result;
     }
 
@@ -145,8 +144,7 @@ error deserialize_one(buffer_reader& reader, associative_container auto& contain
         value_type element;
 
         for (size_type i = 0; i < size; ++i) {
-            auto result = deserialize_one(reader, element);
-            if (failure(result)) [[unlikely]] {
+            if (auto result = deserialize_one(reader, element); failure(result)) [[unlikely]] {
                 return result;
             }
             container.emplace(std::move(element));
@@ -248,7 +246,7 @@ error deserialize_one(buffer_reader& reader, container auto& container) {
     using size_type = typename type::size_type;
 
     if constexpr (clearable_container<type>) {
-        // Pre-condition: the container is empty.
+        // Pre-condition: the container should be empty.
         // In C++17 and later, aggregates can have user-provided constructors (member initializers),
         // allowing default-constructed non-empty containers.
         container.clear();
@@ -302,6 +300,30 @@ error deserialize_one(buffer_reader& reader, container auto& container) {
     }
     else {
         return error { std::errc::not_supported };
+    }
+}
+
+[[nodiscard]] inline constexpr 
+error deserialize_one(buffer_reader& reader, c_array auto& array) {
+    using type = std::remove_cvref_t<decltype(array)>;
+    
+    // Deserialize the elements.
+    if constexpr (trivially_copyable<type>) {
+        // Optimization: memory copy elements.
+        std::byte* data = reinterpret_cast<std::byte*>(&array);
+        std::size_t size = sizeof(array);
+
+        return reader.read_bytes(data, size);
+    }
+    else {
+        // Non-optimized path.
+        for (auto& element : array) {
+            auto result = deserialize_one(reader, element);
+            if (failure(result)) [[unlikely]] {
+                return result;
+            }
+        }
+        return {};
     }
 }
 
