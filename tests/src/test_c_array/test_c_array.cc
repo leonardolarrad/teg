@@ -5,7 +5,7 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
-TEST_CASE("Prove concepts") {    
+TEST_CASE("Assert concepts") {    
     ASSERT(teg::c_array<int[5]>);                        // OK: One dimensional c-array
     ASSERT(teg::c_array<int[5][5]>);                     // OK: Two dimensional c-array
     ASSERT(teg::c_array<int[5][5][5]>);                  // OK: Three dimensional c-array

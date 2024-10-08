@@ -9,6 +9,22 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
+TEST_CASE("Assert concepts") {
+    // Tuple like.
+    ASSERT((teg::tuple<std::tuple<int, int, int>>));
+    ASSERT((teg::tuple<std::pair<int, int>>));
+    ASSERT((teg::tuple<std::array<int, 3>>));
+    ASSERT((teg::tuple<std::tuple<>>));
+    ASSERT((teg::tuple<std::array<int, 0>>));
+    
+    // Pair like.
+    ASSERT((teg::pair<std::pair<int, int>>));
+    ASSERT((teg::pair<std::tuple<int, int>>));
+    ASSERT((teg::pair<std::array<int, 2>>));
+    ASSERT(!(teg::pair<std::array<int, 0>>));
+    ASSERT(!(teg::pair<std::tuple<>>));
+}
+
 TEST_CASE("Trivial de/serialization") {
     SECTION("Tuple") {
         std::tuple<int, float, std::string> t0 = { 100, 100.0f, "100" };
