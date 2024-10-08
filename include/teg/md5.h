@@ -59,10 +59,12 @@
 #include <cstdint>
 #include <string_view>
 
+#include "fixed_string.h"
+
 namespace teg::internal {
 
 // The data representation at each round is a 4-tuple of uint32_t.
-struct intermediate_data {
+struct digest {
     std::uint32_t a, b, c, d;
 };
 
@@ -87,8 +89,8 @@ static constexpr std::array<uint32_t, 16> shifts = {
     7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21
 };
 
-// The initial mid data.
-static constexpr intermediate_data initial_intermediate_data = {
+// The initial data.
+static constexpr digest initial_digest_data = {
     0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476
 };
 
@@ -193,7 +195,7 @@ static constexpr auto compute_f
     }
 }
 
-static constexpr std::uint32_t compute_f(std::uint32_t i, intermediate_data mid) {
+static constexpr std::uint32_t compute_f(std::uint32_t i, digest mid) {
     return compute_f(i, mid.b, mid.c, mid.d);
 }
 
@@ -226,7 +228,7 @@ static constexpr auto left_rotate(std::uint32_t value, std::uint32_t bits) -> st
 
 // Applies the |i|th step of mixing.
 static constexpr auto apply_step
-    (std::uint32_t i, round_data const& data, intermediate_data mid) -> intermediate_data {
+    (std::uint32_t i, round_data const& data, digest mid) -> digest {
     
     assert(i < 64);
     
@@ -235,7 +237,7 @@ static constexpr auto apply_step
     
     const std::uint32_t f = compute_f(i, mid) + mid.a + constants[i] + data[g];
     const uint32_t s = get_shift(i);
-    return intermediate_data {
+    return digest {
         .a = mid.d,
         .b = mid.b + left_rotate(f, s),
         .c = mid.b,
@@ -244,29 +246,29 @@ static constexpr auto apply_step
 }
 
 // Adds two mid data together.
-static constexpr auto add(intermediate_data mid1, intermediate_data mid2) -> intermediate_data {
-    return intermediate_data {
-        mid1.a + mid2.a, mid1.b + mid2.b,
-        mid1.c + mid2.c, mid1.d + mid2.d
+static constexpr auto add(digest d0, digest d1) -> digest {
+    return digest {
+        d0.a + d1.a, d0.b + d1.b,
+        d0.c + d1.c, d0.d + d1.d
     };
 }
 
 // Processes an entire message.
-static constexpr auto process_message(std::string_view message) -> intermediate_data {
+static constexpr auto process_message(std::string_view message) -> digest {
     const std::uint32_t m = get_padded_message_length(static_cast<std::uint32_t>(message.size()));
     
-    intermediate_data mid0 = initial_intermediate_data;
+    digest digest0 = initial_digest_data;
     
     for (uint32_t offset = 0; offset < m; offset += 64) {
         round_data data = get_round_data(message, m, offset);
-        intermediate_data mid1 = mid0;
+        digest digest1 = digest0;
 
         for (uint32_t i = 0; i < 64; ++i) {
-            mid1 = apply_step(i, data, mid1);
+            digest1 = apply_step(i, data, digest1);
         }
-        mid0 = add(mid0, mid1);
+        digest0 = add(digest0, digest1);
     }
-    return mid0;
+    return digest0;
 }
 
 static constexpr auto swap_endian(std::uint32_t a) -> std::uint32_t {
@@ -276,15 +278,39 @@ static constexpr auto swap_endian(std::uint32_t a) -> std::uint32_t {
 }
 
 static constexpr auto md5_hash_64_impl(std::string_view data) -> std::uint64_t {
-    intermediate_data processed_data = process_message(data);
+    digest md5_digest = process_message(data);
 
-    return (static_cast<std::uint64_t>(swap_endian(processed_data.a)) << 32) 
-         | (static_cast<std::uint64_t>(swap_endian(processed_data.b)) <<  0);
+    return (static_cast<std::uint64_t>(swap_endian(md5_digest.a)) << 32) 
+         | (static_cast<std::uint64_t>(swap_endian(md5_digest.b)) <<  0);
 }
 
 static constexpr auto md5_hash_32_impl(std::string_view data) -> std::uint32_t {
-    intermediate_data processed_data = process_message(data);
-    return swap_endian(processed_data.a);
+    digest md5_digest = process_message(data);
+    return swap_endian(md5_digest.a);
+}
+
+static constexpr auto to_hex(std::uint32_t value) -> fixed_string<8> {
+    constexpr char hex_digits[] = "0123456789abcdef";
+
+    return {
+        hex_digits[(value >> 28) & 0xf],
+        hex_digits[(value >> 24) & 0xf],
+        hex_digits[(value >> 20) & 0xf],
+        hex_digits[(value >> 16) & 0xf],
+        hex_digits[(value >> 12) & 0xf],
+        hex_digits[(value >>  8) & 0xf],
+        hex_digits[(value >>  4) & 0xf],
+        hex_digits[(value >>  0) & 0xf]
+    };
+}
+
+static constexpr auto md5_hash(std::string_view data) -> fixed_string<32> {
+    digest md5_digest = process_message(data);
+
+    return to_hex(swap_endian(md5_digest.a)) 
+         + to_hex(swap_endian(md5_digest.b))
+         + to_hex(swap_endian(md5_digest.c)) 
+         + to_hex(swap_endian(md5_digest.d));
 }
 
 } // namespace teg::internal
@@ -297,6 +323,10 @@ constexpr auto md5_hash_u32(std::string_view data) -> std::uint32_t {
 
 constexpr auto md5_hash_u64(std::string_view data) -> std::uint64_t {
     return internal::md5_hash_64_impl(data);
+}
+
+constexpr auto md5_hash(std::string_view data) -> fixed_string<32> {
+    return internal::md5_hash(data);
 }
 
 } // namespace teg

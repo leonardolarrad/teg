@@ -75,6 +75,14 @@
 #define ASSERT_GE(a, b)  _ASSERT_BINARY("ASSERT_GE(" #a ", " #b ")", a, b, >=)
 #define ASSERT(cond)     _ASSERT_UNARY("ASSERT(" #cond ")", cond)
 
+#define COMPTIME_ASSERT_EQ(a, b)  static_assert(a == b, #a " == " #b); ASSERT(a == b);
+#define COMPTIME_ASSERT_NE(a, b)  static_assert(a != b, #a " != " #b); ASSERT(a != b);
+#define COMPTIME_ASSERT_LT(a, b)  static_assert(a < b, #a " < " #b);   ASSERT(a < b);
+#define COMPTIME_ASSERT_LE(a, b)  static_assert(a <= b, #a " <= " #b); ASSERT(a <= b);
+#define COMPTIME_ASSERT_GT(a, b)  static_assert(a > b, #a " > " #b);   ASSERT(a > b);
+#define COMPTIME_ASSERT_GE(a, b)  static_assert(a >= b, #a " >= " #b); ASSERT(a >= b);
+#define COMPTIME_ASSERT(cond)     static_assert(cond, #cond);          ASSERT(cond);
+
 
 #if !defined(MANUAL_TEST_MAIN_ENTRY) && !defined(AUTO_TEST_MAIN_ENTRY)
 #define AUTO_TEST_MAIN_ENTRY
