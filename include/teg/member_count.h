@@ -1,10 +1,10 @@
 ///  Copyright (c) 2024 Adrian & Leonardo Larrad.
 ///  
-///  This software is provided 'as-is', without any express or implied warranty. 
-///  In no event will the authors be held liable for any damages arising from
+///  This software is provided 'as-is', without type_wildcard express or implied warranty. 
+///  In no event will the authors be held liable for type_wildcard damages arising from
 ///  the use of this software.
 ///  
-///  Permission is granted to anyone to use this software for any purpose,including
+///  Permission is granted to anyone to use this software for type_wildcard purpose,including
 ///  commercial applications, and to alter it and redistribute it freely, subject
 ///  to the following restrictions:
 ///  
@@ -14,11 +14,10 @@
 ///     not required.
 ///  2. Altered source versions must be plainly marked as such, and must not be
 ///     misrepresented as being the original software.
-///  3. This notice may not be removed or altered from any source distribution.
+///  3. This notice may not be removed or altered from type_wildcard source distribution.
 
 #ifndef TEG_MEMBERS_COUNT_H
 #define TEG_MEMBERS_COUNT_H
-#pragma once
 
 #include <cstdint>
 #include <type_traits>
@@ -31,13 +30,13 @@ namespace teg::internal {
 
 #if defined(_MSC_VER)
 
-struct any { 
+struct type_wildcard { 
     template <class T> constexpr operator T&() const& noexcept;
     template <class T> constexpr operator T&&() const&& noexcept;
 };
 
 template <std::size_t I>
-using indexed_any = any;
+using indexed_type_wildcard = type_wildcard;
 
 template <class T, class... A>
 concept aggregate_initializable = aggregate<T> && requires { T{std::declval<A>()...}; };
@@ -45,7 +44,7 @@ concept aggregate_initializable = aggregate<T> && requires { T{std::declval<A>()
 template <class T, std::size_t N>
 concept aggregate_initializable_with_n_args = aggregate<T>
     && []<std::size_t... I>(std::index_sequence<I...>) {
-        return aggregate_initializable<T, indexed_any<I>...>;
+        return aggregate_initializable<T, indexed_type_wildcard<I>...>;
     }(std::make_index_sequence<N>());    
 
 
@@ -86,17 +85,24 @@ constexpr auto members_count_impl() -> std::size_t {
 
 #else
 
-struct any {
+struct type_wildcard {
     template <class T> constexpr operator T() const noexcept;
 };
 
-template <typename T, typename... A>
-concept aggregate_initializable = requires { T{ { std::declval<A>() }... }; };
+struct nullptr_wildcard {
+    constexpr operator std::nullptr_t() const noexcept;
+};
 
-template<typename T, typename ... A>
-constexpr std::size_t forward_search() {
-    if constexpr (aggregate_initializable<T, any, A...>) {
-        return forward_search<T, A..., any>();
+template <class T, class P, class... A>
+concept aggregate_initializable = requires { T{ {std::declval<A>()}..., {std::declval<P>()} }; };
+
+template <aggregate T, class... A>
+constexpr auto forward_search() -> std::size_t {
+    if constexpr (aggregate_initializable<T, type_wildcard, A...>) {
+        return forward_search<T, A..., type_wildcard>();
+    }
+    else if constexpr (aggregate_initializable<T, nullptr_wildcard, A...>) {
+        return forward_search<T, A..., nullptr_wildcard>();
     }
     else {
         return sizeof...(A);

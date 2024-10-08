@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <deque>
 #include <forward_list>
+#include <iostream>
 #include <list>
 #include <map>
 #include <memory>
@@ -10,9 +11,9 @@
 #include <set>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
-#include <iostream>
 
 #include "teg/teg.h"
 #include "test/test.h"
@@ -46,9 +47,20 @@ struct aggregate0 {
     std::optional<std::string> opt0;
 
     // Owning pointers.
-    //std::optional<std::unique_ptr<std::uint64_t>> opt1;
+    std::shared_ptr<std::uint64_t> sp0;
+    std::optional<std::unique_ptr<std::uint64_t>> opt1;
 
-    bool operator==(const aggregate0&) const = default;
+    bool operator==(const aggregate0& other) const {
+        return std::equal(std::begin(ca0), std::end(ca0), std::begin(other.ca0))
+            && std::equal(std::begin(ca1), std::end(ca1), std::begin(other.ca1))
+            && std::equal(std::begin(a0), std::end(a0), std::begin(other.a0))
+            && fs0 == other.fs0 && v0 == other.v0 && dq0 == other.dq0 && s0 == other.s0
+            && m0 == other.m0 && fl0 == other.fl0 && l0 == other.l0 && v1 == other.v1
+            && t0 == other.t0 && opt0 == other.opt0 && *sp0 == *other.sp0
+            && ((opt1.has_value() && other.opt1.has_value()) 
+                ? *(opt1.value()) == *(other.opt1.value())
+                : !opt1.has_value() && !other.opt1.has_value());
+    }
 };
 
 auto make_aggregate() -> aggregate0 {
@@ -66,7 +78,8 @@ auto make_aggregate() -> aggregate0 {
         .v1 = 100,
         .t0 = { "a", "b", "c" },
         .opt0 = "hello",
-        //.opt1 = std::make_unique<std::uint64_t>(100)
+        .sp0 = std::make_shared<std::uint64_t>(99),
+        .opt1 = std::make_unique<std::uint64_t>(999)
     };
 }
 

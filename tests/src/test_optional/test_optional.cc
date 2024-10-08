@@ -3,6 +3,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "teg/teg.h"
 #include "test/test.h"
@@ -60,5 +61,30 @@ TEST_CASE("Aggregate de/serialization") {
         std::optional<std::map<std::string, std::string>> opt1;
         teg::deserialize(b, opt1).or_throw();
         ASSERT(opt0 == opt1);
+    }
+}
+
+TEST_CASE("Special case: optional owning pointer") {
+    SECTION("Unique pointer") {
+        teg::buffer b;
+        std::optional<std::unique_ptr<int>> opt0 = std::make_unique<int>(99);
+        teg::serialize(b, opt0).or_throw();
+
+        std::optional<std::unique_ptr<int>> opt1;
+        teg::deserialize(b, opt1).or_throw();
+        
+        ASSERT(opt1.has_value());
+        ASSERT_EQ(*(opt0.value()), *(opt1.value()));
+    }
+    SECTION("Shared pointer") {
+        teg::buffer b;
+        std::optional<std::shared_ptr<int>> opt0 = std::make_shared<int>(99);
+        teg::serialize(b, opt0).or_throw();
+
+        std::optional<std::shared_ptr<int>> opt1;
+        teg::deserialize(b, opt1).or_throw();
+        
+        ASSERT(opt1.has_value());
+        ASSERT_EQ(*(opt0.value()), *(opt1.value()));
     }
 }
