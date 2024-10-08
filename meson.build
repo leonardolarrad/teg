@@ -10,10 +10,12 @@ project(
 # Build project
 teg_dir = include_directories('include')
 teg_inc = [teg_dir]
+
 teg_dep = declare_dependency(
+  include_directories : teg_inc,
+  link_with : [],
   link_args : [],
   compile_args : [],
-  include_directories : teg_inc
 )
 
 # Build tests
