@@ -3,7 +3,6 @@
 #include <functional>
 
 #include "teg/teg.h"
-#include "teg/tuple.h"
 #include "test/test.h"
 
 struct int_2 {
@@ -123,9 +122,4 @@ TEST_CASE("Visit members") {
         );
         ASSERT_EQ(r, "hello world");
     }
-}
-
-TEST_CASE("Type as tuple") {
-    ASSERT((std::is_same_v<std::tuple<int>, decltype(teg::as_tuple<int>())>));
-    ASSERT((std::is_same_v<std::tuple<int, int, int>, decltype(teg::as_tuple<std::tuple<int, int, int>>())>));
 }

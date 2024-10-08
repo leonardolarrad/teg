@@ -26,7 +26,6 @@
 #include "index_table.h"
 #include "member_count.h"
 #include "serialization.h"
-#include "tuple.h"
 #include "type_id.h"
 #include "visitor.h"
 #include "md5.h"

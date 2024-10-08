@@ -23,7 +23,6 @@
 #include "concepts.h"
 #include "visitor.h"
 #include "fixed_string.h"
-#include "declval.h"
 
 namespace teg {
 
