@@ -28,7 +28,7 @@
 #include "buffer.h"
 #include "concepts.h"
 #include "error.h"
-#include "member_count.h"
+#include "members_count.h"
 #include "visitor.h"
 
 namespace teg::internal {

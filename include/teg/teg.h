@@ -24,7 +24,7 @@
 #include "error.h"
 #include "fixed_string.h"
 #include "index_table.h"
-#include "member_count.h"
+#include "members_count.h"
 #include "serialization.h"
 #include "type_id.h"
 #include "visitor.h"
