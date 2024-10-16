@@ -23,8 +23,7 @@ static bool test_lib() {
     return t0 == t1;
 }
 
-static void benchmark() {
-    teg::byte_buffer buffer;
+static void benchmark() {   
     std::vector<bm::ecommerce_page> data_out_10_2048bb;
 
     bm::benchmark()
@@ -32,7 +31,7 @@ static void benchmark() {
         .iterations(746667)
         .repetitions(10)
         .run("teg:serialization:10_2048b", [&](){
-            buffer.clear();
+            teg::byte_buffer buffer;
             teg::serialize(buffer, data_in_10_2048b).or_throw();
         })
         //.run("teg:deserialization:10_1024b", [&](){
