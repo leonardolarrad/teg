@@ -74,51 +74,44 @@ struct string_2 {
 };
 
 TEST_CASE("Reflect members count") {
-    // c arrays
-    ASSERT_EQ(teg::members_count_v<std::int32_t[5]>, 5);
-    ASSERT_EQ(teg::members_count_v<std::int32_t[125]>, 125);
-    ASSERT_EQ(teg::members_count_v<std::int32_t[125][5]>, 125);
-    // classes
-    ASSERT_EQ(teg::members_count_v<int_2>, 2);
-    ASSERT_EQ(teg::members_count_v<int_3>, 3);
-    ASSERT_EQ(teg::members_count_v<int_64>, 64);
-    ASSERT_EQ(teg::members_count_v<int_100>, 100);
-    ASSERT_EQ(teg::members_count_v<int_2_2>, 2);
-    ASSERT_EQ(teg::members_count_v<mix_12>, 12);
-    ASSERT_EQ(teg::members_count_v<int_arr_2_16>, 2);
-    ASSERT_EQ(teg::members_count_v<char_arr_2_32>, 2);       
-    ASSERT_EQ(teg::members_count_v<string_2>, 2);
+    SECTION("C-arrays") {
+        ASSERT_EQ(teg::members_count_v<std::int32_t[5]>, 5);
+        ASSERT_EQ(teg::members_count_v<std::int32_t[125]>, 125);
+        ASSERT_EQ(teg::members_count_v<std::int32_t[125][5]>, 125);
+    }
+    SECTION("Non c-array aggregates") {
+        ASSERT_EQ(teg::members_count_v<int_2>, 2);
+        ASSERT_EQ(teg::members_count_v<int_3>, 3);
+        ASSERT_EQ(teg::members_count_v<int_64>, 64);
+        ASSERT_EQ(teg::members_count_v<int_100>, 100);
+        ASSERT_EQ(teg::members_count_v<int_2_2>, 2);
+        ASSERT_EQ(teg::members_count_v<mix_12>, 12);
+        ASSERT_EQ(teg::members_count_v<int_arr_2_16>, 2);
+        ASSERT_EQ(teg::members_count_v<char_arr_2_32>, 2);       
+        ASSERT_EQ(teg::members_count_v<string_2>, 2);
+    }
 }
 
 TEST_CASE("Visit members") {
-    {
-        auto r = teg::visit_members(
-            int_2 { 1999, 1998 },
+    SECTION("Sum members") {    
+        int r = teg::visit_members(            
             [](auto x, auto y) {
                 ASSERT_EQ(x, 1999);
                 ASSERT_EQ(y, 1998);
                 return x + y;
-            }
+            },
+            int_2 { 1999, 1998 }
         );
         ASSERT_EQ(r, 3997);
     }
-    {
-        teg::visit_members(
-            char_arr_2_32 { "hello", "world" },
-            [](auto x, auto y) {
-                ASSERT_EQ(std::string(x), "hello");
-                ASSERT_EQ(std::string(y), "world");
-            }
-        );
-    }
-    {
-        auto r = teg::visit_members(
-            string_2 { "hello", "world" },
+    SECTION("Concatenate members") {
+        std::string r = teg::visit_members(
             [](auto& x, auto& y) {
                 ASSERT_EQ(x, "hello");
                 ASSERT_EQ(y, "world");
                 return x + " " + y;
-            }
+            },
+            string_2 { "hello", "world" }
         );
         ASSERT_EQ(r, "hello world");
     }

@@ -25,6 +25,7 @@
 #include <utility>
     
 #include "core_concepts.h"
+#include "c_array.h"
 
 namespace teg::internal {
 
@@ -77,10 +78,16 @@ constexpr auto binary_search() -> std::size_t {
 
 template <class T>
 constexpr auto members_count_impl() -> std::size_t {
-    constexpr auto begin = minimun_initialization<T>();
-    constexpr auto end = sizeof(T) * 8 + 1;
+    if constexpr (concepts::bounded_c_array<T>) {
+        // Compile-time optimization: we already know the extend of the c-array.
+        return std::extent_v<T>;
+    } else {
+        // Perform a recursive binary search.
+        constexpr auto begin = minimun_initialization<T>();
+        constexpr auto end = sizeof(T) * 8 + 1;
 
-    return binary_search<T, begin, end>();
+        return binary_search<T, begin, end>();
+    }
 }
 
 #else
@@ -109,9 +116,15 @@ constexpr auto forward_search() -> std::size_t {
     }        
 }
 
-template <concepts::aggregate T>
+template <class T>
 constexpr auto members_count_impl() -> std::size_t {
-    return forward_search<T>();
+    if constexpr (concepts::bounded_c_array<T>) {
+        // Compile-time optimization: we already know the extend of the c-array.
+        return std::extent_v<T>;
+    } else {
+        // Perform a recursive forward search.
+        return forward_search<T>();
+    }
 }
 
 #endif // _MSC_VER

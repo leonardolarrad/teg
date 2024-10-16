@@ -23,6 +23,9 @@ TEST_CASE("Check concepts") {
     ASSERT((teg::concepts::pair<std::array<int, 2>>));
     ASSERT(!(teg::concepts::pair<std::array<int, 0>>));
     ASSERT(!(teg::concepts::pair<std::tuple<>>));
+
+    // A tuple is not an aggregate.
+    ASSERT(!(teg::concepts::aggregate<std::tuple<int, int, int>>));
 }
 
 TEST_CASE("Trivial de/serialization") {
