@@ -16,151 +16,59 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-#pragma once
+#ifndef TEG_BUFFER_H
+#define TEG_BUFFER_H
 
-#include <cstddef>
 #include <vector>
-#include <tuple>
-#include <memory>
-#include <concepts>
+#include <array>
 #include <type_traits>
-#include <optional>
-#include <variant>
 
-#include "concepts.h"
-#include "visitor.h"
+#include "core_concepts.h"
+#include "container_concepts.h"
 
-namespace teg::internal {
+namespace teg::concepts {
 
-constexpr inline 
-std::size_t buffer_size_one(optional auto const& obj);
+///  \brief A byte type.
+///  
+///  A byte type can be represented either by a `char`, an `unsigned char` or `std::byte`.
+///  However, it is recommended to use std::byte when possible.
+///  
+///  \see https://en.cppreference.com/w/cpp/types/byte
+///  
+template <class T>
+concept byte = std::same_as<std::remove_cv_t<T>, char> 
+            || std::same_as<std::remove_cv_t<T>, unsigned char> 
+            || std::same_as<std::remove_cv_t<T>, std::byte>;
 
-constexpr inline 
-std::size_t buffer_size_one(owning_pointer auto const& obj);
+///  \brief A byte buffer type. 
+///
+///  A byte buffer can be either a contiguous container or a contiguous view of bytes.
+///  In the first case, the buffer can be resized to fit the format of the serialized
+///  data. In the second case, the buffer is fixed in size, requiring the exact size
+///  of the buffer to be specified.
+///  
+///  \see https://en.cppreference.com/w/cpp/named_req/ContiguousContainer
+///  \see https://en.cppreference.com/w/cpp/container/span
+///  
+template <class T>
+concept byte_buffer = (contiguous_container<T> || span<T>) && byte<typename T::value_type>;    
 
-template <class T> requires tuple<T> && (!container<T>)
-constexpr inline 
-std::size_t buffer_size_one(T const& obj);
-
-constexpr inline 
-std::size_t buffer_size_one(variant auto const& obj);
-
-constexpr inline 
-std::size_t buffer_size_one(fixed_size_container auto const& obj);
-
-constexpr inline 
-std::size_t buffer_size_one(container auto const& obj);
-
-constexpr inline 
-std::size_t buffer_size_one(c_array auto const& obj);
-
-constexpr inline
-std::size_t buffer_size_one(auto const& obj);
-
-constexpr inline
-std::size_t buffer_size_many() {
-    return 0;
-}
-
-constexpr inline
-std::size_t buffer_size_many(auto const& first_obj, auto const&... remaining_objs) {
-    return buffer_size_one(first_obj) + buffer_size_many(remaining_objs...);
-}
-
-template <class T> requires tuple<T> && (!container<T>)
-constexpr inline 
-std::size_t buffer_size_one(T const& tuple) {    
-    return std::apply(
-        [](auto&&... elements) constexpr {
-            return buffer_size_many(elements...);
-        },
-        tuple
-    );
-}
-
-constexpr inline 
-std::size_t buffer_size_one(optional auto const& optional) {    
-    if (optional.has_value()) {
-        return sizeof(std::byte) + buffer_size_one(optional.value());
-    }
-    else {
-        return sizeof(std::byte);
-    }
-}
-
-constexpr inline 
-std::size_t buffer_size_one(owning_pointer auto const& pointer) {
-    if (pointer == nullptr) {
-        return 0;
-    }
-    return buffer_size_one(*pointer);
-}
-
-constexpr inline 
-std::size_t buffer_size_one(variant auto const& var) {
-   std::size_t index_size = sizeof(var.index());
-   std::size_t element_size = std::visit(
-        [](auto&& var) constexpr {
-            return buffer_size_one(var);
-        },
-        var
-    );
-    return index_size + element_size;
-}
-
-
-constexpr inline 
-std::size_t buffer_size_one(fixed_size_container auto const& obj) {    
-    std::size_t size = 0;
-    for (auto const& elem : obj) {
-        size += buffer_size_one(elem);
-    }
-    return size;
-}
-
-constexpr inline 
-std::size_t buffer_size_one(container auto const& obj) {
-    using type = std::remove_cvref_t<decltype(obj)>;
-    using size_type = typename type::size_type;
-    
-    auto size = sizeof(size_type);
-    for (auto const& elem : obj) {
-        size += buffer_size_one(elem);
-    }
-    return size;
-}
-
-constexpr inline 
-std::size_t buffer_size_one(c_array auto const& arr) {
-    return std::size(arr) * buffer_size_one(arr[0]);
-}
-
-constexpr inline 
-std::size_t buffer_size_one(auto const& obj) {
-    using type = std::remove_cvref_t<decltype(obj)>;
-    
-    if constexpr (fundamental<type> || is_enum<type>) {
-        return sizeof(type);
-    }
-    else {
-        return visit_members(
-            obj, 
-            [](auto&&... objs) constexpr {
-                return buffer_size_many(objs...);
-            }
-        );
-    }
-}
-
-} // namespace teg::internal
+} // namespace teg::concepts
 
 namespace teg {
 
-using buffer = std::vector<std::byte>;
+///  \brief A contiguous and resizable container of bytes.
+///  \note This is the default buffer type for run-time de/serialization.
+///  
+using byte_buffer = std::vector<std::byte>;
 
-[[nodiscard]] constexpr inline 
-std::size_t buffer_size(const auto&... obj) {
-    return internal::buffer_size_many(obj...);
-}
+///  \brief A fixed contiguous container of bytes.
+///  \tparam N The size of the buffer.
+///  \note This is the default buffer type for compile-time de/serialization.
+///  
+template <std::size_t N>
+using fixed_byte_buffer = std::array<std::byte, N>;
 
 } // namespace teg
+
+#endif // TEG_BUFFER_H

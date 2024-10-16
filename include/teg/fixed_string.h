@@ -32,7 +32,7 @@
 
 namespace teg {
 
-template<class C, std::size_t N, typename TT = std::char_traits<C>>
+template<class C, std::size_t N, class TT = std::char_traits<C>>
 class basic_fixed_string {
 public:
     // Member types.
@@ -132,7 +132,7 @@ constexpr basic_fixed_string<C, N-1> make_fixed_string(const C (&str)[N]) noexce
     return basic_fixed_string<C, N-1>(str);
 }
 
-template <typename C, std::size_t N1, std::size_t N2, typename TT>
+template <class C, std::size_t N1, std::size_t N2, class TT>
 [[nodiscard]] constexpr bool operator==(basic_fixed_string<C, N1, TT> const& l, basic_fixed_string<C, N2, TT> const& r) noexcept
 {
     using left_view_type = typename basic_fixed_string<C, N1, TT>::string_view_type;
@@ -141,7 +141,7 @@ template <typename C, std::size_t N1, std::size_t N2, typename TT>
     return static_cast<left_view_type>(l) == static_cast<right_view_type>(r);
 }
 
-template <typename C, std::size_t N1, std::size_t N2, typename TT>
+template <class C, std::size_t N1, std::size_t N2, class TT>
 [[nodiscard]] constexpr auto operator<=>(const basic_fixed_string<C, N1, TT>& l, const basic_fixed_string<C, N2, TT>& r) noexcept
 {
     using left_view_type = typename basic_fixed_string<C, N1, TT>::string_view_type;
@@ -150,21 +150,21 @@ template <typename C, std::size_t N1, std::size_t N2, typename TT>
     return static_cast<left_view_type>(l) <=> static_cast<right_view_type>(r);
 }
 
-template <typename C, std::size_t N1, std::size_t N2, typename TT>
+template <class C, std::size_t N1, std::size_t N2, class TT>
 [[nodiscard]] constexpr bool operator==(basic_fixed_string<C, N1, TT> const& lhs, const C (&rhs)[N2]) noexcept
 {
     using view_type = typename basic_fixed_string<C, N1, TT>::string_view_type;
     return static_cast<view_type>(lhs) == rhs;
 }
 
-template <typename C, std::size_t N1, std::size_t N2, typename TT>
+template <class C, std::size_t N1, std::size_t N2, class TT>
 [[nodiscard]] constexpr bool operator==(const C (&lhs)[N1], basic_fixed_string<C, N2, TT> const& rhs) noexcept
 {
     using view_type = typename basic_fixed_string<C, N2, TT>::string_view_type;
     return lhs == static_cast<view_type>(rhs);
 }
 
-template <typename C, std::size_t N1, std::size_t N2, typename TT>
+template <class C, std::size_t N1, std::size_t N2, class TT>
 constexpr basic_fixed_string<C, N1 + N2, TT> operator+(basic_fixed_string<C, N1, TT> const& lhs, basic_fixed_string<C, N2, TT> const& rhs) noexcept
 {
     basic_fixed_string<C, N1 + N2, TT> result;
@@ -173,23 +173,22 @@ constexpr basic_fixed_string<C, N1 + N2, TT> operator+(basic_fixed_string<C, N1,
     return result;
 }
 
-template <typename C, std::size_t N1, std::size_t N2, typename TT>
+template <class C, std::size_t N1, std::size_t N2, class TT>
 constexpr basic_fixed_string<C, N1 - 1 + N2, TT> operator+(const C (&l)[N1], const basic_fixed_string<C, N2, TT>& r) noexcept
 {    
     return basic_fixed_string<C, N1, TT>(l) + r;
 }
 
-template <typename C, std::size_t N1, std::size_t N2, typename TT>
+template <class C, std::size_t N1, std::size_t N2, class TT>
 constexpr basic_fixed_string<C, N1 + N2 - 1, TT> operator+(const basic_fixed_string<C, N1, TT>& l, const C (&r)[N2]) noexcept
 {
     return l + basic_fixed_string<C, N2, TT>(r);
 }
 
-// Deduction guide.
-template <typename C, std::size_t N>
+/// Deduction guide.
+template <class C, std::size_t N>
 basic_fixed_string(const C(&)[N]) -> basic_fixed_string<C, N-1>;
 
-// Aliases.
 template <std::size_t N>
 using fixed_string = basic_fixed_string<char, N>;
 

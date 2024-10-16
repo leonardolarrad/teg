@@ -4,7 +4,10 @@
 **/benchmark/src/benchmark_zppbits
 **/benchmark/deps/*/*
 
+**/misc/*.tmp
+
 **/include/boost
+**/include/zppbits
 **/include/teg_0
 **/include/teg_1
 **/include/teg_2

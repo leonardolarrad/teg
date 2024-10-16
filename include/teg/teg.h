@@ -16,16 +16,21 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-#pragma once
+#ifndef TEG_H
+#define TEG_H
 
 #include "buffer.h"
-#include "concepts.h"
+#include "c_array.h"
+#include "container_concepts.h"
+#include "core_concepts.h"
 #include "deserialization.h"
 #include "error.h"
 #include "fixed_string.h"
 #include "index_table.h"
-#include "members_count.h"
-#include "serialization.h"
-#include "type_id.h"
-#include "visitor.h"
 #include "md5.h"
+#include "members_count.h"
+#include "members_visitor.h"
+#include "serialization.h"
+#include "unreachable.h"
+
+#endif // TEG_H

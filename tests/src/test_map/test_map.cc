@@ -7,7 +7,7 @@
 
 TEST_CASE("Trivial de/serialization") {
     SECTION("Map") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::map<int, int> m0 = { { 1, 1 }, { 2, 2 }, { 3, 3 }, { 4, 4 }, { 5, 5 } };
         teg::serialize(b, m0).or_throw();
 
@@ -16,7 +16,7 @@ TEST_CASE("Trivial de/serialization") {
         ASSERT(m0 == m1);
     }
     SECTION("Multimap") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::multimap<int, int> m0 = { { 1, 1 }, { 1, 1 }, { 2, 2 }, { 2, 2 }, { 5, 5 } };
         teg::serialize(b, m0).or_throw();
 
@@ -25,7 +25,7 @@ TEST_CASE("Trivial de/serialization") {
         ASSERT(m0 == m1);
     }
     SECTION("Unordered map") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::unordered_map<int, int> m0 = { { 1, 1 }, { 2, 2 }, { 3, 3 }, { 4, 4 }, { 5, 5 } };
         teg::serialize(b, m0).or_throw();
 
@@ -34,7 +34,7 @@ TEST_CASE("Trivial de/serialization") {
         ASSERT(m0 == m1);
     }
     SECTION("Unordered multimap") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::unordered_multimap<int, int> m0 = { { 1, 1 }, { 1, 1 }, { 2, 2 }, { 2, 2 }, { 5, 5 } };
         teg::serialize(b, m0).or_throw();
 
@@ -46,7 +46,7 @@ TEST_CASE("Trivial de/serialization") {
 
 TEST_CASE("Aggregate de/serialization") {    
     SECTION("Map") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::map<std::string, std::string> m0 = { 
             { "a", "a" }, { "b", "b" }, 
             { "c", "c" }, { "d", "d" }, 
@@ -58,7 +58,7 @@ TEST_CASE("Aggregate de/serialization") {
         ASSERT(m0 == m1);
     }
     SECTION("Multimap") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::multimap<std::string, std::string> m0 = { 
             { "a", "a" }, { "b", "b" }, 
             { "c", "c" }, { "d", "d" }, 
@@ -70,7 +70,7 @@ TEST_CASE("Aggregate de/serialization") {
         ASSERT(m0 == m1);
     }
     SECTION("Unordered map") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::unordered_map<std::string, std::string> m0 = { 
             { "a", "a" }, { "b", "b" }, 
             { "c", "c" }, { "d", "d" }, 
@@ -82,7 +82,7 @@ TEST_CASE("Aggregate de/serialization") {
         ASSERT(m0 == m1);
     }
     SECTION("Unordered multimap") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::unordered_multimap<std::string, std::string> m0 = { 
             { "a", "a" }, { "b", "b" }, 
             { "c", "c" }, { "d", "d" }, 

@@ -15,38 +15,41 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
-template <typename T> 
-std::string overload(T&& t) requires teg::fixed_size_container<T> {
+template <typename T> requires teg::concepts::fixed_size_container<std::remove_cvref_t<T>>
+std::string overload(T&& t)  {
     return "fixed_size_container";
 }
 
-template <typename T> 
-std::string overload(T&& t) requires teg::contiguous_container<T> {
+template <typename T> requires (teg::concepts::contiguous_container<std::remove_cvref_t<T>>)
+std::string overload(T&& t)  {
     return "contiguous_container";
 }
 
-template <typename T> 
-std::string overload(T&& t) requires teg::container<T> {
+template <typename T> requires (teg::concepts::container<std::remove_cvref_t<T>>)
+std::string overload(T&& t)  {
     return "container";
 }
 
-template <typename T>
-std::string overload(T&& t) requires teg::optional<T> {
+template <typename T> requires teg::concepts::optional<std::remove_cvref_t<T>>
+std::string overload(T&& t)  {
     return "optional";
 }
 
-template <typename T>
-std::string overload(T&& t) requires teg::owning_pointer<T> {
+template <typename T> requires teg::concepts::owning_ptr<std::remove_cvref_t<T>>
+std::string overload(T&& t)  {
     return "owning_pointer";
 }
 
-template <typename T>
-std::string overload(T&& t) requires teg::tuple<T> && (!teg::container<T>) {
+template <typename T> 
+requires 
+        teg::concepts::tuple<std::remove_cvref_t<T>> 
+    && (!teg::concepts::container<std::remove_cvref_t<T>>)
+std::string overload(T&& t)  {
     return "tuple";
 }
 
-template <typename T>
-std::string overload(T&& t) requires teg::variant<T> {
+template <typename T> requires teg::concepts::variant<std::remove_cvref_t<T>>
+std::string overload(T&& t)  {
     return "variant";
 }
 

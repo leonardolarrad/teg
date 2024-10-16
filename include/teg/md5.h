@@ -48,7 +48,7 @@
 ///  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ///  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-///  This is file is a rewrite of the md5 implementation used in Chromium.
+///  This file is a rewritten version of the MD5 implementation originally used in Chromium.
 ///  https://chromium.googlesource.com/chromium/src/base/+/refs/heads/main/hash/md5_constexpr_internal.h
 
 #ifndef TEG_MD5_H
@@ -63,12 +63,10 @@
 
 namespace teg::internal {
 
-// The data representation at each round is a 4-tuple of uint32_t.
 struct digest {
     std::uint32_t a, b, c, d;
 };
 
-// The input data for a single round consists of 16 uint32_t (64 bytes).
 using round_data = std::array<std::uint32_t, 16>;
 
 static constexpr std::array<std::uint32_t, 64> constants = {
@@ -89,26 +87,19 @@ static constexpr std::array<uint32_t, 16> shifts = {
     7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21
 };
 
-// The initial data.
 static constexpr digest initial_digest_data = {
     0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476
 };
 
-// Given the message length, calculates the padded message length. There has
-// to be room for the 1-byte end-of-message marker, plus 8 bytes for the
-// uint64_t encoded message length, all rounded up to a multiple of 64 bytes.
 static constexpr auto get_padded_message_length(std::uint32_t len) -> std::uint32_t {
     return (((len + 1 + 8) + 63) / 64) * 64;
 }
 
-// Extracts the |i|th byte of a uint64_t, where |i == 0| extracts the least
-// significant byte. It is expected that 0 <= i < 8.
 static constexpr auto extract_byte(std::uint64_t value, std::uint32_t i) -> std::uint8_t {
     assert(i < 8u);
     return static_cast<std::uint8_t>((value >> (i * 8)) & 0xff);
 }
 
-// Extracts the |i|th byte of a message of length |n|.
 static constexpr auto get_padded_message_byte
     (std::string_view data, std::uint32_t m, std::uint32_t i) -> std::uint8_t {
 
@@ -117,23 +108,16 @@ static constexpr auto get_padded_message_byte
     assert(m % 64 == 0) ;
 
     if (i < data.size()) {
-        // Emit the message itself...
         return static_cast<uint8_t>(data[i]);
     } else if (i == data.size()) {
-        // ...followed by the end of message marker.
         return 0x80;
     } else if (i >= m - 8) {
-        // The last 8 bytes encode the original message length times 8.
         return extract_byte(data.size() * 8, i - (m - 8));
     } else {
-        // And everything else is just empyt padding.
         return 0;
     }
 }
 
-// Extracts the uint32_t starting at position |i| from the padded message
-// generate by the provided input |data|. The bytes are treated in little
-// endian order.
 static constexpr auto get_padded_message_word
     (std::string_view data, std::uint32_t m, std::uint32_t i) -> std::uint32_t {
 
@@ -148,10 +132,7 @@ static constexpr auto get_padded_message_word
          | static_cast<std::uint32_t>((get_padded_message_byte(data, m, i + 3)) << 24);
 }
 
-// Given an input buffer |data|, extracts one round worth of data starting at
-// offset |i|.
-static constexpr auto get_round_data
-    (std::string_view data, std::uint32_t m, std::uint32_t i) -> round_data {
+static constexpr auto get_round_data(std::string_view data, std::uint32_t m, std::uint32_t i) -> round_data {
 
     assert(i % 64 == 0);
     assert(i < m);
@@ -178,7 +159,6 @@ static constexpr auto get_round_data
     };
 }
 
-// Mixes elements |b|, |c| and |d| at round |i| of the calculation.
 static constexpr auto compute_f
     (std::uint32_t i, std::uint32_t b, std::uint32_t c, std::uint32_t d) -> std::uint32_t {
 
@@ -199,7 +179,6 @@ static constexpr std::uint32_t compute_f(std::uint32_t i, digest mid) {
     return compute_f(i, mid.b, mid.c, mid.d);
 }
 
-// Calculates the indexing function at round |i|.
 static constexpr std::uint32_t compute_g(std::uint32_t i) {
     assert(i < 64);
 
@@ -214,22 +193,17 @@ static constexpr std::uint32_t compute_g(std::uint32_t i) {
     }
 }
 
-// Calculates the rotation to be applied at round |i|.
 static constexpr auto get_shift(std::uint32_t i) -> std::uint32_t {
     assert(i < 64);
     return shifts[(i / 16) * 4 + (i % 4)];
 }
 
-// Rotates to the left the given |value| by the given |bits|.
 static constexpr auto left_rotate(std::uint32_t value, std::uint32_t bits) -> std::uint32_t {
     assert(bits < 32);
     return (value << bits) | (value >> (32 - bits));
 }
 
-// Applies the |i|th step of mixing.
-static constexpr auto apply_step
-    (std::uint32_t i, round_data const& data, digest mid) -> digest {
-    
+static constexpr auto apply_step(std::uint32_t i, round_data const& data, digest mid) -> digest {
     assert(i < 64);
     
     const std::uint32_t g = compute_g(i);
@@ -245,7 +219,6 @@ static constexpr auto apply_step
     };
 }
 
-// Adds two mid data together.
 static constexpr auto add(digest d0, digest d1) -> digest {
     return digest {
         d0.a + d1.a, d0.b + d1.b,
@@ -253,7 +226,6 @@ static constexpr auto add(digest d0, digest d1) -> digest {
     };
 }
 
-// Processes an entire message.
 static constexpr auto process_message(std::string_view message) -> digest {
     const std::uint32_t m = get_padded_message_length(static_cast<std::uint32_t>(message.size()));
     
@@ -317,14 +289,47 @@ static constexpr auto md5_hash(std::string_view data) -> fixed_string<32> {
 
 namespace teg {
 
+/// \brief Computes first 32 bits of the MD5 hash of the given data.
+///
+/// \param data A string view of the data to hash.
+/// \return The first 32 bits of the MD5 hash.
+///
+/// \example
+/// \code
+///    constexpr std::uint32_t hash = teg::md5_hash_u32("Hello there!");
+///    static_assert(hash == 0xa77b5533ul);    
+/// \endcode
+///
 constexpr auto md5_hash_u32(std::string_view data) -> std::uint32_t {
     return internal::md5_hash_32_impl(data);
 }
 
+///  \brief Computes first 64 bits of the MD5 hash of the given data.
+///  
+///  \param data A string view of the data to hash.
+///  \return The first 64 bits of the MD5 hash.
+/// 
+///  \example
+///  \code
+///      constexpr std::uint64_t hash = teg::md5_hash_u64("Hello there!");
+///      static_assert(hash == 0xa77b5533a77b5533ul);    
+///  \endcode
+///  
 constexpr auto md5_hash_u64(std::string_view data) -> std::uint64_t {
     return internal::md5_hash_64_impl(data);
 }
 
+///  \brief Computes the MD5 hash of the given data.
+/// 
+///  \param data A string view of the data to hash.
+///  \return A fixed string containing the 32-byte hexadecimal representation of the MD5 hash.
+///  
+///  \example
+///  \code
+///      constexpr teg::fixed_string<32> hash = teg::md5_hash("Hello there!");
+///      static_assert(hash == "a77b55332699835c035957df17630d28");
+///  \endcode
+///  
 constexpr auto md5_hash(std::string_view data) -> fixed_string<32> {
     return internal::md5_hash(data);
 }

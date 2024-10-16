@@ -19,12 +19,12 @@
 #ifndef TEG_MEMBERS_COUNT_H
 #define TEG_MEMBERS_COUNT_H
 
+#include <concepts>
 #include <cstdint>
 #include <type_traits>
-#include <concepts>
 #include <utility>
     
-#include "concepts.h"
+#include "core_concepts.h"
 
 namespace teg::internal {
 
@@ -39,16 +39,16 @@ template <std::size_t I>
 using indexed_type_wildcard = type_wildcard;
 
 template <class T, class... A>
-concept aggregate_initializable = aggregate<T> && requires { T{std::declval<A>()...}; };
+concept aggregate_initializable = concepts::aggregate<T> && requires { T{std::declval<A>()...}; };
 
 template <class T, std::size_t N>
-concept aggregate_initializable_with_n_args = aggregate<T>
+concept aggregate_initializable_with_n_args = concepts::aggregate<T>
     && []<std::size_t... I>(std::index_sequence<I...>) {
         return aggregate_initializable<T, indexed_type_wildcard<I>...>;
     }(std::make_index_sequence<N>());    
 
 
-template <aggregate T, std::size_t N = 0>
+template <class T, std::size_t N = 0>
 constexpr auto minimun_initialization() -> std::size_t {
     if constexpr (!aggregate_initializable_with_n_args<T, N>) {
         return minimun_initialization<T, N + 1>();
@@ -57,7 +57,7 @@ constexpr auto minimun_initialization() -> std::size_t {
     }
 }
 
-template <aggregate T, std::size_t B, std::size_t E>
+template <class T, std::size_t B, std::size_t E>
 constexpr auto binary_search() -> std::size_t {
     using type = T;
     constexpr auto begin = B;
@@ -75,7 +75,7 @@ constexpr auto binary_search() -> std::size_t {
     }
 }
 
-template <aggregate T>
+template <class T>
 constexpr auto members_count_impl() -> std::size_t {
     constexpr auto begin = minimun_initialization<T>();
     constexpr auto end = sizeof(T) * 8 + 1;
@@ -96,7 +96,7 @@ struct nullptr_wildcard {
 template <class T, class P, class... A>
 concept aggregate_initializable = requires { T{ {std::declval<A>()}..., {std::declval<P>()} }; };
 
-template <aggregate T, class... A>
+template <class T, class... A>
 constexpr auto forward_search() -> std::size_t {
     if constexpr (aggregate_initializable<T, type_wildcard, A...>) {
         return forward_search<T, A..., type_wildcard>();
@@ -109,7 +109,7 @@ constexpr auto forward_search() -> std::size_t {
     }        
 }
 
-template <aggregate T>
+template <concepts::aggregate T>
 constexpr auto members_count_impl() -> std::size_t {
     return forward_search<T>();
 }
@@ -120,11 +120,12 @@ constexpr auto members_count_impl() -> std::size_t {
 
 namespace teg {
 
-/// Number of members of an aggregate type.
-/// @tparam T An aggregate type
-///
-/// @see https://en.cppreference.com/w/cpp/language/aggregate_initialization
-template <aggregate T>
+///  \brief Returns the number of data members in an aggregate type.
+///  \tparam T An aggregate type.
+///  
+///  \see https://en.cppreference.com/w/cpp/language/aggregate_initialization
+///  
+template <class T> requires (concepts::aggregate<T>)
 constexpr std::size_t members_count_v = internal::members_count_impl<T>();
 
 } // namespace teg

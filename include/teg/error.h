@@ -16,7 +16,9 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-#pragma once
+#ifndef TEG_ERROR_H
+#define TEG_ERROR_H
+
 #include <system_error>
 
 namespace teg {
@@ -51,3 +53,5 @@ constexpr bool failure(error err) {
 }
 
 } // namespace teg
+
+#endif // TEG_ERROR_H

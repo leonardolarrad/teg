@@ -7,7 +7,7 @@ namespace bm = benchmarking;
 static std::vector<bm::ecommerce_page> data_in_10_2048b = bm::generate_benchmark_data(10, 2048);
 
 static bool test_lib() {
-    teg::buffer b;
+    teg::byte_buffer b;
     bm::ecommerce_page t0 = data_in_10_2048b[0];
     auto r0 = teg::serialize(b, t0);
     if (teg::failure(r0)) {
@@ -24,7 +24,7 @@ static bool test_lib() {
 }
 
 static void benchmark() {
-    teg::buffer buffer;
+    teg::byte_buffer buffer;
     std::vector<bm::ecommerce_page> data_out_10_2048bb;
 
     bm::benchmark()

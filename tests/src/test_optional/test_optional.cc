@@ -10,7 +10,7 @@
 
 TEST_CASE("Trivial de/serialization") {    
     SECTION("Optional with value") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::optional<int> opt0 = 100;
         teg::serialize(b, opt0).or_throw();
 
@@ -19,7 +19,7 @@ TEST_CASE("Trivial de/serialization") {
         ASSERT(opt0 == opt1);
     }
     SECTION("Optional without value") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::optional<int> opt0;
         teg::serialize(b, opt0).or_throw();
 
@@ -31,7 +31,7 @@ TEST_CASE("Trivial de/serialization") {
 
 TEST_CASE("Aggregate de/serialization") {
     SECTION("Optional string") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::optional<std::string> opt0 = "hello";
         teg::serialize(b, opt0).or_throw();
 
@@ -40,7 +40,7 @@ TEST_CASE("Aggregate de/serialization") {
         ASSERT(opt0 == opt1);
     }
     SECTION("Optional vector") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::optional<std::vector<int>> opt0 = std::vector<int>{ 1, 2, 3, 4, 5 };
         teg::serialize(b, opt0).or_throw();
 
@@ -49,7 +49,7 @@ TEST_CASE("Aggregate de/serialization") {
         ASSERT(opt0 == opt1);
     }
     SECTION("Optional map") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::optional<std::map<std::string, std::string>> opt0 = 
             std::map<std::string, std::string> {
                 { "a", "a" }, { "b", "b" }, 
@@ -66,7 +66,7 @@ TEST_CASE("Aggregate de/serialization") {
 
 TEST_CASE("Special case: optional owning pointer") {
     SECTION("Unique pointer") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::optional<std::unique_ptr<int>> opt0 = std::make_unique<int>(99);
         teg::serialize(b, opt0).or_throw();
 
@@ -77,7 +77,7 @@ TEST_CASE("Special case: optional owning pointer") {
         ASSERT_EQ(*(opt0.value()), *(opt1.value()));
     }
     SECTION("Shared pointer") {
-        teg::buffer b;
+        teg::byte_buffer b;
         std::optional<std::shared_ptr<int>> opt0 = std::make_shared<int>(99);
         teg::serialize(b, opt0).or_throw();
 

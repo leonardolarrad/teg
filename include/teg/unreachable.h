@@ -16,10 +16,14 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-#pragma once
+#ifndef TEG_UNREACHABLE_H
+#define TEG_UNREACHABLE_H
 
 namespace teg {
 
+///  Unconditionally aborts the program.
+///  \see https://en.cppreference.com/w/cpp/utility/unreachable
+///
 [[noreturn]] 
 inline void unreachable() {
     #if defined( __GNUC__ ) || defined( __clang__ )
@@ -30,3 +34,5 @@ inline void unreachable() {
 }
 
 } // namespace teg
+
+#endif // TEG_UNREACHABLE_H

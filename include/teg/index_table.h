@@ -16,8 +16,8 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-///  This file is a rewrite of `boost::mp_with_index` source code, originally 
-///  authored by Peter Dimov.
+///  This file is a rewritten version of the `boost::mp_with_index` source code, 
+///  originally authored by Peter Dimov.
 ///
 ///  Copyright 2017 Peter Dimov.
 ///  Distributed under the Boost Software License, Version 1.0.
@@ -46,7 +46,9 @@
 ///  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ///  DEALINGS IN THE SOFTWARE.
 
-#pragma once
+#ifndef TEG_INDEX_TABLE_H
+#define TEG_INDEX_TABLE_H
+
 #include <cassert>
 #include <cstdint>
 #include <type_traits>
@@ -417,7 +419,16 @@ struct index_table<16>
 
 namespace teg {
 
-template<std::size_t N, typename F> 
+///  \brief Creates a compile-time index table and then performs a lookup on it with a 
+///         given run-time index, invoking a given function with the index as an argument.
+///   
+///  \tparam  N  The size of the index table.
+///  \tparam  F  An invocable object type.
+///  \param   i  The run-time index.
+///  \param   f  A function object to invoke with the index as an argument.
+///  \return     Result of invoking the function `f(i)`.
+///  
+template<std::size_t N, class F> 
 inline constexpr auto index_table_lookup(std::size_t i, F&& f)
     -> decltype(std::declval<F>()(std::declval<std::integral_constant<std::size_t, 0>>()))
 {
@@ -426,3 +437,5 @@ inline constexpr auto index_table_lookup(std::size_t i, F&& f)
 }
 
 } // namespace teg
+
+#endif // TEG_INDEX_TABLE_H
