@@ -9,7 +9,7 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
-TEST_CASE("Assert concepts") {
+TEST_CASE("Check concepts") {
     // Tuple like.
     ASSERT((teg::concepts::tuple<std::tuple<int, int, int>>));
     ASSERT((teg::concepts::tuple<std::pair<int, int>>));

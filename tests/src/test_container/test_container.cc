@@ -15,6 +15,198 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
+TEST_CASE("Check concepts: containers") {
+    ASSERT((teg::concepts::container<std::array<int, 10>>));                                                     // array  
+    ASSERT((teg::concepts::container<std::vector<std::string>>));                                                // vector
+    ASSERT((teg::concepts::container<std::deque<std::string>>));                                                 // deque
+    ASSERT((teg::concepts::container<std::list<std::string>>));                                                  // list
+    ASSERT((teg::concepts::container<std::map<int, std::string>>));                                              // map
+    ASSERT((teg::concepts::container<std::multimap<int, std::string>>));                                         // multimap
+    ASSERT((teg::concepts::container<std::set<std::string>>));                                                   // set
+    ASSERT((teg::concepts::container<std::multiset<std::string>>));                                              // multiset
+    ASSERT((teg::concepts::container<std::basic_string<char>>));                                                 // basic_string
+    ASSERT((teg::concepts::container<std::forward_list<std::string>>));                                          // forward_list
+    ASSERT((teg::concepts::container<std::unordered_set<int>>));                                                 // unordered_set
+    ASSERT((teg::concepts::container<std::unordered_map<int, std::string>>));                                    // unordered_map
+    ASSERT((teg::concepts::container<std::unordered_multiset<int>>));                                            // unordered_multiset
+    ASSERT((teg::concepts::container<std::unordered_multimap<int, std::string>>));                               // unordered_multimap
+    
+    // Containers adaptors.
+    ASSERT(!(teg::concepts::container<std::stack<std::string>>));                                                // !stack
+    ASSERT(!(teg::concepts::container<std::queue<std::string>>));                                                // !queue
+    ASSERT(!(teg::concepts::container<std::priority_queue<std::string>>));                                       // !priority_queue
+
+    // Compile-time string.
+    ASSERT((teg::concepts::container<teg::basic_fixed_string<char, 10>>));                                       // basic_fixed_string                             
+}
+
+TEST_CASE("Check concepts: reversible containers") {
+    // Reversible containers.
+    ASSERT((teg::concepts::reversible_container<std::array<int, 10>>));                                          // array  
+    ASSERT((teg::concepts::reversible_container<std::vector<std::string>>));                                     // vector
+    ASSERT((teg::concepts::reversible_container<std::deque<std::string>>));                                      // deque
+    ASSERT((teg::concepts::reversible_container<std::list<std::string>>));                                       // list
+    ASSERT((teg::concepts::reversible_container<std::map<int, std::string>>));                                   // map
+    ASSERT((teg::concepts::reversible_container<std::multimap<int, std::string>>));                              // multimap
+    ASSERT((teg::concepts::reversible_container<std::set<std::string>>));                                        // set
+    ASSERT((teg::concepts::reversible_container<std::multiset<std::string>>));                                   // multiset
+    ASSERT((teg::concepts::reversible_container<std::basic_string<char>>));                                      // basic_string
+    ASSERT((teg::concepts::reversible_container<teg::basic_fixed_string<char, 10>>));                            // basic_fixed_string
+    // Non reversible containers.
+    ASSERT(!(teg::concepts::reversible_container<std::forward_list<std::string>>));                              // !forward_list
+    ASSERT(!(teg::concepts::reversible_container<std::unordered_set<int>>));                                     // !unordered_set
+    ASSERT(!(teg::concepts::reversible_container<std::unordered_map<int, std::string>>));                        // !unordered_map
+    ASSERT(!(teg::concepts::reversible_container<std::unordered_multiset<int>>));                                // !unordered_multiset
+    ASSERT(!(teg::concepts::reversible_container<std::unordered_multimap<int, std::string>>));                   // !unordered_multimap
+}
+
+TEST_CASE("Check concepts: random access containers") {
+    // Random access containers.
+    ASSERT((teg::concepts::random_access_container<std::array<int, 10>>));                                       // array
+    ASSERT((teg::concepts::random_access_container<std::vector<std::string>>));                                  // vector
+    ASSERT((teg::concepts::random_access_container<std::deque<std::string>>));                                   // deque
+    ASSERT((teg::concepts::random_access_container<std::basic_string<char>>));                                   // basic_string
+    ASSERT((teg::concepts::random_access_container<teg::basic_fixed_string<char, 10>>));                         // basic_fixed_string
+    // Non random access containers.
+    ASSERT(!(teg::concepts::random_access_container<std::forward_list<std::string>>));                           // !forward_list
+    ASSERT(!(teg::concepts::random_access_container<std::list<std::string>>));                                   // !list    
+    ASSERT(!(teg::concepts::random_access_container<std::map<int, std::string>>));                               // !map
+    ASSERT(!(teg::concepts::random_access_container<std::multimap<int, std::string>>));                          // !multimap
+    ASSERT(!(teg::concepts::random_access_container<std::set<std::string>>));                                    // !set
+    ASSERT(!(teg::concepts::random_access_container<std::multiset<std::string>>));                               // !multiset
+    ASSERT(!(teg::concepts::random_access_container<std::unordered_set<int>>));                                  // !unordered_set
+    ASSERT(!(teg::concepts::random_access_container<std::unordered_map<int, std::string>>));                     // !unordered_map
+    ASSERT(!(teg::concepts::random_access_container<std::unordered_multiset<int>>));                             // !unordered_multiset
+    ASSERT(!(teg::concepts::random_access_container<std::unordered_multimap<int, std::string>>));                // !unordered_multimap
+    ASSERT(!(teg::concepts::random_access_container<std::stack<std::string>>));                                  // !stack
+    ASSERT(!(teg::concepts::random_access_container<std::queue<std::string>>));                                  // !queue
+    ASSERT(!(teg::concepts::random_access_container<std::priority_queue<std::string>>));                         // !priority_queue
+}
+
+TEST_CASE("Check concepts: contiguous containers") {
+    // Random access containers.
+    ASSERT((teg::concepts::contiguous_container<std::array<int, 10>>));                                          // array
+    ASSERT((teg::concepts::contiguous_container<std::vector<std::string>>));                                     // vector
+    ASSERT((teg::concepts::contiguous_container<std::basic_string<char>>));                                      // basic_string
+    ASSERT((teg::concepts::contiguous_container<teg::basic_fixed_string<char, 10>>));                            // basic_fixed_string
+    
+    // Non random access containers.
+    ASSERT(!(teg::concepts::contiguous_container<std::deque<std::string>>));                                     // !deque
+    ASSERT(!(teg::concepts::contiguous_container<std::forward_list<std::string>>));                              // !forward_list
+    ASSERT(!(teg::concepts::contiguous_container<std::list<std::string>>));                                      // !list    
+    ASSERT(!(teg::concepts::contiguous_container<std::map<int, std::string>>));                                  // !map
+    ASSERT(!(teg::concepts::contiguous_container<std::multimap<int, std::string>>));                             // !multimap
+    ASSERT(!(teg::concepts::contiguous_container<std::set<std::string>>));                                       // !set
+    ASSERT(!(teg::concepts::contiguous_container<std::multiset<std::string>>));                                  // !multiset
+    ASSERT(!(teg::concepts::contiguous_container<std::unordered_set<int>>));                                     // !unordered_set
+    ASSERT(!(teg::concepts::contiguous_container<std::unordered_map<int, std::string>>));                        // !unordered_map
+    ASSERT(!(teg::concepts::contiguous_container<std::unordered_multiset<int>>));                                // !unordered_multiset
+    ASSERT(!(teg::concepts::contiguous_container<std::unordered_multimap<int, std::string>>));                   // !unordered_multimap
+    ASSERT(!(teg::concepts::contiguous_container<std::stack<std::string>>));                                     // !stack
+    ASSERT(!(teg::concepts::contiguous_container<std::queue<std::string>>));                                     // !queue
+    ASSERT(!(teg::concepts::contiguous_container<std::priority_queue<std::string>>));                            // !priority_queue
+}
+
+TEST_CASE("Check concepts: in-place constructing containers") {
+    // In-place constructing containers.
+    ASSERT((teg::concepts::inplace_constructing_container<std::set<std::string>>));                              // set
+    ASSERT((teg::concepts::inplace_constructing_container<std::multiset<std::string>>));                         // multiset
+    ASSERT((teg::concepts::inplace_constructing_container<std::unordered_set<int>>));                            // unordered_set
+    ASSERT((teg::concepts::inplace_constructing_container<std::map<int, std::string>>));                         // map
+    ASSERT((teg::concepts::inplace_constructing_container<std::multimap<int, std::string>>));                    // multimap
+    ASSERT((teg::concepts::inplace_constructing_container<std::unordered_map<int, std::string>>));               // unordered_map
+    ASSERT((teg::concepts::inplace_constructing_container<std::unordered_multiset<int>>));                       // unordered_multiset
+    ASSERT((teg::concepts::inplace_constructing_container<std::unordered_multimap<int, std::string>>));          // unordered_multimap
+    // Non in-place constructing containers.
+    ASSERT(!(teg::concepts::inplace_constructing_container<std::array<int, 10>>));                               // !array
+    ASSERT(!(teg::concepts::inplace_constructing_container<std::vector<std::string>>));                          // !vector
+    ASSERT(!(teg::concepts::inplace_constructing_container<std::basic_string<char>>));                           // !basic_string
+    ASSERT(!(teg::concepts::inplace_constructing_container<std::deque<std::string>>));                           // !deque
+    ASSERT(!(teg::concepts::inplace_constructing_container<std::forward_list<std::string>>));                    // !forward_list
+    ASSERT(!(teg::concepts::inplace_constructing_container<std::list<std::string>>));                            // !list    
+}
+
+TEST_CASE("Check concepts: back in-place constructing containers") {
+    // Back inplace constructing containers.
+    ASSERT((teg::concepts::back_inplace_constructing_container<std::vector<std::string>>));                      // vector
+    ASSERT((teg::concepts::back_inplace_constructing_container<std::deque<std::string>>));                       // deque
+    ASSERT((teg::concepts::back_inplace_constructing_container<std::list<std::string>>));                        // list    
+    // Non back inplace constructing containers.
+    ASSERT(!(teg::concepts::back_inplace_constructing_container<std::array<int, 10>>));                          // !array
+    ASSERT(!(teg::concepts::back_inplace_constructing_container<std::basic_string<char>>));                      // !basic_string
+    ASSERT(!(teg::concepts::back_inplace_constructing_container<std::forward_list<std::string>>));               // !forward_list
+    ASSERT(!(teg::concepts::back_inplace_constructing_container<std::set<std::string>>));                        // !set
+    ASSERT(!(teg::concepts::back_inplace_constructing_container<std::map<int, std::string>>));                   // !map
+    ASSERT(!(teg::concepts::back_inplace_constructing_container<std::multiset<std::string>>));                   // !multiset
+    ASSERT(!(teg::concepts::back_inplace_constructing_container<std::multimap<int, std::string>>));              // !multimap
+    ASSERT(!(teg::concepts::back_inplace_constructing_container<std::unordered_set<int>>));                      // !unordered_set
+    ASSERT(!(teg::concepts::back_inplace_constructing_container<std::unordered_map<int, std::string>>));         // !unordered_map
+    ASSERT(!(teg::concepts::back_inplace_constructing_container<std::unordered_multiset<int>>));                 // !unordered_multiset
+    ASSERT(!(teg::concepts::back_inplace_constructing_container<std::unordered_multimap<int, std::string>>));    // !unordered_multimap
+}
+
+TEST_CASE("Check concepts: front in-place constructing containers") {
+    // Back inplace constructing containers.
+    ASSERT((teg::concepts::front_inplace_constructing_container<std::deque<std::string>>));                      // deque
+    ASSERT((teg::concepts::front_inplace_constructing_container<std::list<std::string>>));                       // list    
+    ASSERT((teg::concepts::front_inplace_constructing_container<std::forward_list<std::string>>));               // forward_list
+    // Non back inplace constructing containers
+    ASSERT(!(teg::concepts::front_inplace_constructing_container<std::vector<std::string>>));                    // !vector
+    ASSERT(!(teg::concepts::front_inplace_constructing_container<std::array<int, 10>>));                         // !array
+    ASSERT(!(teg::concepts::front_inplace_constructing_container<std::basic_string<char>>));                     // !basic_string
+    ASSERT(!(teg::concepts::front_inplace_constructing_container<std::set<std::string>>));                       // !set
+    ASSERT(!(teg::concepts::front_inplace_constructing_container<std::map<int, std::string>>));                  // !map
+    ASSERT(!(teg::concepts::front_inplace_constructing_container<std::multiset<std::string>>));                  // !multiset
+    ASSERT(!(teg::concepts::front_inplace_constructing_container<std::multimap<int, std::string>>));             // !multimap
+    ASSERT(!(teg::concepts::front_inplace_constructing_container<std::unordered_set<int>>));                     // !unordered_set
+    ASSERT(!(teg::concepts::front_inplace_constructing_container<std::unordered_map<int, std::string>>));        // !unordered_map
+    ASSERT(!(teg::concepts::front_inplace_constructing_container<std::unordered_multiset<int>>));                // !unordered_multiset
+    ASSERT(!(teg::concepts::front_inplace_constructing_container<std::unordered_multimap<int, std::string>>));   // !unordered_multimap
+}
+
+TEST_CASE("Check concepts: fixed size containers") {
+    ASSERT((teg::concepts::fixed_size_container<std::array<int, 10>>));                                          // array
+    ASSERT((teg::concepts::fixed_size_container<teg::basic_fixed_string<char, 10>>));                            // basic_fixed_string
+}
+
+TEST_CASE("Check concepts: associative containers") {
+    // Associative containers.
+    ASSERT((teg::concepts::associative_container<std::set<std::string>>));                                       // set
+    ASSERT((teg::concepts::associative_container<std::map<int, std::string>>));                                  // map
+    ASSERT((teg::concepts::associative_container<std::multiset<std::string>>));                                  // multiset
+    ASSERT((teg::concepts::associative_container<std::multimap<int, std::string>>));                             // multimap
+    ASSERT((teg::concepts::associative_container<std::unordered_set<int>>));                                     // unordered_set
+    ASSERT((teg::concepts::associative_container<std::unordered_map<int, std::string>>));                        // unordered_map
+    ASSERT((teg::concepts::associative_container<std::unordered_multiset<int>>));                                // unordered_multiset
+    ASSERT((teg::concepts::associative_container<std::unordered_multimap<int, std::string>>));                   // unordered_multimap
+    // Associative containers.
+    ASSERT(!(teg::concepts::associative_container<std::vector<std::string>>));                                   // !vector
+    ASSERT(!(teg::concepts::associative_container<std::array<int, 10>>));                                        // !array
+    ASSERT(!(teg::concepts::associative_container<std::deque<std::string>>));                                    // !deque
+    ASSERT(!(teg::concepts::associative_container<std::list<std::string>>));                                     // !list    
+    ASSERT(!(teg::concepts::associative_container<std::forward_list<std::string>>));                             // !forward_list
+    ASSERT(!(teg::concepts::associative_container<std::basic_string<char>>));                                    // !basic_string
+}
+
+TEST_CASE("Check concepts: set containers") {
+    // Set containers.
+    ASSERT((teg::concepts::set_container<std::set<std::string>>));                                               // set
+    ASSERT((teg::concepts::set_container<std::multiset<std::string>>));                                          // multiset
+    ASSERT((teg::concepts::set_container<std::unordered_set<int>>));                                             // unordered_set
+    ASSERT((teg::concepts::set_container<std::unordered_multiset<int>>));                                        // unordered_multiset
+    // Non set containers.                  
+    ASSERT(!(teg::concepts::set_container<std::map<int, std::string>>));                                         // !map
+    ASSERT(!(teg::concepts::set_container<std::multimap<int, std::string>>));                                    // !multimap
+    ASSERT(!(teg::concepts::set_container<std::unordered_map<int, std::string>>));                               // !unordered_map
+    ASSERT(!(teg::concepts::set_container<std::unordered_multimap<int, std::string>>));                          // !unordered_multimap
+    ASSERT(!(teg::concepts::set_container<std::vector<std::string>>));                                           // !vector
+    ASSERT(!(teg::concepts::set_container<std::array<int, 10>>));                                                // !array
+    ASSERT(!(teg::concepts::set_container<std::deque<std::string>>));                                            // !deque
+    ASSERT(!(teg::concepts::set_container<std::list<std::string>>));                                             // !list    
+    ASSERT(!(teg::concepts::set_container<std::forward_list<std::string>>));                                     // !forward_list
+    ASSERT(!(teg::concepts::set_container<std::basic_string<char>>));                                            // !basic_string
+}
+
 TEST_CASE("De/serialize std::array") {    
     teg::byte_buffer b;
     std::array<int, 2> arr0 = { 1, 2 };
@@ -76,4 +268,3 @@ TEST_CASE("De/serialize std::forward_list") {
     teg::deserialize(b, fl1).or_throw();
     ASSERT(fl0 == fl1);    
 }
-

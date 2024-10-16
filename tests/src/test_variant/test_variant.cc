@@ -1,3 +1,4 @@
+#include <any>
 #include <array>
 #include <bitset>
 #include <cstdint>
@@ -7,6 +8,11 @@
 
 #include "teg/teg.h"
 #include "test/test.h"
+
+TEST_CASE("Check concepts") {
+    ASSERT((teg::concepts::variant<std::variant<int, float>>));
+    ASSERT(!(teg::concepts::variant<std::any>));
+}
 
 TEST_CASE("Trivial de/serialization") {
     SECTION("Index 0") {

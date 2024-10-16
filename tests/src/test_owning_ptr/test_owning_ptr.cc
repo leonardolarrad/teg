@@ -1,9 +1,21 @@
 #include <array>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "teg/teg.h"
 #include "test/test.h"
+
+TEST_CASE("Check concepts") {
+    // Owning pointers.
+    ASSERT((teg::concepts::owning_ptr<std::unique_ptr<int>>));
+    ASSERT((teg::concepts::owning_ptr<std::shared_ptr<int>>));
+
+    // Not owning pointers.
+    ASSERT(!(teg::concepts::owning_ptr<std::weak_ptr<int>>));
+    ASSERT(!(teg::concepts::owning_ptr<int*>));
+    ASSERT(!(teg::concepts::owning_ptr<int const*>));
+}
 
 TEST_CASE("Unique pointer de/serialization") {    
     SECTION("Trivial de/serialization") {
@@ -68,4 +80,3 @@ TEST_CASE("Shared pointer de/serialization") {
         ASSERT(**p0 == **p1);
     }
 }
-

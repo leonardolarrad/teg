@@ -8,6 +8,11 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
+TEST_CASE("Check concepts") {
+    ASSERT((teg::concepts::optional<std::optional<int>>));
+    ASSERT(!(teg::concepts::optional<std::nullopt_t>));
+}
+
 TEST_CASE("Trivial de/serialization") {    
     SECTION("Optional with value") {
         teg::byte_buffer b;

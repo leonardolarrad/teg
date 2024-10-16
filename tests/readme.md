@@ -24,9 +24,8 @@ meson test <prueba> -v -C build/debug/
 
 | Prueba | Descripción |
 | --- | --- |
-| `concepts` | Pruebas de Conceptos (C++20 _Concepts_) utilizados por la librería. |
 | `reflection` | Pruebas de reflección estática (reflección en tiempo de compilación). |
-| `overload_resolution` | Resolución de sobrecarga de funciones a través de Conceptos. |
+| `overload_resolution` | Resolución de sobrecarga de funciones a través de Conceptos (C++20 _Concepts_). |
 | `fundamental` | Serialización de tipos de datos fundamentales (ej. `bool`, `char`, `unsigned int`, etc.) |
 | `carray` | De/serialización de arreglos tipo C. |
 | `optional` | De/serialización de tipos de datos opcionales (específicamente `std::optional`). |
@@ -39,6 +38,7 @@ meson test <prueba> -v -C build/debug/
 | `tuple` | De/serialización de tuplas (específicamente `std::tuple` y `std::pair`). |
 | `variant` | De/serialización de variantes; unión discriminada de tipos de datos (específicamente `std::variant`). |
 | `aggregates` | De/serialización de agregados. Pruebas de integración de serialización por componentes. |
+| `comptime_serialization` | De/serialización de datos en tiempo de compilación. |
 
 ### RESULTADOS
 
