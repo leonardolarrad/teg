@@ -27,6 +27,17 @@ TEST_CASE("Compile-time test MD5 hashes") {
         COMPTIME_ASSERT_EQ(hash, "624c89bb6f2573d7624e14209de8f492");
     }
     SECTION ("Test 3") {
+        constexpr auto msg = teg::make_fixed_string("This is outrageous! It's unfair!");
+
+        constexpr std::uint32_t hash_32 = teg::md5_hash_u32(msg);
+        constexpr std::uint64_t hash_64 = teg::md5_hash_u64(msg);
+        constexpr teg::fixed_string<32> hash = teg::md5_hash(msg);
+
+        COMPTIME_ASSERT_EQ(hash_32, 0xc9e04138ul);
+        COMPTIME_ASSERT_EQ(hash_64, 0xc9e04138e5f3abb6ull);
+        COMPTIME_ASSERT_EQ(hash, "c9e04138e5f3abb618a7a124c9a92ab2");
+    }
+    SECTION ("Test 4") {
         constexpr auto msg = teg::make_fixed_string("It's over Anakin, I have the high ground");
 
         constexpr std::uint32_t hash_32 = teg::md5_hash_u32(msg); 
