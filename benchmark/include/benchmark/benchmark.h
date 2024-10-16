@@ -17,17 +17,18 @@
 ///  3. This notice may not be removed or altered from any source distribution.
 
 #pragma once
-#include <concepts>
+#include <algorithm>
 #include <chrono>
+#include <cmath>
+#include <concepts>
 #include <cstring>
+#include <format>
 #include <iosfwd>
+#include <iostream>
+#include <numeric>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <cmath>
-#include <algorithm>
-#include <format>
-#include <numeric>
 
 namespace benchmarking {
 

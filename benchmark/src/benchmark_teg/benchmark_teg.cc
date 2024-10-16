@@ -28,7 +28,7 @@ static void benchmark() {
     std::vector<bm::ecommerce_page> data_out_10_2048bb;
 
     bm::benchmark()
-        .warmup(0)
+        .warmup(128)
         .iterations(746667)
         .repetitions(10)
         .run("teg:serialization:10_2048b", [&](){
