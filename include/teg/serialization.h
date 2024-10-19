@@ -123,10 +123,7 @@ private:
     }
 
     template <class T> 
-        requires (concepts::trivially_serializable<T>) 
-              && (!concepts::optional<T>)
-              && (!concepts::tuple<T> || concepts::container<T>)
-              && (!concepts::variant<T>)
+        requires (concepts::trivially_serializable<T>)
     [[nodiscard]] static constexpr inline auto buffer_size_one(T const& trivial) -> std::size_t {        
         return sizeof(trivial);
     }
@@ -239,9 +236,6 @@ private:
 
     template <class T>
         requires (concepts::trivially_serializable<T>)
-              && (!concepts::optional<T>)
-              && (!concepts::tuple<T> || concepts::container<T>)
-              && (!concepts::variant<T>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& obj) -> error {
         // Trivial serialization.
         if (std::is_constant_evaluated()) {
@@ -360,7 +354,10 @@ private:
         }
     }
 
-    template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
+    template <class T> 
+        requires (concepts::tuple<T>) 
+              && (!concepts::container<T>)
+              && (!concepts::trivially_serializable<T>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& tuple) -> error {    
         return std::apply(
             [&](auto&&... elements) constexpr {
