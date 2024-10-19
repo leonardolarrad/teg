@@ -49,7 +49,7 @@ namespace teg {
 
 template <class B = byte_buffer>
     requires concepts::byte_buffer<B>
-class deserializer {
+class binary_deserializer {
 public:
     static constexpr bool has_resizable_buffer = concepts::resizable_container<B>;
 
@@ -57,12 +57,12 @@ public:
     using buffer_type = std::conditional_t<has_resizable_buffer, B&, span_type>;
     using byte_type = typename std::remove_reference_t<buffer_type>::value_type;
 
-    deserializer() = delete;
-    deserializer(deserializer const&) = delete;
-    deserializer& operator=(deserializer const&) = delete;
+    binary_deserializer() = delete;
+    binary_deserializer(binary_deserializer const&) = delete;
+    binary_deserializer& operator=(binary_deserializer const&) = delete;
 
-    constexpr explicit deserializer(B & buffer) : m_buffer(buffer), m_position(0) {}
-    constexpr explicit deserializer(B && buffer) : m_buffer(buffer), m_position(0) {}
+    constexpr explicit binary_deserializer(B & buffer) : m_buffer(buffer), m_position(0) {}
+    constexpr explicit binary_deserializer(B && buffer) : m_buffer(buffer), m_position(0) {}
 
     template <class... T> requires (concepts::deserializable<T> && ...)
     [[nodiscard]] constexpr inline auto deserialize(T&... objs) -> error {        
@@ -353,7 +353,7 @@ private:
 template <class B, class... T>
     requires (concepts::byte_buffer<B>) && (concepts::deserializable<T> && ...)
 constexpr inline auto deserialize(B & input_buffer, T&... objs) -> error {
-    return deserializer<B>{input_buffer}.deserialize(objs...);
+    return binary_deserializer<B>{input_buffer}.deserialize(objs...);
 }
 
 } // namespace teg
