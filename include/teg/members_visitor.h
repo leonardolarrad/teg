@@ -691,14 +691,24 @@ namespace teg {
 constexpr static auto max_visit_members = 64;
 
 template<class F, class T>
-requires (concepts::aggregate<std::remove_cvref_t<T>>) 
-      && (members_count_v<std::remove_cvref_t<T>> <= max_visit_members) 
+requires (concepts::structure_bindable<std::remove_cvref_t<T>>) 
+      && (!concepts::aggregate<std::remove_cvref_t<T>> || members_count_v<std::remove_cvref_t<T>> <= max_visit_members)
+      && (!concepts::tuple<std::remove_cvref_t<T>> || std::tuple_size_v<std::remove_cvref_t<T>> <= max_visit_members)
 constexpr inline decltype(auto) visit_members(F&& visitor, T&& obj) noexcept {
-    return internal::visit_members(
-        std::forward<F>(visitor),
-        std::forward<T>(obj), 
-        std::integral_constant<std::size_t, members_count_v<std::remove_cvref_t<T>>>{}        
-    );
+    if constexpr (teg::concepts::tuple<std::remove_cvref_t<T>>) {
+        return internal::visit_members(
+            std::forward<F>(visitor),
+            std::forward<T>(obj), 
+            std::integral_constant<std::size_t, std::tuple_size_v<std::remove_cvref_t<T>>>{}   
+        );
+    }
+    else {
+        return internal::visit_members(
+            std::forward<F>(visitor),
+            std::forward<T>(obj), 
+            std::integral_constant<std::size_t, members_count_v<std::remove_cvref_t<T>>>{}        
+        );
+    }
 }
 
 } // namespace teg

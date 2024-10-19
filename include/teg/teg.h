@@ -19,6 +19,7 @@
 #ifndef TEG_H
 #define TEG_H
 
+#include "alignment.h"
 #include "buffer.h"
 #include "c_array.h"
 #include "container_concepts.h"

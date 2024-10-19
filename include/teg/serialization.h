@@ -27,6 +27,7 @@
 #include <bit>
 #include <cstring>
 
+#include "alignment.h"
 #include "buffer.h"
 #include "container_concepts.h"
 #include "core_concepts.h"
@@ -39,7 +40,7 @@ template <class T>
 concept serializable = true;
 
 template <class T>
-concept trivially_serializable = standard_layout<T> && trivially_copyable<T>;
+concept trivially_serializable = trivially_copyable<T> && packed_layout<T>;
 
 } // namespace teg::concepts
 
@@ -266,7 +267,7 @@ private:
         }
     }
 
-    template <class T> 
+    template <class T>
         requires (concepts::aggregate<T>)
               && (!concepts::container<T>)
               && (!concepts::bounded_c_array<T>) 
