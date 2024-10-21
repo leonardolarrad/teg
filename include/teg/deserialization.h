@@ -348,9 +348,9 @@ private:
     }
 
     template <class T> 
-        requires concepts::contiguous_container<T>
-              && concepts::resizable_container<T> 
-              && concepts::trivially_serializable<typename T::value_type>
+        requires (concepts::contiguous_container<T>)
+              && (concepts::trivially_serializable<typename T::value_type>)
+              && (!concepts::trivially_deserializable<T>)
     [[nodiscard]] constexpr inline auto read_bytes(T& container) -> error {
         // Deserialization at compile-time is not possible in this case.
         // Deserialize at run-time.
