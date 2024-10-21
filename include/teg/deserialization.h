@@ -303,7 +303,10 @@ private:
         return deserialize_one(*optional);
     }
 
-    template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
+    template <class T> 
+        requires (concepts::tuple<T>) 
+              && (!concepts::container<T>)
+              && (!concepts::trivially_deserializable<T>)
     [[nodiscard]] inline constexpr auto deserialize_one(T& tuple) -> error {
         return std::apply(
             [&](auto&&... elements) constexpr {

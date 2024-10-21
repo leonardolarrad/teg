@@ -30,14 +30,14 @@
 namespace teg {
 
 template <class T>
-    requires (concepts::standard_layout<T>) 
+    requires (concepts::trivially_copyable<T>) 
           && (!concepts::aggregate<T>)
 consteval auto packed_sizeof() -> std::size_t {
     return sizeof(T);
 }
 
 template <class T>
-    requires (concepts::standard_layout<T>) 
+    requires (concepts::trivially_copyable<T>) 
           && (concepts::aggregate<T>)
 consteval auto packed_sizeof() -> std::size_t {
     return visit_members(
@@ -49,27 +49,27 @@ consteval auto packed_sizeof() -> std::size_t {
 }
 
 template <class T>
-    requires (concepts::standard_layout<T>)
+    requires (concepts::trivially_copyable<T>)
 constexpr bool has_padding() {
     return !std::has_unique_object_representations_v<T>;
 }
 
 template <class T>
-    requires (concepts::standard_layout<T>)
+    requires (concepts::trivially_copyable<T>)
           && (concepts::fundamental<T> || concepts::is_enum<T>)
 constexpr bool has_padding() {
     return false;
 }
 
 template <class T>
-    requires (concepts::standard_layout<T>) 
+    requires (concepts::trivially_copyable<T>) 
           && (concepts::c_array<T>)
 constexpr bool has_padding() {
     return has_padding<std::remove_cvref_t<std::remove_all_extents_t<T>>>();
 }
 
 template <class T>
-    requires (concepts::standard_layout<T>) 
+    requires (concepts::trivially_copyable<T>) 
           && (concepts::aggregate<T>)
           && (!concepts::c_array<T>)
 constexpr bool has_padding() {
@@ -90,10 +90,10 @@ constexpr bool has_padding() {
 namespace teg::concepts {
 
 template <class T>
-concept padded_layout = concepts::standard_layout<T> && has_padding<T>();
+concept padded_layout = concepts::trivially_copyable<T> && has_padding<T>();
 
 template <class T>
-concept packed_layout = concepts::standard_layout<T> && !has_padding<T>();
+concept packed_layout = concepts::trivially_copyable<T> && !has_padding<T>();
 
 } // namespace teg::concepts
 

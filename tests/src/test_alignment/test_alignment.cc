@@ -9,6 +9,7 @@
 #include <variant>
 #include <concepts>
 #include <string>
+#include <tuple>
 
 #include "teg/teg.h"
 #include "test/test.h"
@@ -125,6 +126,31 @@ TEST_CASE("C-arrays are packed if their element type is packed") {
     }
 }
 
+TEST_CASE("Check wheter tuple-like types model `packed_layout`") {
+    SECTION("`std::tuple` type does not model `trivially_copyable` nor `standard_layout`") {
+        COMPTIME_ASSERT(!(teg::concepts::trivially_copyable<std::tuple<int64_t, int64_t>>));
+        COMPTIME_ASSERT(!(teg::concepts::standard_layout<std::tuple<int64_t, int64_t>>));
+    }
+    SECTION("Some `std::pair` types does model `trivially_copyable` and `standard_layout`") {
+        COMPTIME_ASSERT(!(teg::concepts::trivially_copyable<std::pair<int64_t, int64_t>>));
+        COMPTIME_ASSERT((teg::concepts::standard_layout<std::pair<int64_t, int64_t>>));
+
+        COMPTIME_ASSERT((teg::concepts::trivially_copyable<std::pair<const int64_t, int64_t>>));
+        COMPTIME_ASSERT((teg::concepts::standard_layout<std::pair<const int64_t, int64_t>>));
+    }
+    SECTION("`std::tuple` types do not model `packed_layout`") {
+        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::tuple<const int8_t, const int8_t>>));
+        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::tuple<int32_t, int64_t>>));
+    }
+    SECTION("Some `std::pair` types do model `packed_layout`") {
+        COMPTIME_ASSERT((teg::concepts::packed_layout<std::pair<const int32_t, int32_t>>)); // This is trivially copyable!
+        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::pair<int32_t, int32_t>>));      // but this is not.
+
+        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::pair<const int32_t, std::string>>));
+        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::pair<const int8_t, int64_t>>)); // Trivially copyable but with padding bits.
+    }
+}
+
 TEST_CASE("Check wheter optional types model `packed_layout`") {    
     SECTION("Optional types model `trivially_copyable` and `standard_layout`") {
         COMPTIME_ASSERT(teg::concepts::trivially_copyable<std::optional<int64_t>>);
@@ -151,11 +177,9 @@ TEST_CASE("Check wheter variant types model `packed_layout`") {
         COMPTIME_ASSERT(teg::concepts::trivially_copyable<std::variant<int64_t>>);
         COMPTIME_ASSERT(teg::concepts::standard_layout<std::variant<int64_t>>);
     }    
-    SECTION("Variant types (by themselves) do not model `packed_layout`") {
+    SECTION("Variant types (by themselves) does not model `packed_layout`") {
         COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::variant<int8_t>>));
-        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::variant<int16_t>>));
-        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::variant<int32_t>>));
-        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::variant<int64_t>>));
+        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::variant<const int8_t>>));
     }
     SECTION("Neither aggregates containing variants cannot model `packed_layout`") {
         struct aggregate_with_variants {
