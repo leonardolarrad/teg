@@ -1,6 +1,7 @@
 #include <array>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include "teg/teg.h"
 #include "test/test.h"
@@ -78,6 +79,28 @@ constexpr auto cx_struct() {
     return v1;
 }
 
+constexpr auto cx_pair() {
+    teg::byte_buffer buffer{};
+
+    std::pair<int32_t, int32_t> p0 = { 99, 11 };
+    teg::serialize(buffer, p0).or_throw();
+    
+    std::pair<int32_t, int32_t> p1;
+    teg::deserialize(buffer, p1).or_throw();
+    return p1;
+}
+
+constexpr auto cx_tuple() {
+    teg::byte_buffer buffer{};
+
+    std::tuple<int32_t, int32_t, int32_t> t0 = { 99, 11, 5 };
+    teg::serialize(buffer, t0).or_throw();
+    
+    std::tuple<int32_t, int32_t, int32_t> t1;
+    teg::deserialize(buffer, t1).or_throw();
+    return t1;
+}
+
 TEST_CASE("Compile-time de/serialization") {    
     constexpr auto cx0 = cx_int();
     COMPTIME_ASSERT_EQ(cx0, 66);    
@@ -96,4 +119,10 @@ TEST_CASE("Compile-time de/serialization") {
 
     constexpr auto cx5 = cx_struct();
     COMPTIME_ASSERT((cx5 == vec2{ 11, 99 }));
+
+    constexpr auto cx6 = cx_pair();
+    COMPTIME_ASSERT((cx6 == std::pair<int32_t, int32_t>{ 99, 11 }));
+
+    constexpr auto cx7 = cx_tuple();
+    COMPTIME_ASSERT((cx7 == std::tuple<int32_t, int32_t, int32_t>{ 99, 11, 5 }));
 }
