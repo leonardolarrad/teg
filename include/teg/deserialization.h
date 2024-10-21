@@ -303,7 +303,7 @@ private:
         return deserialize_one(*optional);
     }
 
-    template <class T> 
+    template <class T>
         requires (concepts::tuple<T>) 
               && (!concepts::container<T>)
               && (!concepts::trivially_deserializable<T>)

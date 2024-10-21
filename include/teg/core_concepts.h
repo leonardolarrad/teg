@@ -63,17 +63,6 @@ concept character =
 template <class T>
 concept is_class = std::is_class_v<T>;
 
-///  \brief An aggregate type.
-///
-///  An aggregate is an array or a class with no user-declared or inherited constructors,
-///  no private or protected direct non-static data members, no virtual functions, and
-///  no virtual, private, or protected base classes. ISO/IEC 14882:2020 [dcl.init.aggr].
-///
-///  \see https://en.cppreference.com/w/cpp/language/aggregate_initialization
-///  
-template <class T>
-concept aggregate = std::is_aggregate_v<T>;
-
 ///  \brief A trivial type.
 ///  \see https://en.cppreference.com/w/cpp/named_req/TrivialType
 ///  
@@ -137,22 +126,6 @@ concept tuple =  requires {
 ///  
 template <class T>
 concept pair = tuple<T> && std::tuple_size_v<T> == 2;
-
-///  \brief A type that can be bound to an identifier list using structured binding.
-///  
-///  Structured binding allows an object to be bound to a list of identifiers.
-///  In other languagues, this mechanism is referred to as "destructuring" or
-///  "unpacking".
-///
-///  \example
-///  \code
-///     auto [a, b, c] = std::make_tuple(1, 2, 3);
-///     a = 0;
-///  \endcode
-///  \see https://en.cppreference.com/w/cpp/language/structured_binding
-///  
-template <class T>
-concept structure_bindable = aggregate<T> || tuple<T>;
 
 ///  \brief A span type.
 ///

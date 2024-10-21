@@ -17,7 +17,7 @@
 struct alignment_info {
     std::size_t size;
     std::size_t alignment;
-    bool has_padding;
+    bool has_padding_bits;
 
     constexpr bool operator==(alignment_info const&) const = default;
 };
@@ -27,7 +27,7 @@ constexpr auto info() -> alignment_info {
     return alignment_info {
         .size = sizeof(T),
         .alignment = alignof(T),
-        .has_padding = teg::has_padding<T>(),
+        .has_padding_bits = teg::has_padding_bits<T>(),
     };
 }
 
@@ -62,10 +62,10 @@ TEST_CASE("Use reflection to detect whether a type has padding") {
 
         COMPTIME_ASSERT(packed.size != unpacked.size);
         COMPTIME_ASSERT(packed.alignment != unpacked.alignment);
-        COMPTIME_ASSERT(packed.has_padding);
-        COMPTIME_ASSERT(!unpacked.has_padding);
+        COMPTIME_ASSERT(packed.has_padding_bits);
+        COMPTIME_ASSERT(!unpacked.has_padding_bits);
         
-        COMPTIME_ASSERT(teg::concepts::padded_layout<unpacked_struct_0>);
+        COMPTIME_ASSERT(!teg::concepts::packed_layout<unpacked_struct_0>);
         COMPTIME_ASSERT(teg::concepts::packed_layout<packed_struct_0>);
     }
     SECTION("Test 2: A struct expected to be always packed") {  
@@ -86,8 +86,8 @@ TEST_CASE("Use reflection to detect whether a type has padding") {
 
         COMPTIME_ASSERT(packed.size == unpacked.size);
         COMPTIME_ASSERT(packed.alignment != unpacked.alignment); // They still have different alignments.
-        COMPTIME_ASSERT(!packed.has_padding);
-        COMPTIME_ASSERT(!unpacked.has_padding);
+        COMPTIME_ASSERT(!packed.has_padding_bits);
+        COMPTIME_ASSERT(!unpacked.has_padding_bits);
         
         // And both of them are packed layout types.
         COMPTIME_ASSERT(teg::concepts::packed_layout<unpacked_struct_1>);
@@ -114,8 +114,8 @@ TEST_CASE("C-arrays are packed if their element type is packed") {
 
         COMPTIME_ASSERT(packed.size != unpacked.size);
         COMPTIME_ASSERT(packed.alignment != unpacked.alignment);
-        COMPTIME_ASSERT(packed.has_padding);
-        COMPTIME_ASSERT(!unpacked.has_padding);        
+        COMPTIME_ASSERT(packed.has_padding_bits);
+        COMPTIME_ASSERT(!unpacked.has_padding_bits);        
         
         COMPTIME_ASSERT(!(teg::concepts::packed_layout<unpacked_struct_2[17]>));
         COMPTIME_ASSERT((teg::concepts::packed_layout<packed_struct_2[17]>));
@@ -139,15 +139,16 @@ TEST_CASE("Check wheter tuple-like types model `packed_layout`") {
         COMPTIME_ASSERT((teg::concepts::standard_layout<std::pair<const int64_t, int64_t>>));
     }
     SECTION("`std::tuple` types do not model `packed_layout`") {
-        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::tuple<const int8_t, const int8_t>>));
+        COMPTIME_ASSERT((teg::concepts::packed_layout<std::tuple<char>>));
+        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::tuple<int8_t, int8_t>>));
         COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::tuple<int32_t, int64_t>>));
     }
     SECTION("Some `std::pair` types do model `packed_layout`") {
-        COMPTIME_ASSERT((teg::concepts::packed_layout<std::pair<const int32_t, int32_t>>)); // This is trivially copyable!
-        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::pair<int32_t, int32_t>>));      // but this is not.
+        COMPTIME_ASSERT((teg::concepts::packed_layout<std::pair<char, char>>));
+        COMPTIME_ASSERT((teg::concepts::packed_layout<std::pair<int32_t, int32_t>>));
 
-        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::pair<const int32_t, std::string>>));
-        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::pair<const int8_t, int64_t>>)); // Trivially copyable but with padding bits.
+        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::pair<int8_t, int64_t>>));
+        COMPTIME_ASSERT(!(teg::concepts::packed_layout<std::pair<int32_t, std::string>>));
     }
 }
 

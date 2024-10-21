@@ -53,6 +53,17 @@ concept bounded_c_array = std::is_bounded_array_v<T>;
 template <class T>
 concept unbounded_c_array = std::is_unbounded_array_v<T>;
 
+///  \brief An aggregate type.
+///
+///  An aggregate is an array or a class with no user-declared or inherited constructors,
+///  no private or protected direct non-static data members, no virtual functions, and
+///  no virtual, private, or protected base classes. ISO/IEC 14882:2020 [dcl.init.aggr].
+///
+///  \see https://en.cppreference.com/w/cpp/language/aggregate_initialization
+///  
+template <class T>
+concept aggregate = std::is_aggregate_v<T> && !unbounded_c_array<T>;
+
 }
 
 namespace teg::internal {

@@ -40,7 +40,7 @@ template <class T>
 concept serializable = true;
 
 template <class T>
-concept trivially_serializable = standard_layout<T> && packed_layout<T>;
+concept trivially_serializable = trivially_copyable<T> && packed_layout<T>;
 
 } // namespace teg::concepts
 

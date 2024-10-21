@@ -690,10 +690,31 @@ namespace teg {
 
 constexpr static auto max_visit_members = 64;
 
+namespace concepts {
+
+///  \brief A type that can be bound to an identifier list using structured binding.
+///  
+///  Structured binding allows an object to be bound to a list of identifiers.
+///  In other languagues, this mechanism is referred to as "destructuring" or
+///  "unpacking".
+///
+///  \example
+///  \code
+///     auto [a, b, c] = std::make_tuple(1, 2, 3);
+///     a = 0;
+///  \endcode
+///  \see https://en.cppreference.com/w/cpp/language/structured_binding
+///  
+template <class T>
+concept structure_bindable = 
+           (aggregate<T> || tuple<T>)
+        && (!aggregate<std::remove_cvref_t<T>> || members_count_v<std::remove_cvref_t<T>> <= max_visit_members)
+        && (!tuple<std::remove_cvref_t<T>> || std::tuple_size_v<std::remove_cvref_t<T>> <= max_visit_members);
+
+} // namespace concepts
+
 template<class F, class T>
-requires (concepts::structure_bindable<std::remove_cvref_t<T>>) 
-      && (!concepts::aggregate<std::remove_cvref_t<T>> || members_count_v<std::remove_cvref_t<T>> <= max_visit_members)
-      && (!concepts::tuple<std::remove_cvref_t<T>> || std::tuple_size_v<std::remove_cvref_t<T>> <= max_visit_members)
+        requires (concepts::structure_bindable<std::remove_cvref_t<T>>)
 constexpr inline decltype(auto) visit_members(F&& visitor, T&& obj) noexcept {
     if constexpr (teg::concepts::tuple<std::remove_cvref_t<T>>) {
         return internal::visit_members(
