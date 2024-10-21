@@ -104,6 +104,10 @@ public:
         if constexpr (has_resizable_buffer) {
             m_buffer.resize(m_buffer.size() + buffer_size(objs...));
         }
+
+        if (m_buffer.size() < m_position + buffer_size(objs...)) {
+            return error { std::errc::no_buffer_space };
+        }
         
         return serialize_many(objs...);
     }
@@ -237,28 +241,7 @@ private:
     template <class T>
         requires (concepts::trivially_serializable<T>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& obj) -> error {
-        // Trivial serialization.
-        if (std::is_constant_evaluated()) {
-            // At compile-time.
-            using src_array_type = std::array<byte_type, sizeof(obj)>;
-            
-            auto src_array = std::bit_cast<src_array_type>(obj);
-            for (auto& src_byte : src_array) {
-                m_buffer[m_position++] = src_byte;
-            }
-
-            return {};
-        }
-        else {
-            // At run-time.
-            auto* dst = m_buffer.data() + m_position;
-            auto* const src = reinterpret_cast<byte_type const*>(&obj);
-            auto const size = sizeof(obj);
-
-            std::memcpy(dst, src, size);
-            m_position += size;
-            return {};
-        }
+        return write_bytes(obj);
     }
 
     template <class T>
@@ -316,14 +299,8 @@ private:
             concepts::contiguous_container<container_type> &&
             concepts::trivially_serializable<element_type>
         ) {
-            // Optimized path: memory copy elements.
-            auto* dst = m_buffer.data() + m_position;
-            auto const* src = reinterpret_cast<byte_type const*>(container.data());
-            auto const size = container.size() * sizeof(element_type);
-            
-            std::memcpy(dst, src, size);
-            m_position += size;
-            return {};   
+            // Optimized path: memory copy elements.            
+            return write_bytes(container);   
         }
         else {
             // Non-optimized path: serialize each element one by one.
@@ -386,6 +363,48 @@ private:
             },
             variant
         );
+    }
+
+    template <class T>
+        requires (concepts::trivially_serializable<T>)
+    [[nodiscard]] constexpr inline auto write_bytes(T const& obj) -> error {
+        if (std::is_constant_evaluated()) {
+            // Serialize at compile-time.
+            using src_array_type = std::array<byte_type, sizeof(obj)>;
+            
+            auto src_array = std::bit_cast<src_array_type>(obj);
+            for (auto& src_byte : src_array) {
+                m_buffer[m_position++] = src_byte;
+            }
+
+            return {};
+        }
+        else {
+            // Serialize at run-time.
+            auto* dst = m_buffer.data() + m_position;
+            auto* const src = reinterpret_cast<byte_type const*>(&obj);
+            auto const size = sizeof(obj);
+
+            std::memcpy(dst, src, size);
+            m_position += size;
+            return {};
+        }
+    }
+
+    template <class T>
+        requires (concepts::contiguous_container<T>)
+              && (concepts::trivially_serializable<typename T::value_type>)
+              && (!concepts::trivially_serializable<T>)
+    [[nodiscard]] constexpr inline auto write_bytes(T const& container) -> error {
+        // Serialization at compile-time is not possible in this case.
+        // Serialize at run-time.
+        auto* dst = m_buffer.data() + m_position;
+        auto const* src = reinterpret_cast<byte_type const*>(container.data());
+        auto const size = container.size() * sizeof(typename T::value_type);
+        
+        std::memcpy(dst, src, size);
+        m_position += size;
+        return {};
     }
 
 private:

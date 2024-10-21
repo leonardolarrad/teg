@@ -71,8 +71,7 @@ public:
     [[nodiscard]] constexpr inline auto deserialize(T&... objs) -> error {        
         if constexpr (sizeof...(objs) == 0) {
             return {};
-        }
-                
+        }        
         return deserialize_many(objs...);
     }
 
@@ -93,45 +92,7 @@ private:
     template <class T>
         requires (concepts::trivially_deserializable<T>)
     [[nodiscard]] constexpr inline auto deserialize_one(T& obj) -> error {
-        if (std::is_constant_evaluated()) {
-            // Deserialize at compile-time.
-            using type = std::remove_cvref_t<T>;
-            using src_array_type = std::array<std::remove_cv_t<byte_type>, sizeof(type)>;
-
-            src_array_type src_array;
-            for (auto& src_byte : src_array) {
-                src_byte = m_buffer[m_position++];
-            }
-
-            if constexpr (!concepts::c_array<type>) {
-                // The object being deserialized is not a c-array and we can simply `bit-cast` its content.
-                obj = std::bit_cast<type>(src_array);
-                return {};
-            }
-            else {
-                // The object being deserialized is a c-array and can have multiple dimensions (rank can be > 1).
-                using c_array_type = type;
-                using element_type = std::remove_cvref_t<std::remove_all_extents_t<c_array_type>>;
-                using tmp_array_type = std::array<element_type, sizeof(c_array_type) / sizeof(element_type)>;
-
-                // In C++ functions can not return c-arrays, and therefore, std::bit_cast can not be used directly.
-                // Instead, we have to create a temporary array and then copy its elements one by one.
-                tmp_array_type tmp_array = std::bit_cast<tmp_array_type>(src_array);
-                copy_md_c_array(obj, tmp_array);
-                
-                return {};
-            }
-        }
-        else {
-            // Deserialize at run-time.
-            auto* dst = reinterpret_cast<std::remove_cv_t<byte_type>*>(&obj);
-            auto* const src = m_buffer.data() + m_position;
-            auto const size = sizeof(obj);
-
-            std::memcpy(dst, src, size);
-            m_position += size;
-            return {};
-        }
+        return read_bytes(obj);
     }
 
     template <class T>
@@ -189,15 +150,7 @@ private:
         ) {
             // Optimized path: memory copy elements.
             container.resize(size);
-
-            auto* dst = reinterpret_cast<byte_type*>(container.data());
-            auto const* src = m_buffer.data() + m_position;
-            auto const size = container.size() * sizeof(value_type);
-
-            std::memcpy(dst, src, size);
-            m_position += size;
-
-            return {};
+            return read_bytes(container);
         }
         else {
             // Unoptimized path: deserialize elements one by one.
@@ -347,6 +300,74 @@ private:
         });
     }
 
+    template <class T>
+        requires (concepts::trivially_deserializable<T>)
+    [[nodiscard]] constexpr inline auto read_bytes(T& obj) -> error {
+        if (std::is_constant_evaluated()) {
+            // Deserialize at compile-time.
+            using type = std::remove_cvref_t<T>;
+            using src_array_type = std::array<std::remove_cv_t<byte_type>, sizeof(type)>;
+
+            src_array_type src_array;
+            for (auto& src_byte : src_array) {
+                src_byte = m_buffer[m_position++];
+            }
+
+            if constexpr (!concepts::c_array<type>) {
+                // The object being deserialized is not a c-array and we can simply `bit-cast` its content.
+                obj = std::bit_cast<type>(src_array);
+                return {};
+            }
+            else {
+                // The object being deserialized is a c-array and can have multiple dimensions (rank can be > 1).
+                using c_array_type = type;
+                using element_type = std::remove_cvref_t<std::remove_all_extents_t<c_array_type>>;
+                using tmp_array_type = std::array<element_type, sizeof(c_array_type) / sizeof(element_type)>;
+
+                // In C++ functions can not return c-arrays, and therefore, std::bit_cast can not be used directly.
+                // Instead, we have to create a temporary array and then copy its elements one by one.
+                tmp_array_type tmp_array = std::bit_cast<tmp_array_type>(src_array);
+                copy_md_c_array(obj, tmp_array);                
+                return {};
+            }
+        }
+        else {
+            // Deserialize at run-time.
+            if (m_position + sizeof(obj) > m_buffer.size()) {
+                return error { std::errc::value_too_large };
+            }
+
+            auto* dst = reinterpret_cast<std::remove_cv_t<byte_type>*>(&obj);
+            auto* const src = m_buffer.data() + m_position;
+            auto const size = sizeof(obj);
+
+            std::memcpy(dst, src, size);
+            m_position += size;
+            return {};
+        }
+    }
+
+    template <class T> 
+        requires concepts::contiguous_container<T>
+              && concepts::resizable_container<T> 
+              && concepts::trivially_serializable<typename T::value_type>
+    [[nodiscard]] constexpr inline auto read_bytes(T& container) -> error {
+        // Deserialization at compile-time is not possible in this case.
+        // Deserialize at run-time.
+        auto* dst = reinterpret_cast<byte_type*>(container.data());
+        auto const* src = m_buffer.data() + m_position;
+        auto const size = container.size() * sizeof(typename T::value_type);
+
+        if (m_position + size > m_buffer.size()) {
+            return error { std::errc::value_too_large };
+        }
+
+        std::memcpy(dst, src, size);
+        m_position += size;
+
+        return {};
+    }
+
 private:
     buffer_type m_buffer = {};
     std::size_t m_position = 0;
@@ -354,7 +375,7 @@ private:
 
 template <class B, class... T>
     requires (concepts::byte_buffer<B>) && (concepts::deserializable<T> && ...)
-constexpr inline auto deserialize(B & input_buffer, T&... objs) -> error {
+constexpr inline auto deserialize(B& input_buffer, T&... objs) -> error {
     return binary_deserializer<B>{input_buffer}.deserialize(objs...);
 }
 
