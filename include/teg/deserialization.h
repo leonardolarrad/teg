@@ -23,9 +23,12 @@
 #include <concepts>
 #include <cstddef>
 #include <cstring>
+#include <optional>
 #include <span>
+#include <tuple>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 #include "buffer.h"
 #include "c_array.h"
@@ -87,15 +90,11 @@ private:
         return {};
     }
     
-    template <class T> 
+    template <class T>
         requires (concepts::trivially_deserializable<T>)
-              && (!concepts::optional<T>)
-              && (!concepts::tuple<T> || concepts::container<T>)
-              && (!concepts::variant<T>)
     [[nodiscard]] constexpr inline auto deserialize_one(T& obj) -> error {
-        // Trivial deserialization.
         if (std::is_constant_evaluated()) {
-            // At compile-time.
+            // Deserialize at compile-time.
             using type = std::remove_cvref_t<T>;
             using src_array_type = std::array<std::remove_cv_t<byte_type>, sizeof(type)>;
 
@@ -124,7 +123,7 @@ private:
             }
         }
         else {
-            // At run-time.
+            // Deserialize at run-time.
             auto* dst = reinterpret_cast<std::remove_cv_t<byte_type>*>(&obj);
             auto* const src = m_buffer.data() + m_position;
             auto const size = sizeof(obj);
@@ -135,7 +134,7 @@ private:
         }
     }
 
-    template <class T> 
+    template <class T>
         requires (concepts::aggregate<T>)
               && (!concepts::bounded_c_array<T>)
               && (!concepts::container<T>)
