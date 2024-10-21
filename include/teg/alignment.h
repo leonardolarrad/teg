@@ -141,6 +141,10 @@ constexpr auto has_padding_bits() -> bool {
 
 namespace teg::concepts {
 
+///  \brief A type that has standard layout and has no padding bits.
+///  \tparam T A standard layout type.
+///  \see https://en.cppreference.com/w/c/language/object
+///
 template <class T>
 concept packed_layout = standard_layout<T> && !has_padding_bits<T>();
 
