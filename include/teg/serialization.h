@@ -33,6 +33,7 @@
 #include "core_concepts.h"
 #include "error.h"
 #include "members_visitor.h"
+#include "options.h"
 
 namespace teg::concepts {
 
@@ -46,15 +47,29 @@ concept trivially_serializable = trivially_copyable<T> && packed_layout<T>;
 
 namespace teg {
 
-template <class B = byte_buffer>
+template <class B = byte_buffer, options Opt = default_mode>
     requires concepts::byte_buffer<B>
 class binary_serializer {
 public:
+    using span_type = decltype(std::span{std::declval<B&>()});
+    using buffer_type = std::conditional_t<concepts::resizable_container<B>, B&, span_type>;
+    using byte_type = typename std::remove_reference_t<buffer_type>::value_type;
+    
+    ///  \brief The type used to represent the size of the container being serialized.
+    ///  
+    using container_size_type = get_container_size_type<Opt>;
+
+    ///  \brief The type used to represent the index of the variant being serialized.
+    ///  
+    using variant_index_type = get_variant_index_type<Opt>;
+
     static constexpr bool has_resizable_buffer = concepts::resizable_container<B>;
 
-    using span_type = decltype(std::span{std::declval<B&>()});
-    using buffer_type = std::conditional_t<has_resizable_buffer, B&, span_type>;
-    using byte_type = typename std::remove_reference_t<buffer_type>::value_type;
+    static constexpr uint64_t allocation_limit = get_allocation_limit<Opt>();
+
+    static constexpr uint64_t max_container_size = std::numeric_limits<container_size_type>::max();
+
+    static constexpr uint64_t max_variant_index = std::numeric_limits<variant_index_type>::max();
     
     binary_serializer() = delete;
     binary_serializer(binary_serializer const&) = delete;
@@ -64,8 +79,8 @@ public:
     constexpr explicit binary_serializer(B && buffer) : m_buffer(buffer), m_position(0) {}
 
     template <class... T> requires (concepts::serializable<T> && ...)
-    [[nodiscard]] static constexpr inline auto buffer_size(T const&... objs) ->  std::size_t {
-        return buffer_size_many(objs...);
+    [[nodiscard]] static constexpr inline auto encoding_size(T const&... objs) -> uint64_t {
+        return encoding_size_many(objs...);
     }
 
     ///  \brief Binary serialization of the given objects.
@@ -102,10 +117,18 @@ public:
         }
 
         if constexpr (has_resizable_buffer) {
-            m_buffer.resize(m_buffer.size() + buffer_size(objs...));
+            const uint64_t new_size = m_buffer.size() + encoding_size(objs...);
+
+            // Check allocation limit.
+            if (new_size > allocation_limit) {
+                return error { std::errc::value_too_large };
+            }
+
+            m_buffer.resize(new_size);
         }
 
-        if (m_buffer.size() < m_position + buffer_size(objs...)) {
+        // Check buffer space.
+        if (m_buffer.size() < m_position + encoding_size(objs...)) {
             return error { std::errc::no_buffer_space };
         }
         
@@ -117,18 +140,18 @@ private:
 
     template <class T0, class... TN> 
     [[nodiscard]] static constexpr inline auto 
-        buffer_size_many(T0 const& first_obj, TN const&... remaining_objs) -> std::size_t 
+        encoding_size_many(T0 const& first_obj, TN const&... remaining_objs) -> uint64_t 
     {
-        return buffer_size_one(first_obj) + buffer_size_many(remaining_objs...);
+        return encoding_size_one(first_obj) + encoding_size_many(remaining_objs...);
     }
 
-    [[nodiscard]] static constexpr inline auto buffer_size_many() -> std::size_t {
+    [[nodiscard]] static constexpr inline auto encoding_size_many() -> uint64_t {
         return 0;
     }
 
     template <class T> 
         requires (concepts::trivially_serializable<T>)
-    [[nodiscard]] static constexpr inline auto buffer_size_one(T const& trivial) -> std::size_t {        
+    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& trivial) -> uint64_t {        
         return sizeof(trivial);
     }
 
@@ -137,64 +160,64 @@ private:
               && (!concepts::bounded_c_array<T>)
               && (!concepts::container<T>)
               && (!concepts::trivially_serializable<T>)
-    [[nodiscard]] static constexpr inline auto buffer_size_one(T const& aggregate) -> std::size_t {
+    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& aggregate) -> uint64_t {
         return visit_members(
             [&](auto&&... member) constexpr {
-                return buffer_size_many(member...);
+                return encoding_size_many(member...);
             },
             aggregate
         );
     }
 
     template <class T> requires (concepts::bounded_c_array<T>) && (!concepts::trivially_serializable<T>)
-    [[nodiscard]] static constexpr inline auto buffer_size_one(T const& c_array) -> std::size_t {
-        return std::size(c_array) * buffer_size_one(c_array[0]);
+    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& c_array) -> uint64_t {
+        return std::size(c_array) * encoding_size_one(c_array[0]);
     }
 
     template <class T> requires (concepts::container<T>) && (!concepts::trivially_serializable<T>)
-    [[nodiscard]] static constexpr inline auto buffer_size_one(T const& container) -> std::size_t {
+    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& container) -> uint64_t {
         using container_type = std::remove_reference_t<T>;
         using element_type = typename container_type::value_type;
         using size_type = typename container_type::size_type;
         
-        size_type size = 0;
+        uint64_t result = 0;
 
         if constexpr (!concepts::fixed_size_container<container_type>) {
-            size = sizeof(size_type);
+            result = sizeof(size_type);
         }
 
         if constexpr (
                concepts::sized_container<container_type>
             && concepts::trivially_serializable<element_type>
         ) {
-            size += sizeof(element_type) * container.size();
-            return size;
+            result += sizeof(element_type) * container.size();
+            return result;
         } 
         else if constexpr (
             concepts::trivially_serializable<element_type>
         ) {
-            size += sizeof(element_type) * std::distance(container.begin(), container.end());
-            return size;        
+            result += sizeof(element_type) * std::distance(container.begin(), container.end());
+            return result;        
         } else {
             for (auto const& element : container) {
-                size += buffer_size_one(element);
+                result += encoding_size_one(element);
             }
-            return size;
+            return result;
         }        
     }
 
     template <class T> requires (concepts::owning_ptr<T>)
-    [[nodiscard]] static constexpr inline auto buffer_size_one(T const& ptr) -> std::size_t {
+    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& ptr) -> uint64_t {
         if (ptr == nullptr) {
             return 0;
         }    
-        return buffer_size_one(*ptr);
+        return encoding_size_one(*ptr);
     }
 
     template <class T> requires (concepts::optional<T>)
-    [[nodiscard]] static constexpr inline auto buffer_size_one(T const& optional) -> std::size_t {    
+    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& optional) -> uint64_t {    
         if (optional.has_value()) {
-            return sizeof(std::byte) + buffer_size_one(optional.value());
+            return sizeof(std::byte) + encoding_size_one(optional.value());
         }
         else {
             return sizeof(std::byte);
@@ -202,21 +225,21 @@ private:
     }
 
     template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
-    [[nodiscard]] static constexpr inline auto buffer_size_one(T const& tuple) -> std::size_t {    
+    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& tuple) -> uint64_t {    
         return std::apply(
             [](auto&&... elements) constexpr {
-                return buffer_size_many(elements...);
+                return encoding_size_many(elements...);
             },
             tuple
         );
     }
 
     template <class T> requires (concepts::variant<T>)
-    [[nodiscard]] static constexpr inline auto buffer_size_one(T const& variant) -> std::size_t {
-        std::size_t const index_size = sizeof(variant.index());
-        std::size_t const element_size = std::visit(
+    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& variant) -> uint64_t {
+        uint64_t const index_size = sizeof(variant.index());
+        uint64_t const element_size = std::visit(
             [](auto&& value) constexpr {
-                return buffer_size_one(value);
+                return encoding_size_one(value);
             },
             variant
         );
@@ -409,13 +432,14 @@ private:
 
 private:
     buffer_type m_buffer = {};
-    std::size_t m_position = 0;
+    uint64_t m_position = 0;
 };
 
-template <class B, class... T>
-    requires (concepts::byte_buffer<B>) && (concepts::serializable<T> && ...)
-constexpr inline auto serialize(B & output_buffer, T const&... objs) -> error {
-    return binary_serializer<B>{output_buffer}.serialize(objs...);
+template <class B, class... T, options Opt = default_mode>
+    requires (concepts::byte_buffer<B>) 
+          && (concepts::serializable<T> && ...)
+constexpr inline auto serialize(B& output_buffer, T const&... objs) -> error {
+    return binary_serializer<B, Opt>{output_buffer}.serialize(objs...);
 }
 
 } // namespace teg
