@@ -31,6 +31,7 @@
 #include "md5.h"
 #include "members_count.h"
 #include "members_visitor.h"
+#include "options.h"
 #include "serialization.h"
 #include "unreachable.h"
 
