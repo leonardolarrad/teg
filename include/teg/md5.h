@@ -58,18 +58,19 @@
 #include <cassert>
 #include <cstdint>
 #include <string_view>
+#include <tuple>
 
 #include "fixed_string.h"
 
 namespace teg::internal {
 
 struct digest {
-    std::uint32_t a, b, c, d;
+    uint32_t a, b, c, d;
 };
 
-using round_data = std::array<std::uint32_t, 16>;
+using round_data = std::array<uint32_t, 16>;
 
-static constexpr std::array<std::uint32_t, 64> constants = {
+static constexpr std::array<uint32_t, 64> constants = {
     0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a,
     0xa8304613, 0xfd469501, 0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be,
     0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821, 0xf61e2562, 0xc040b340,
@@ -91,17 +92,17 @@ static constexpr digest initial_digest_data = {
     0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476
 };
 
-static constexpr auto get_padded_message_length(std::uint32_t len) -> std::uint32_t {
+static constexpr auto get_padded_message_length(uint32_t len) -> uint32_t {
     return (((len + 1 + 8) + 63) / 64) * 64;
 }
 
-static constexpr auto extract_byte(std::uint64_t value, std::uint32_t i) -> std::uint8_t {
+static constexpr auto extract_byte(uint64_t value, uint32_t i) -> uint8_t {
     assert(i < 8u);
-    return static_cast<std::uint8_t>((value >> (i * 8)) & 0xff);
+    return static_cast<uint8_t>((value >> (i * 8)) & 0xff);
 }
 
 static constexpr auto get_padded_message_byte
-    (std::string_view data, std::uint32_t m, std::uint32_t i) -> std::uint8_t {
+    (std::string_view data, uint32_t m, uint32_t i) -> uint8_t {
 
     assert(i < m);
     assert(data.size() < m);
@@ -119,20 +120,20 @@ static constexpr auto get_padded_message_byte
 }
 
 static constexpr auto get_padded_message_word
-    (std::string_view data, std::uint32_t m, std::uint32_t i) -> std::uint32_t {
+    (std::string_view data, uint32_t m, uint32_t i) -> uint32_t {
 
     assert(i % 4 == 0);
     assert(i < m);
     assert(data.size() < m);
     assert(m % 64 == 0) ;
 
-    return static_cast<std::uint32_t>((get_padded_message_byte(data, m, i + 0)) <<  0) 
-         | static_cast<std::uint32_t>((get_padded_message_byte(data, m, i + 1)) <<  8) 
-         | static_cast<std::uint32_t>((get_padded_message_byte(data, m, i + 2)) << 16) 
-         | static_cast<std::uint32_t>((get_padded_message_byte(data, m, i + 3)) << 24);
+    return static_cast<uint32_t>((get_padded_message_byte(data, m, i + 0)) <<  0) 
+         | static_cast<uint32_t>((get_padded_message_byte(data, m, i + 1)) <<  8) 
+         | static_cast<uint32_t>((get_padded_message_byte(data, m, i + 2)) << 16) 
+         | static_cast<uint32_t>((get_padded_message_byte(data, m, i + 3)) << 24);
 }
 
-static constexpr auto get_round_data(std::string_view data, std::uint32_t m, std::uint32_t i) -> round_data {
+static constexpr auto get_round_data(std::string_view data, uint32_t m, uint32_t i) -> round_data {
 
     assert(i % 64 == 0);
     assert(i < m);
@@ -160,7 +161,7 @@ static constexpr auto get_round_data(std::string_view data, std::uint32_t m, std
 }
 
 static constexpr auto compute_f
-    (std::uint32_t i, std::uint32_t b, std::uint32_t c, std::uint32_t d) -> std::uint32_t {
+    (uint32_t i, uint32_t b, uint32_t c, uint32_t d) -> uint32_t {
 
     assert(i < 64);
 
@@ -175,11 +176,11 @@ static constexpr auto compute_f
     }
 }
 
-static constexpr std::uint32_t compute_f(std::uint32_t i, digest mid) {
+static constexpr uint32_t compute_f(uint32_t i, digest mid) {
     return compute_f(i, mid.b, mid.c, mid.d);
 }
 
-static constexpr std::uint32_t compute_g(std::uint32_t i) {
+static constexpr uint32_t compute_g(uint32_t i) {
     assert(i < 64);
 
     if (i < 16) {
@@ -193,23 +194,23 @@ static constexpr std::uint32_t compute_g(std::uint32_t i) {
     }
 }
 
-static constexpr auto get_shift(std::uint32_t i) -> std::uint32_t {
+static constexpr auto get_shift(uint32_t i) -> uint32_t {
     assert(i < 64);
     return shifts[(i / 16) * 4 + (i % 4)];
 }
 
-static constexpr auto left_rotate(std::uint32_t value, std::uint32_t bits) -> std::uint32_t {
+static constexpr auto left_rotate(uint32_t value, uint32_t bits) -> uint32_t {
     assert(bits < 32);
     return (value << bits) | (value >> (32 - bits));
 }
 
-static constexpr auto apply_step(std::uint32_t i, round_data const& data, digest mid) -> digest {
+static constexpr auto apply_step(uint32_t i, round_data const& data, digest mid) -> digest {
     assert(i < 64);
     
-    const std::uint32_t g = compute_g(i);
+    const uint32_t g = compute_g(i);
     assert(g < 16);
     
-    const std::uint32_t f = compute_f(i, mid) + mid.a + constants[i] + data[g];
+    const uint32_t f = compute_f(i, mid) + mid.a + constants[i] + data[g];
     const uint32_t s = get_shift(i);
     return digest {
         .a = mid.d,
@@ -227,7 +228,7 @@ static constexpr auto add(digest d0, digest d1) -> digest {
 }
 
 static constexpr auto process_message(std::string_view message) -> digest {
-    const std::uint32_t m = get_padded_message_length(static_cast<std::uint32_t>(message.size()));
+    const uint32_t m = get_padded_message_length(static_cast<uint32_t>(message.size()));
     
     digest digest0 = initial_digest_data;
     
@@ -243,25 +244,36 @@ static constexpr auto process_message(std::string_view message) -> digest {
     return digest0;
 }
 
-static constexpr auto swap_endian(std::uint32_t a) -> std::uint32_t {
+static constexpr auto swap_endian(uint32_t a) -> uint32_t {
     return
         ((a & 0xff) << 24) | (((a >> 8) & 0xff) << 16) |
         (((a >> 16) & 0xff) << 8) | ((a >> 24) & 0xff);
 }
 
-static constexpr auto md5_hash_64_impl(std::string_view data) -> std::uint64_t {
-    digest md5_digest = process_message(data);
-
-    return (static_cast<std::uint64_t>(swap_endian(md5_digest.a)) << 32) 
-         | (static_cast<std::uint64_t>(swap_endian(md5_digest.b)) <<  0);
-}
-
-static constexpr auto md5_hash_32_impl(std::string_view data) -> std::uint32_t {
+static constexpr auto md5_hash_u32_impl(std::string_view data) -> uint32_t {
     digest md5_digest = process_message(data);
     return swap_endian(md5_digest.a);
 }
 
-static constexpr auto to_hex(std::uint32_t value) -> fixed_string<8> {
+static constexpr auto md5_hash_u64_impl(std::string_view data) -> uint64_t {
+    digest md5_digest = process_message(data);
+
+    return (static_cast<uint64_t>(swap_endian(md5_digest.a)) << 32) 
+         | (static_cast<uint64_t>(swap_endian(md5_digest.b)) <<  0);
+}
+
+static constexpr auto md5_hash_u128_impl(std::string_view data) -> std::tuple<uint32_t, uint32_t, uint32_t, uint32_t> {
+    digest md5_digest = process_message(data);
+
+    return { 
+        swap_endian(md5_digest.a), 
+        swap_endian(md5_digest.b), 
+        swap_endian(md5_digest.c), 
+        swap_endian(md5_digest.d) 
+    };
+}
+
+static constexpr auto to_hex(uint32_t value) -> fixed_string<8> {
     constexpr char hex_digits[] = "0123456789abcdef";
 
     return {
@@ -296,12 +308,12 @@ namespace teg {
 ///
 /// \example
 /// \code
-///    constexpr std::uint32_t hash = teg::md5_hash_u32("Hello there!");
+///    constexpr uint32_t hash = teg::md5_hash_u32("Hello there!");
 ///    static_assert(hash == 0xa77b5533ul);    
 /// \endcode
 ///
-constexpr auto md5_hash_u32(std::string_view data) -> std::uint32_t {
-    return internal::md5_hash_32_impl(data);
+constexpr auto md5_hash_u32(std::string_view data) -> uint32_t {
+    return internal::md5_hash_u32_impl(data);
 }
 
 ///  \brief Computes first 64 bits of the MD5 hash of the given data.
@@ -311,12 +323,30 @@ constexpr auto md5_hash_u32(std::string_view data) -> std::uint32_t {
 /// 
 ///  \example
 ///  \code
-///      constexpr std::uint64_t hash = teg::md5_hash_u64("Hello there!");
-///      static_assert(hash == 0xa77b5533a77b5533ul);    
+///      constexpr uint64_t hash = teg::md5_hash_u64("Hello there!");
+///      static_assert(hash == 0xa77b55332699835cul);    
 ///  \endcode
 ///  
-constexpr auto md5_hash_u64(std::string_view data) -> std::uint64_t {
-    return internal::md5_hash_64_impl(data);
+constexpr auto md5_hash_u64(std::string_view data) -> uint64_t {
+    return internal::md5_hash_u64_impl(data);
+}
+
+///  \brief Md5 digest representation as a 128-bit tuple.
+///
+using md5_digest = std::tuple<uint32_t, uint32_t, uint32_t, uint32_t>;
+
+///  \brief Computes the MD5 hash of the given data.
+///  
+///  \param data A string view of the data to hash.
+///  \return A tuple containing the 4 32-bit words of the MD5 hash.
+/// 
+///  \example
+///  \code
+///      constexpr teg::md5_digest hash = teg::md5_hash_u128("Hello there!");
+///      static_assert(hash == std::make_tuple(0xa77b5533, 0x2699835c, 0x035957df, 0x17630d28));    
+///  \endcode
+constexpr auto md5_hash_u128(std::string_view data) -> md5_digest {
+    return internal::md5_hash_u128_impl(data);
 }
 
 ///  \brief Computes the MD5 hash of the given data.
