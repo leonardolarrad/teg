@@ -268,3 +268,44 @@ TEST_CASE("De/serialize std::forward_list") {
     teg::deserialize(b, fl1).or_throw();
     ASSERT(fl0 == fl1);    
 }
+
+TEST_CASE("Force allocation limit") {
+    SECTION("1-byte container size limit") {
+        teg::byte_buffer buffer0{};
+        teg::byte_buffer buffer1{};
+
+        constexpr teg::options opt0 = teg::options::container_size_1b;
+        constexpr teg::options opt1 = teg::options::container_size_2b;
+
+        std::vector<uint8_t> v0{};
+        for (auto i = 0; i < 255 * 2; ++i) {
+            v0.push_back(static_cast<uint8_t>(i));
+        }
+
+        auto r0 = teg::serialize<opt0>(buffer0, v0);
+        auto r1 = teg::serialize<opt1>(buffer1, v0);
+
+        ASSERT(buffer0.size() == 0);
+        ASSERT(teg::failure(r0));
+        ASSERT(teg::success(r1));
+    }
+    SECTION("2-byte container size limit") {
+        teg::byte_buffer buffer0{};
+        teg::byte_buffer buffer1{};
+
+        constexpr teg::options opt0 = teg::options::container_size_2b;
+        constexpr teg::options opt1 = teg::options::container_size_4b;
+
+        std::vector<uint8_t> v0{};
+        for (auto i = 0; i < 65536 * 2; ++i) {
+            v0.push_back(static_cast<uint8_t>(i));
+        }
+
+        auto r0 = teg::serialize<opt0>(buffer0, v0);
+        auto r1 = teg::serialize<opt1>(buffer1, v0);
+
+        ASSERT(buffer0.size() == 0);
+        ASSERT(teg::failure(r0));
+        ASSERT(teg::success(r1));
+    }
+}

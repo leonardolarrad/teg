@@ -118,7 +118,8 @@ public:
         }
 
         if constexpr (has_resizable_buffer) {
-            const uint64_t new_size = m_buffer.size() + encoding_size(objs...);
+            uint64_t const old_size = m_buffer.size();
+            uint64_t const new_size = old_size + encoding_size(objs...);
 
             // Check allocation limit.
             if (new_size > allocation_limit) [[unlikely]] {
@@ -128,15 +129,22 @@ public:
             // Resize the buffer.
             using buffer_size_type = std::remove_cvref_t<buffer_type>::size_type;
             m_buffer.resize(static_cast<buffer_size_type>(new_size));
+
+            if (auto const result = serialize_many(objs...); failure(result)) [[unlikely]] {
+                // Restore the old buffer.
+                m_buffer.resize(static_cast<buffer_size_type>(old_size));
+                return result;
+            }
+            return {};
         }
         else {
             // Check buffer space.
             if (m_buffer.size() < m_position + encoding_size(objs...)) [[unlikely]] {
                 return error { std::errc::no_buffer_space };
             }
+
+            return serialize_many(objs...);
         }
-        
-        return serialize_many(objs...);
     }
 
 private:
@@ -454,7 +462,7 @@ private:
     uint64_t m_position = 0;
 };
 
-template <class B, class... T, options Opt = default_mode>
+template <options Opt = default_mode, class B, class... T>
     requires (concepts::byte_buffer<B>) 
           && (concepts::serializable<T> && ...)
 constexpr inline auto serialize(B& output_buffer, T const&... objs) -> error {

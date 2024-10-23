@@ -74,7 +74,7 @@ static constexpr options compact_mode =
 static constexpr options fast_mode =
     options::allocation_limit_4gib | options::container_size_native | options::variant_index_native;
 
-static constexpr options secure_mode = default_mode | options::enable_integrity_check;
+static constexpr options secure_mode = default_mode | options::enable_all_checks;
 
 ///  \brief Container size type.
 ///  \tparam Opt Options flag.
