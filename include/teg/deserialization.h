@@ -37,6 +37,7 @@
 #include "error.h"
 #include "members_visitor.h"
 #include "serialization.h"
+#include "options.h"
 
 namespace teg::concepts {
 
@@ -50,19 +51,35 @@ concept trivially_deserializable = trivially_serializable<T>;
 
 namespace teg {
 
-template <class B = byte_buffer>
+template <class B = byte_buffer, options Opt = default_mode>
     requires concepts::byte_buffer<B>
 class binary_deserializer {
 public:
-    static constexpr bool has_resizable_buffer = concepts::resizable_container<B>;
+    
 
     using span_type = decltype(std::span{std::declval<B&>()});
-    using buffer_type = std::conditional_t<has_resizable_buffer, B&, span_type>;
+    using buffer_type = std::conditional_t<concepts::resizable_container<B>, B&, span_type>;
     using byte_type = typename std::remove_reference_t<buffer_type>::value_type;
 
     binary_deserializer() = delete;
     binary_deserializer(binary_deserializer const&) = delete;
     binary_deserializer& operator=(binary_deserializer const&) = delete;
+
+    ///  \brief The type used to represent the size of the container being serialized.
+    ///  
+    using container_size_type = get_container_size_type<Opt>;
+
+    ///  \brief The type used to represent the index of the variant being serialized.
+    ///  
+    using variant_index_type = get_variant_index_type<Opt>;
+
+    static constexpr bool has_resizable_buffer = concepts::resizable_container<B>;
+
+    static constexpr uint64_t allocation_limit = get_allocation_limit<Opt>();
+
+    static constexpr uint64_t max_container_size = std::numeric_limits<container_size_type>::max();
+
+    static constexpr uint64_t max_variant_index = std::numeric_limits<variant_index_type>::max();
 
     constexpr explicit binary_deserializer(B & buffer) : m_buffer(buffer), m_position(0) {}
     constexpr explicit binary_deserializer(B && buffer) : m_buffer(buffer), m_position(0) {}
@@ -127,26 +144,25 @@ private:
               && (!concepts::fixed_size_container<T>)
               && (!concepts::trivially_deserializable<T>)
     [[nodiscard]] inline constexpr auto deserialize_one(T& container) -> error {
-        using type = std::remove_reference_t<T>;
-        using value_type = typename type::value_type;
-        using size_type = typename type::size_type;
+        using container_type = std::remove_reference_t<T>;
+        using element_type = typename container_type::value_type;
 
-        if constexpr (concepts::clearable_container<type>) {
+        if constexpr (concepts::clearable_container<container_type>) {
             // Pre-condition: the container should be empty.
             container.clear();
         }
 
         // Deserialize the size.
-        size_type size;
+        container_size_type size;
         if (auto result = deserialize_one(size); failure(result)) [[unlikely]] {
             return result;
         }
 
         // Deserialize the elements.
         if constexpr (
-               concepts::contiguous_container<type>
-            && concepts::resizable_container<type> 
-            && concepts::trivially_serializable<value_type>
+               concepts::contiguous_container<container_type>
+            && concepts::resizable_container<container_type> 
+            && concepts::trivially_serializable<element_type>
         ) {
             // Optimized path: memory copy elements.
             container.resize(size);
@@ -156,18 +172,18 @@ private:
             // Unoptimized path: deserialize elements one by one.
             // Select the most suitable method to emplace the elements based on the container type.
 
-            if constexpr (concepts::reservable_container<type>) {
+            if constexpr (concepts::reservable_container<container_type>) {
                 // Optimization: pre-allocate uninitialized memory whenever possible.
                 container.reserve(size);
             }
 
-            if constexpr (concepts::map_container<type>) {
-                // By default, `std::map` uses `std::pair<const key_type, mapped_type>` as its value_type.
+            if constexpr (concepts::map_container<container_type>) {
+                // By default, `std::map` uses `std::pair<const key_type, mapped_type>` as its element_type.
                 // We cannot deserialize const-qualified types, so we need to remove the const qualifiers.
-                using key_value_element = std::pair<typename type::key_type, typename type::mapped_type>;
+                using key_value_element = std::pair<typename container_type::key_type, typename container_type::mapped_type>;
                 key_value_element element;
 
-                for (size_type i = 0; i < size; ++i) {                    
+                for (container_size_type i = 0; i < size; ++i) {                    
                     if (auto result = deserialize_one(element); failure(result)) [[unlikely]] {
                         return result;
                     }
@@ -175,10 +191,10 @@ private:
                 }
                 return {};
             }
-            else if constexpr (concepts::inplace_constructing_container<type>) {
+            else if constexpr (concepts::inplace_constructing_container<container_type>) {
                 // Construct the elements and then move them into the container.
-                value_type element;
-                for (size_type i = 0; i < size; ++i) {
+                element_type element;
+                for (container_size_type i = 0; i < size; ++i) {
                     if (auto result = deserialize_one(element); failure(result)) [[unlikely]] {
                         return result;
                     }
@@ -186,31 +202,31 @@ private:
                 }
                 return {};
             }
-            else if constexpr (concepts::back_inplace_constructing_container<type>) {
+            else if constexpr (concepts::back_inplace_constructing_container<container_type>) {
                 // Emplace the elements at the back of the container.
-                for (size_type i = 0; i < size; ++i) {                
+                for (container_size_type i = 0; i < size; ++i) {                
                     if (auto result = deserialize_one(container.emplace_back()); failure(result)) [[unlikely]] {
                         return result;
                     }
                 }
                 return {};
             }
-            else if constexpr (concepts::front_inplace_constructing_container<type>) {
+            else if constexpr (concepts::front_inplace_constructing_container<container_type>) {
                 // Worst-case scenario: the container constructs its elements at the front of its storage.
                 // We may need to reverse the container after deserialization.
-                for (size_type i = 0; i < size; ++i) {
+                for (container_size_type i = 0; i < size; ++i) {
                     if (auto result = deserialize_one(container.emplace_front()); failure(result)) [[unlikely]] {
                         return result;
                     }
                 }
 
-                if constexpr (concepts::invertible_container<type>) {
+                if constexpr (concepts::invertible_container<container_type>) {
                     container.reverse();
                 }
                 return {};
             }
             else {
-                static_assert(!sizeof(T), "Unsupported container type.");
+                static_assert(!sizeof(T), "Unsupported container container_type.");
             }
         }
     }
@@ -274,7 +290,7 @@ private:
         using variant_type = std::remove_reference_t<T>;
 
         // Deserialize the index.
-        std::size_t runtime_index;
+        variant_index_type runtime_index;
         if (auto result = deserialize_one(runtime_index); failure(result)) [[unlikely]] {
             return result;
         }
@@ -373,7 +389,7 @@ private:
     std::size_t m_position = 0;
 };
 
-template <class B, class... T>
+template <class B, class... T, options Opt = default_mode>
     requires (concepts::byte_buffer<B>) && (concepts::deserializable<T> && ...)
 constexpr inline auto deserialize(B& input_buffer, T&... objs) -> error {
     return binary_deserializer<B>{input_buffer}.deserialize(objs...);

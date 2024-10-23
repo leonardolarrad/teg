@@ -19,13 +19,14 @@
 #ifndef TEG_SERIALIZATION_H
 #define TEG_SERIALIZATION_H
 
-#include <cstddef>
+#include <algorithm>
+#include <bit>
 #include <concepts>
+#include <cstddef>
+#include <cstring>
+#include <span>
 #include <type_traits>
 #include <utility>
-#include <span>
-#include <bit>
-#include <cstring>
 
 #include "alignment.h"
 #include "buffer.h"
@@ -120,16 +121,19 @@ public:
             const uint64_t new_size = m_buffer.size() + encoding_size(objs...);
 
             // Check allocation limit.
-            if (new_size > allocation_limit) {
+            if (new_size > allocation_limit) [[unlikely]] {
                 return error { std::errc::value_too_large };
             }
 
-            m_buffer.resize(new_size);
+            // Resize the buffer.
+            using buffer_size_type = std::remove_cvref_t<buffer_type>::size_type;
+            m_buffer.resize(static_cast<buffer_size_type>(new_size));
         }
-
-        // Check buffer space.
-        if (m_buffer.size() < m_position + encoding_size(objs...)) {
-            return error { std::errc::no_buffer_space };
+        else {
+            // Check buffer space.
+            if (m_buffer.size() < m_position + encoding_size(objs...)) [[unlikely]] {
+                return error { std::errc::no_buffer_space };
+            }
         }
         
         return serialize_many(objs...);
@@ -178,31 +182,34 @@ private:
     [[nodiscard]] static constexpr inline auto encoding_size_one(T const& container) -> uint64_t {
         using container_type = std::remove_reference_t<T>;
         using element_type = typename container_type::value_type;
-        using size_type = typename container_type::size_type;
         
-        uint64_t result = 0;
+        uint64_t encoding_size = 0;
 
         if constexpr (!concepts::fixed_size_container<container_type>) {
-            result = sizeof(size_type);
+            encoding_size = sizeof(container_size_type);
         }
 
         if constexpr (
-               concepts::sized_container<container_type>
-            && concepts::trivially_serializable<element_type>
+            concepts::sized_container<container_type> &&
+            concepts::trivially_serializable<element_type>
         ) {
-            result += sizeof(element_type) * container.size();
-            return result;
+            const uint64_t container_size = std::min(
+                static_cast<uint64_t>(container.size()), max_container_size);
+            encoding_size += sizeof(element_type) * container_size;
+            return encoding_size;
         } 
         else if constexpr (
             concepts::trivially_serializable<element_type>
         ) {
-            result += sizeof(element_type) * std::distance(container.begin(), container.end());
-            return result;        
+            const uint64_t container_size = std::min(
+                static_cast<uint64_t>(std::distance(container.begin(), container.end())), max_container_size);
+            encoding_size += sizeof(element_type) * container_size;
+            return encoding_size;        
         } else {
             for (auto const& element : container) {
-                result += encoding_size_one(element);
+                encoding_size += encoding_size_one(element);
             }
-            return result;
+            return encoding_size;
         }        
     }
 
@@ -217,10 +224,10 @@ private:
     template <class T> requires (concepts::optional<T>)
     [[nodiscard]] static constexpr inline auto encoding_size_one(T const& optional) -> uint64_t {    
         if (optional.has_value()) {
-            return sizeof(std::byte) + encoding_size_one(optional.value());
+            return sizeof(byte_type) + encoding_size_one(optional.value());
         }
         else {
-            return sizeof(std::byte);
+            return sizeof(byte_type);
         }
     }
 
@@ -236,8 +243,8 @@ private:
 
     template <class T> requires (concepts::variant<T>)
     [[nodiscard]] static constexpr inline auto encoding_size_one(T const& variant) -> uint64_t {
-        uint64_t const index_size = sizeof(variant.index());
-        uint64_t const element_size = std::visit(
+        const uint64_t index_size = sizeof(variant_index_type);
+        const uint64_t element_size = std::visit(
             [](auto&& value) constexpr {
                 return encoding_size_one(value);
             },
@@ -296,22 +303,33 @@ private:
     [[nodiscard]] constexpr inline auto serialize_one(T const& container) -> error {
         using container_type = std::remove_reference_t<T>;
         using element_type = typename container_type::value_type;
-        using size_type = typename container_type::size_type;
+        using native_size_type = typename container_type::size_type;
         
         // Serialize the size if needed.
         if constexpr (!concepts::fixed_size_container<container_type>) {
             // If the container its fixed, the size is known at compile-time;
             // thus, serialization is unnecessary. Otherwise, serialize its size.
             if constexpr (concepts::sized_container<container_type>) {
-                // Optimization: we don't need to compute the size; it is already known at run-time.
-                if (auto result = serialize_one(container.size()); failure(result)) [[unlikely]] {
+                // Optimized path: we don't need to compute the size; it is already known at run-time.
+                native_size_type const size = container.size();
+
+                if (size > max_container_size) [[unlikely]] {
+                    return error { std::errc::value_too_large };
+                }
+
+                if (auto result = serialize_one(static_cast<container_size_type>(size)); failure(result)) [[unlikely]] {
                     return result;
                 }
             }
             else {
                 // Non-optimized path: some containers (like `std::forward_list`) don't have a `size()` observer.
-                size_type const size = std::distance(container.begin(), container.end());
-                if (auto result = serialize_one(size); failure(result)) [[unlikely]] {
+                native_size_type const size = std::distance(container.begin(), container.end());
+                
+                if (size > max_container_size) [[unlikely]] {
+                    return error { std::errc::value_too_large };
+                }
+
+                if (auto result = serialize_one(static_cast<container_size_type>(size)); failure(result)) [[unlikely]] {
                     return result;
                 }
             }
@@ -375,7 +393,8 @@ private:
         }
 
         // Serialize the index.
-        if (auto result = serialize_one(variant.index()); failure(result)) [[unlikely]] {
+        auto result = serialize_one(static_cast<variant_index_type>(variant.index()));
+        if (failure(result)) [[unlikely]] {
             return result;        
         }    
 
