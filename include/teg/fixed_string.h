@@ -124,7 +124,7 @@ public:
     // Conversions.
     [[nodiscard]] constexpr operator string_view_type() const noexcept { return { m_data, N }; }
 
-private:
+public:
     // Storage.
     value_type m_data[N+1] = {};
 };
@@ -210,6 +210,10 @@ using fixed_wstring = basic_fixed_string<wchar_t, N>;
 
 namespace std {
 
+// Implement tuple-like interface.
+
+template <class T> struct tuple_size; // Forward declaration.
+
 ///  \brief Provides access to the number of elements in an `teg::basic_fixed_string` as a
 ///  compile-time constant expression.
 ///  
@@ -217,14 +221,46 @@ template< class T, std::size_t N >
 struct tuple_size<teg::basic_fixed_string<T, N>> : std::integral_constant<std::size_t, N>
 { };
 
+template<std::size_t I, class T> // Forward declaration.
+struct tuple_element;
+
 ///  \brief Provides compile-time indexed access to the type of the elements of 
 ///  `teg::basic_fixed_string` using tuple-like interface.
 ///  
 template <std::size_t I, class T, std::size_t N>
 struct tuple_element<I, teg::basic_fixed_string<T, N>> {
+    static_assert(I < N);
     using type = T;
 };
 
 } // namespace std
+
+namespace teg {
+    
+template<std::size_t I, class T, std::size_t N>
+constexpr T& get(teg::basic_fixed_string<T, N>& a) noexcept {
+    static_assert(I < N);
+    return a.m_data[I];
+}
+
+template<std::size_t I, class T, std::size_t N>
+constexpr const T& get(const teg::basic_fixed_string<T, N>& a) noexcept {
+    static_assert(I < N);
+    return a[I];
+}
+
+template<std::size_t I, class T, std::size_t N>
+constexpr T&& get(teg::basic_fixed_string<T, N>&& a) noexcept {
+    static_assert(I < N);
+    return std::move(a[I]);
+}
+
+template<std::size_t I, class T, std::size_t N>
+constexpr const T&& get(const teg::basic_fixed_string<T, N>&& a) noexcept {
+    static_assert(I < N);
+    return std::move(a[I]);
+}
+
+} // namespace teg
 
 #endif // TEG_FIXED_STRING_H

@@ -22,6 +22,7 @@
 #include <vector>
 #include <array>
 #include <type_traits>
+#include <tuple>
 
 #include "core_concepts.h"
 #include "container_concepts.h"

@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <utility>
+#include <tuple>
     
 #include "core_concepts.h"
 #include "c_array.h"

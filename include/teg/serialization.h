@@ -27,6 +27,7 @@
 #include <span>
 #include <type_traits>
 #include <utility>
+#include <tuple>
 
 #include "alignment.h"
 #include "buffer.h"
@@ -37,6 +38,7 @@
 #include "error.h"
 #include "members_visitor.h"
 #include "options.h"
+#include "fixed_string.h"
 
 namespace teg::concepts {
 
@@ -175,9 +177,7 @@ private:
         return 0;
     }
 
-    template <class T>
-        requires (concepts::trivially_serializable<T, Opt>)
-              && (!concepts::bounded_c_array<T>)
+    template <class T> requires (concepts::trivially_serializable<T, Opt>)
     [[nodiscard]] static constexpr inline auto encoding_size_one(T const& trivial) -> uint64_t {        
         return sizeof(trivial);
     }
@@ -186,6 +186,7 @@ private:
         requires (concepts::aggregate<T>) 
               && (!concepts::bounded_c_array<T>)
               && (!concepts::container<T>)
+              && (!concepts::tuple<T>)
               && (!concepts::trivially_serializable<T, Opt>)
     [[nodiscard]] static constexpr inline auto encoding_size_one(T const& aggregate) -> uint64_t {
         return visit_members(
@@ -196,7 +197,9 @@ private:
         );
     }
 
-    template <class T> requires (concepts::bounded_c_array<T>)
+    template <class T> requires 
+           (concepts::bounded_c_array<T>) 
+        && (!concepts::trivially_serializable<T, Opt>)
     [[nodiscard]] static constexpr inline auto encoding_size_one(T const& c_array) -> uint64_t {
         return std::size(c_array) * encoding_size_one(c_array[0]);
     }
@@ -299,8 +302,9 @@ private:
 
     template <class T>
         requires (concepts::aggregate<T>)
-              && (!concepts::container<T>)
               && (!concepts::bounded_c_array<T>) 
+              && (!concepts::container<T>)
+              && (!concepts::tuple<T>)
               && (!concepts::trivially_serializable<T, Opt>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& aggregate) -> error {
         return visit_members(
@@ -330,9 +334,7 @@ private:
     ///  including fixed-size containers, contiguous containers, and associative containers, 
     ///  in a generic approach.
     ///  
-    template <class T>
-        requires (concepts::container<T>) 
-              && (!concepts::tuple<T>)
+    template <class T> requires (concepts::container<T>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& container) -> error {
 
         using container_type = std::remove_reference_t<T>;
@@ -417,9 +419,7 @@ private:
 
     ///  \brief Serializes the given tuple-like object. 
     ///
-    template <class T> 
-        requires (concepts::tuple<T>) 
-              //&& (!concepts::trivially_serializable<T, Opt>)
+    template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& tuple) -> error {    
         return std::apply(
             [&](auto&&... elements) constexpr {
@@ -458,8 +458,7 @@ private:
     ///  
     ///  \details Endian-aware algorithm.
     ///  
-    template <class T>
-        requires (concepts::trivially_serializable<T, Opt>)
+    template <class T> requires (concepts::trivially_serializable<T, Opt>)
     [[nodiscard]] constexpr inline auto write_bytes(T const& obj) -> error {
 
         if (std::is_constant_evaluated()) {
@@ -505,7 +504,6 @@ private:
     template <class T>
         requires (concepts::contiguous_container<T>)
               && (concepts::trivially_serializable<typename T::value_type, Opt>)
-              //&& (!concepts::endian_swap_required<Opt> || sizeof(typename T::value_type) == 1)
     [[nodiscard]] constexpr inline auto write_bytes(T const& container) -> error {
 
         auto* dst = m_buffer.data() + m_position;

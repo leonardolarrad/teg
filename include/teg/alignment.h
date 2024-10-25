@@ -23,6 +23,7 @@
 #include <bit>
 #include <cstddef>
 #include <cstdint>
+#include <tuple>
 
 #include "core_concepts.h"
 #include "members_visitor.h"

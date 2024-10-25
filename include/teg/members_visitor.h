@@ -22,6 +22,7 @@
 #include <concepts>
 #include <type_traits>
 #include <utility>
+#include <tuple>
 
 #include "core_concepts.h"
 #include "members_count.h"

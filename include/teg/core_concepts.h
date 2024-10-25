@@ -20,15 +20,17 @@
 #define TEG_CORE_CONCEPTS_H
 
 #include <concepts>
+#include <array>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <ranges>
 #include <span>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
-#include <optional>
 
 namespace teg::concepts {
 
@@ -77,7 +79,7 @@ concept trivially_copyable = std::is_trivially_copyable_v<T>;
 
 ///  \brief A standard layout type.
 ///  \see https://en.cppreference.com/w/cpp/named_req/StandardLayoutType
-///
+///  
 template <class T>
 concept standard_layout = std::is_standard_layout_v<T>;
 
@@ -85,17 +87,17 @@ concept standard_layout = std::is_standard_layout_v<T>;
 ///  
 ///  Asserts that a element of a tuple-like type `T` can be accessed at compile-time 
 ///  by an index `I`.
-///
+///  
 ///  \tparam T A tuple-like type.
 ///  \tparam I A compile-time index.
-///
+///  
 ///  \see https://en.cppreference.com/w/cpp/utility/tuple/tuple_element
 ///  \see https://en.cppreference.com/w/cpp/utility/tuple/get
-///
+///  
 template<class T, std::size_t I>
 concept tuple_element = requires(T t) {
         typename std::tuple_element_t<I, std::remove_const_t<T>>;
-        { get<I>(t) } -> std::convertible_to<const std::tuple_element_t<I, T>&>;
+        { std::get<I>(t) } -> std::convertible_to<const std::tuple_element_t<I, T>&>;
     };
 
 template <class T>
@@ -105,7 +107,7 @@ concept tuple_size = requires { typename std::tuple_size<T>::type; };
 ///  
 ///  A tuple is a heterogeneous, fixed-size collection of values. 
 ///  ISO/IEC 14882:2020 [tuple.general].
-/// 
+///  
 ///  \note Elements of tuple-like objects can be bound with structured binding.
 ///  \note Tuple-like types: std::tuple, std::pair, std::array and std::ranges::subrange.
 ///  \see https://en.cppreference.com/w/cpp/utility/tuple
@@ -116,7 +118,7 @@ concept tuple = tuple_size<T>
         std::tuple_size<T>, 
         std::integral_constant<std::size_t, std::tuple_size_v<T>>
     >
-    && []<std::size_t... I>(std::index_sequence<I...>) { 
+    && []<std::size_t... I>(std::index_sequence<I...>) constexpr { 
         return (tuple_element<T, I> && ...); 
     }(std::make_index_sequence<std::tuple_size_v<T>>());
 
@@ -129,7 +131,7 @@ template <class T>
 concept pair = tuple<T> && std::tuple_size_v<T> == 2;
 
 ///  \brief A span type.
-///
+///  
 ///  A span is a view over a contiguous sequence of objects, the storage of which is
 ///  owned by some other object. ISO/IEC 14882:2020 [span.overview].
 ///  
@@ -161,9 +163,9 @@ concept span =
 ///  
 ///  A span can either have a static extent, in which case the number of elements in the
 ///  sequence is known at compile-time and encoded in the type, or a dynamic extent.
-///
+///  
 ///  \see https://en.cppreference.com/w/cpp/container/span
-/// 
+///  
 template <class T>
 concept dynamic_span = span<T> && T::extent == std::dynamic_extent;
 
@@ -171,17 +173,17 @@ concept dynamic_span = span<T> && T::extent == std::dynamic_extent;
 ///  
 ///  A span can either have a static extent, in which case the number of elements in the
 ///  sequence is known at compile-time and encoded in the type, or a dynamic extent.
-///
+///  
 ///  \see https://en.cppreference.com/w/cpp/container/span
-/// 
+///  
 template <class T>
 concept static_span = span<T> && T::extent != std::dynamic_extent;
 
 ///  \brief An optional type.
-///
+///  
 ///  An optional type is an object that may or may not contain a value.
 ///  \see https://en.cppreference.com/w/cpp/utility/optional
-///
+///  
 template <typename T>
 concept optional = requires(T a) {
     typename T::value_type;
@@ -250,12 +252,12 @@ constexpr inline bool is_variant_v<std::variant<T...>> = true;
 } // namespace internal
 
 ///  \brief A variant type.
-/// 
+///  
 ///  A variant represents a type-safe union (sometimes called a tagged union or
 ///  a discriminated union).
-///
+///  
 ///  \see https://en.cppreference.com/w/cpp/utility/variant
-///
+///  
 template <class T>
 concept variant = internal::is_variant_v<T>;
 

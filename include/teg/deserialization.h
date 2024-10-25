@@ -38,6 +38,7 @@
 #include "members_visitor.h"
 #include "serialization.h"
 #include "options.h"
+#include "fixed_string.h"
 
 namespace teg::concepts {
 
@@ -118,6 +119,7 @@ private:
         requires (concepts::aggregate<T>)
               && (!concepts::bounded_c_array<T>)
               && (!concepts::container<T>)
+              && (!concepts::tuple<T>)
               && (!concepts::trivially_deserializable<T, Opt>)
     [[nodiscard]] constexpr inline auto deserialize_one(T& aggregate) -> error {
         return visit_members(
@@ -129,8 +131,7 @@ private:
     }
 
     template <class T>
-        requires (concepts::bounded_c_array<T> || concepts::fixed_size_container<T>) 
-              && (!concepts::tuple<T>)
+        requires (concepts::bounded_c_array<T> || concepts::fixed_size_container<T>)
               && (!concepts::trivially_deserializable<T, Opt>)
     [[nodiscard]] inline constexpr auto deserialize_one(T& array) -> error {
         // Deserialize the elements.            
@@ -145,7 +146,6 @@ private:
     template <class T> 
         requires (concepts::container<T>)
               && (!concepts::fixed_size_container<T>)
-              && (!concepts::tuple<T>)
     [[nodiscard]] inline constexpr auto deserialize_one(T& container) -> error {
         using container_type = std::remove_reference_t<T>;
         using element_type = typename container_type::value_type;
@@ -275,7 +275,9 @@ private:
         return deserialize_one(*optional);
     }
 
-    template <class T> requires (concepts::tuple<T>)
+    ///  \brief Deserializes the given tuple-like object. 
+    ///
+    template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
     [[nodiscard]] inline constexpr auto deserialize_one(T& tuple) -> error {
         return std::apply(
             [&](auto&&... elements) constexpr {
