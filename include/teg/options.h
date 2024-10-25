@@ -22,6 +22,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <bit>
 
 namespace teg {
 
@@ -29,25 +30,32 @@ namespace teg {
 ///  
 enum class options : uint64_t {
 
-    enable_format_check     = 1 << 0,
-    enable_integrity_check  = 1 << 1,
-    enable_all_checks       = enable_format_check | enable_integrity_check,
+    // An asterisk (*) indicates the default option.
 
-    allocation_limit_1gib   = 1 << 6,
-    allocation_limit_2gib   = 1 << 7,
-    allocation_limit_4gib   = 1 << 8,
+    enable_format_check     = 1 << 0,   // (*) Enable format check: compile-time type code.
+    enable_integrity_check  = 1 << 1,   //     Enable integrity check: data checksum.
+    enable_all_checks       =           //     Enable all checks.
+        enable_format_check | enable_integrity_check,
 
-    container_size_native   = 1 << 12,  // Use native container size type (std::size_t).
-    container_size_1b       = 1 << 13,  // Use 1-byte container size type (uint8_t).
-    container_size_2b       = 1 << 14,  // Use 2-byte container size type (uint16_t).
-    container_size_4b       = 1 << 15,  // Use 4-byte container size type (uint32_t).
-    container_size_8b       = 1 << 16,  // Use 8-byte container size type (uint64_t).
+    native_endian           = 1 << 3,   //     Use native endianness for encoding/decoding data.
+    little_endian           = 1 << 4,   // (*) Use little-endian for encoding/decoding data.
+    big_endian              = 1 << 5,   //     Use big-endian for encoding/decoding data.
 
-    variant_index_native    = 1 << 17,  // Use native variant index type (std::size_t).
-    variant_index_1b        = 1 << 18,  // Use 1-byte variant index type (uint8_t).
-    variant_index_2b        = 1 << 19,  // Use 2-byte variant index type (uint16_t).
-    variant_index_4b        = 1 << 20,  // Use 4-byte variant index type (uint32_t).
-    variant_index_8b        = 1 << 21,  // Use 8-byte variant index type (uint64_t).
+    allocation_limit_1gib   = 1 << 6,   //     Limit byte buffer allocation to 1 GiB.
+    allocation_limit_2gib   = 1 << 7,   // (*) Limit byte buffer allocation to 2 GiB.
+    allocation_limit_4gib   = 1 << 8,   //     Limit byte buffer allocation to 4 GiB.
+
+    container_size_native   = 1 << 12,  //     Use native container size type (std::size_t).
+    container_size_1b       = 1 << 13,  //     Use 1-byte container size type (uint8_t).
+    container_size_2b       = 1 << 14,  //     Use 2-byte container size type (uint16_t).
+    container_size_4b       = 1 << 15,  // (*) Use 4-byte container size type (uint32_t). 
+    container_size_8b       = 1 << 16,  //     Use 8-byte container size type (uint64_t).
+
+    variant_index_native    = 1 << 17,  //     Use native variant index type (std::size_t).
+    variant_index_1b        = 1 << 18,  // (*) Use 1-byte variant index type (uint8_t).
+    variant_index_2b        = 1 << 19,  //     Use 2-byte variant index type (uint16_t).
+    variant_index_4b        = 1 << 20,  //     Use 4-byte variant index type (uint32_t).
+    variant_index_8b        = 1 << 21,  //     Use 8-byte variant index type (uint64_t).
 
 };
 
@@ -66,13 +74,17 @@ constexpr auto operator&(options a, options b) -> bool {
 ///  2^32 (4'294'967'296) elements, and a variant can have up to 2^8 (255) alternatives.
 ///  
 static constexpr options default_mode = 
-    options::allocation_limit_2gib | options::container_size_4b | options::variant_index_1b;
+    options::little_endian | options::allocation_limit_2gib | 
+    options::container_size_4b | options::variant_index_1b;
 
-static constexpr options compact_mode =
-    options::allocation_limit_1gib | options::container_size_1b | options::variant_index_1b;
+static constexpr options compact_mode = 
+    options::little_endian | options::allocation_limit_1gib | 
+    options::container_size_1b | options::variant_index_1b;
 
-static constexpr options fast_mode =
-    options::allocation_limit_4gib | options::container_size_native | options::variant_index_native;
+///  \warning Fast mode is not portable.
+static constexpr options fast_mode = 
+    options::native_endian | options::allocation_limit_4gib | 
+    options::container_size_native | options::variant_index_native;
 
 static constexpr options secure_mode = default_mode | options::enable_all_checks;
 

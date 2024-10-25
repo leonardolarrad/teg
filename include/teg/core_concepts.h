@@ -98,6 +98,9 @@ concept tuple_element = requires(T t) {
         { get<I>(t) } -> std::convertible_to<const std::tuple_element_t<I, T>&>;
     };
 
+template <class T>
+concept tuple_size = requires { typename std::tuple_size<T>::type; };
+
 ///  \brief A tuple-like type.
 ///  
 ///  A tuple is a heterogeneous, fixed-size collection of values. 
@@ -108,9 +111,7 @@ concept tuple_element = requires(T t) {
 ///  \see https://en.cppreference.com/w/cpp/utility/tuple
 ///  
 template<class T>
-concept tuple =  requires {
-        typename std::tuple_size<T>::type; 
-    } 
+concept tuple = tuple_size<T>
     && std::derived_from<
         std::tuple_size<T>, 
         std::integral_constant<std::size_t, std::tuple_size_v<T>>

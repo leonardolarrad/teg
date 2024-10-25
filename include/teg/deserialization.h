@@ -44,14 +44,14 @@ namespace teg::concepts {
 template <class T>
 concept deserializable = serializable<T>;
 
-template <class T>
-concept trivially_deserializable = trivially_serializable<T>;
+template <class T, options Opt>
+concept trivially_deserializable = trivially_serializable<T, Opt>;
 
 } // namespace teg::concepts
 
 namespace teg {
 
-template <class B = byte_buffer, options Opt = default_mode>
+template <options Opt = default_mode, class B = byte_buffer>
     requires concepts::byte_buffer<B>
 class binary_deserializer {
 public:
@@ -81,6 +81,8 @@ public:
 
     static constexpr uint64_t max_variant_index = std::numeric_limits<variant_index_type>::max();
 
+    static constexpr bool requires_endian_swap = requires_endian_swap<Opt>();
+
     constexpr explicit binary_deserializer(B & buffer) : m_buffer(buffer), m_position(0) {}
     constexpr explicit binary_deserializer(B && buffer) : m_buffer(buffer), m_position(0) {}
 
@@ -107,7 +109,7 @@ private:
     }
     
     template <class T>
-        requires (concepts::trivially_deserializable<T>)
+        requires (concepts::trivially_deserializable<T, Opt>)
     [[nodiscard]] constexpr inline auto deserialize_one(T& obj) -> error {
         return read_bytes(obj);
     }
@@ -116,7 +118,7 @@ private:
         requires (concepts::aggregate<T>)
               && (!concepts::bounded_c_array<T>)
               && (!concepts::container<T>)
-              && (!concepts::trivially_deserializable<T>)
+              && (!concepts::trivially_deserializable<T, Opt>)
     [[nodiscard]] constexpr inline auto deserialize_one(T& aggregate) -> error {
         return visit_members(
             [&](auto&... members) {
@@ -128,7 +130,8 @@ private:
 
     template <class T>
         requires (concepts::bounded_c_array<T> || concepts::fixed_size_container<T>) 
-              && (!concepts::trivially_deserializable<T>)
+              && (!concepts::tuple<T>)
+              && (!concepts::trivially_deserializable<T, Opt>)
     [[nodiscard]] inline constexpr auto deserialize_one(T& array) -> error {
         // Deserialize the elements.            
         for (auto& element : array) {
@@ -142,7 +145,7 @@ private:
     template <class T> 
         requires (concepts::container<T>)
               && (!concepts::fixed_size_container<T>)
-              && (!concepts::trivially_deserializable<T>)
+              && (!concepts::tuple<T>)
     [[nodiscard]] inline constexpr auto deserialize_one(T& container) -> error {
         using container_type = std::remove_reference_t<T>;
         using element_type = typename container_type::value_type;
@@ -162,7 +165,7 @@ private:
         if constexpr (
                concepts::contiguous_container<container_type>
             && concepts::resizable_container<container_type> 
-            && concepts::trivially_serializable<element_type>
+            && concepts::trivially_serializable<element_type, Opt>
         ) {
             // Optimized path: memory copy elements.
             container.resize(size);
@@ -272,10 +275,7 @@ private:
         return deserialize_one(*optional);
     }
 
-    template <class T>
-        requires (concepts::tuple<T>) 
-              && (!concepts::container<T>)
-              && (!concepts::trivially_deserializable<T>)
+    template <class T> requires (concepts::tuple<T>)
     [[nodiscard]] inline constexpr auto deserialize_one(T& tuple) -> error {
         return std::apply(
             [&](auto&&... elements) constexpr {
@@ -317,17 +317,28 @@ private:
     }
 
     template <class T>
-        requires (concepts::trivially_deserializable<T>)
-    [[nodiscard]] constexpr inline auto read_bytes(T& obj) -> error {
-        if (std::is_constant_evaluated()) {
-            // Deserialize at compile-time.
-            using type = std::remove_cvref_t<T>;
-            using src_array_type = std::array<std::remove_cv_t<byte_type>, sizeof(type)>;
+        requires (concepts::trivially_deserializable<T, Opt>)
+    [[nodiscard]] constexpr inline auto read_bytes(T& obj) -> error {        
 
-            src_array_type src_array;
-            for (auto& src_byte : src_array) {
-                src_byte = m_buffer[m_position++];
+        if (std::is_constant_evaluated()) {
+            // Compile-time deserialization.
+            constexpr auto size = sizeof(T);
+
+            using type = std::remove_cvref_t<T>;
+            using src_array_type = std::array<std::remove_cv_t<byte_type>, size>;
+            src_array_type src_array{};
+
+            if constexpr (!requires_endian_swap) {
+                for (std::size_t i = 0; i < size; ++i) {
+                    src_array[i] = m_buffer[m_position + i];
+                }
             }
+            else {
+                for (std::size_t i = 0; i < size; ++i) {
+                    src_array[size - 1 - i] = m_buffer[m_position + i];
+                }
+            }
+            m_position += size;
 
             if constexpr (!concepts::c_array<type>) {
                 // The object being deserialized is not a c-array and we can simply `bit-cast` its content.
@@ -348,25 +359,31 @@ private:
             }
         }
         else {
-            // Deserialize at run-time.
-            if (m_position + sizeof(obj) > m_buffer.size()) {
+            // Run-time deserialization.
+            auto const size = sizeof(T);
+
+            if (m_position + size > m_buffer.size()) {
                 return error { std::errc::value_too_large };
             }
 
             auto* dst = reinterpret_cast<std::remove_cv_t<byte_type>*>(&obj);
-            auto* const src = m_buffer.data() + m_position;
-            auto const size = sizeof(obj);
-
-            std::memcpy(dst, src, size);
+            auto* const src = m_buffer.data() + m_position;            
             m_position += size;
-            return {};
+
+            if constexpr (!requires_endian_swap) {       
+                std::memcpy(dst, src, size);
+                return {};
+            }
+            else {
+                std::reverse_copy(src, src + size, dst);
+                return {};
+            }
         }
     }
 
     template <class T> 
         requires (concepts::contiguous_container<T>)
-              && (concepts::trivially_serializable<typename T::value_type>)
-              && (!concepts::trivially_deserializable<T>)
+              && (concepts::trivially_serializable<typename T::value_type, Opt>)
     [[nodiscard]] constexpr inline auto read_bytes(T& container) -> error {
         // Deserialization at compile-time is not possible in this case.
         // Deserialize at run-time.
@@ -389,10 +406,10 @@ private:
     std::size_t m_position = 0;
 };
 
-template <class B, class... T, options Opt = default_mode>
+template <options Opt = default_mode, class B, class... T>
     requires (concepts::byte_buffer<B>) && (concepts::deserializable<T> && ...)
 constexpr inline auto deserialize(B& input_buffer, T&... objs) -> error {
-    return binary_deserializer<B>{input_buffer}.deserialize(objs...);
+    return binary_deserializer<Opt, B>{input_buffer}.deserialize(objs...);
 }
 
 } // namespace teg

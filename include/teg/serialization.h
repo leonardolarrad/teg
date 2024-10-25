@@ -30,8 +30,10 @@
 
 #include "alignment.h"
 #include "buffer.h"
+#include "c_array.h"
 #include "container_concepts.h"
 #include "core_concepts.h"
+#include "endian.h"
 #include "error.h"
 #include "members_visitor.h"
 #include "options.h"
@@ -42,13 +44,23 @@ template <class T>
 concept serializable = true;
 
 template <class T>
-concept trivially_serializable = trivially_copyable<T> && packed_layout<T>;
+concept non_trivially_serializable = 
+    container<T> || optional<T> || owning_ptr<T> || tuple<T> || variant<T>;
+
+template <class T, options Opt>
+concept memory_copyable = 
+       (fundamental<T> || is_enum<T>)
+    || (trivially_copyable<T> && packed_layout<T> && !endian_swap_required<Opt>);
+
+template <class T, options Opt>
+concept trivially_serializable = 
+       memory_copyable<T, Opt> && !non_trivially_serializable<T>;
 
 } // namespace teg::concepts
 
 namespace teg {
 
-template <class B = byte_buffer, options Opt = default_mode>
+template <options Opt = default_mode, class B = byte_buffer>
     requires concepts::byte_buffer<B>
 class binary_serializer {
 public:
@@ -68,10 +80,12 @@ public:
 
     static constexpr uint64_t allocation_limit = get_allocation_limit<Opt>();
 
+    static constexpr bool requires_endian_swap = requires_endian_swap<Opt>();
+
     static constexpr uint64_t max_container_size = std::numeric_limits<container_size_type>::max();
 
     static constexpr uint64_t max_variant_index = std::numeric_limits<variant_index_type>::max();
-    
+
     binary_serializer() = delete;
     binary_serializer(binary_serializer const&) = delete;
     binary_serializer& operator=(binary_serializer const&) = delete;
@@ -131,7 +145,7 @@ public:
             m_buffer.resize(static_cast<buffer_size_type>(new_size));
 
             if (auto const result = serialize_many(objs...); failure(result)) [[unlikely]] {
-                // Restore the old buffer.
+                // Restore the old buffer size.
                 m_buffer.resize(static_cast<buffer_size_type>(old_size));
                 return result;
             }
@@ -161,8 +175,9 @@ private:
         return 0;
     }
 
-    template <class T> 
-        requires (concepts::trivially_serializable<T>)
+    template <class T>
+        requires (concepts::trivially_serializable<T, Opt>)
+              && (!concepts::bounded_c_array<T>)
     [[nodiscard]] static constexpr inline auto encoding_size_one(T const& trivial) -> uint64_t {        
         return sizeof(trivial);
     }
@@ -171,7 +186,7 @@ private:
         requires (concepts::aggregate<T>) 
               && (!concepts::bounded_c_array<T>)
               && (!concepts::container<T>)
-              && (!concepts::trivially_serializable<T>)
+              && (!concepts::trivially_serializable<T, Opt>)
     [[nodiscard]] static constexpr inline auto encoding_size_one(T const& aggregate) -> uint64_t {
         return visit_members(
             [&](auto&&... member) constexpr {
@@ -181,12 +196,12 @@ private:
         );
     }
 
-    template <class T> requires (concepts::bounded_c_array<T>) && (!concepts::trivially_serializable<T>)
+    template <class T> requires (concepts::bounded_c_array<T>)
     [[nodiscard]] static constexpr inline auto encoding_size_one(T const& c_array) -> uint64_t {
         return std::size(c_array) * encoding_size_one(c_array[0]);
     }
 
-    template <class T> requires (concepts::container<T>) && (!concepts::trivially_serializable<T>)
+    template <class T> requires (concepts::container<T>)
     [[nodiscard]] static constexpr inline auto encoding_size_one(T const& container) -> uint64_t {
         using container_type = std::remove_reference_t<T>;
         using element_type = typename container_type::value_type;
@@ -199,17 +214,17 @@ private:
 
         if constexpr (
             concepts::sized_container<container_type> &&
-            concepts::trivially_serializable<element_type>
+            concepts::trivially_serializable<element_type, Opt>
         ) {
-            const uint64_t container_size = std::min(
+            uint64_t const container_size = std::min(
                 static_cast<uint64_t>(container.size()), max_container_size);
             encoding_size += sizeof(element_type) * container_size;
             return encoding_size;
         } 
         else if constexpr (
-            concepts::trivially_serializable<element_type>
+            concepts::trivially_serializable<element_type, Opt>
         ) {
-            const uint64_t container_size = std::min(
+            uint64_t const container_size = std::min(
                 static_cast<uint64_t>(std::distance(container.begin(), container.end())), max_container_size);
             encoding_size += sizeof(element_type) * container_size;
             return encoding_size;        
@@ -277,7 +292,7 @@ private:
     }
 
     template <class T>
-        requires (concepts::trivially_serializable<T>)
+        requires (concepts::trivially_serializable<T, Opt>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& obj) -> error {
         return write_bytes(obj);
     }
@@ -286,7 +301,7 @@ private:
         requires (concepts::aggregate<T>)
               && (!concepts::container<T>)
               && (!concepts::bounded_c_array<T>) 
-              && (!concepts::trivially_serializable<T>)
+              && (!concepts::trivially_serializable<T, Opt>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& aggregate) -> error {
         return visit_members(
             [&](auto&&... members) {
@@ -296,7 +311,9 @@ private:
         );
     }
 
-    template <class T> requires (concepts::bounded_c_array<T>) && (!concepts::trivially_serializable<T>)
+    template <class T> 
+        requires (concepts::bounded_c_array<T>) 
+              && (!concepts::trivially_serializable<T, Opt>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& c_array) -> error {
         // Serialize elements.            
         for (auto const& element : c_array) {
@@ -307,46 +324,60 @@ private:
         return {};
     }
 
-    template <class T> requires (concepts::container<std::remove_cvref_t<T>>) && (!concepts::trivially_serializable<T>) 
+    ///  \brief Serialize a container.
+    ///
+    ///  \details This function handles the serialization all container types, 
+    ///  including fixed-size containers, contiguous containers, and associative containers, 
+    ///  in a generic approach.
+    ///  
+    template <class T>
+        requires (concepts::container<T>) 
+              && (!concepts::tuple<T>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& container) -> error {
+
         using container_type = std::remove_reference_t<T>;
         using element_type = typename container_type::value_type;
         using native_size_type = typename container_type::size_type;
         
-        // Serialize the size if needed.
+        // Serialize the container's size if needed.
         if constexpr (!concepts::fixed_size_container<container_type>) {
-            // If the container its fixed, the size is known at compile-time;
-            // thus, serialization is unnecessary. Otherwise, serialize its size.
+            // For fixed-size containers, the size is known at compile-time; thus, no serialization
+            // is needed. Otherwise, serialize the container's size.
+            
             if constexpr (concepts::sized_container<container_type>) {
-                // Optimized path: we don't need to compute the size; it is already known at run-time.
+                // Optimized path: we don't need to compute the size; 
+                // it is already known at run-time.
                 native_size_type const size = container.size();
 
                 if (size > max_container_size) [[unlikely]] {
                     return error { std::errc::value_too_large };
                 }
 
-                if (auto result = serialize_one(static_cast<container_size_type>(size)); failure(result)) [[unlikely]] {
+                auto result = serialize_one(static_cast<container_size_type>(size));
+                if (failure(result)) [[unlikely]] {
                     return result;
                 }
             }
             else {
-                // Non-optimized path: some containers (like `std::forward_list`) don't have a `size()` observer.
+                // Non-optimized path: some containers (like `std::forward_list`) 
+                // don't have a `size()` observer.
                 native_size_type const size = std::distance(container.begin(), container.end());
                 
                 if (size > max_container_size) [[unlikely]] {
                     return error { std::errc::value_too_large };
                 }
 
-                if (auto result = serialize_one(static_cast<container_size_type>(size)); failure(result)) [[unlikely]] {
+                auto result = serialize_one(static_cast<container_size_type>(size));
+                if (failure(result)) [[unlikely]] {
                     return result;
                 }
             }
         }
 
-        // Serialize the elements.
+        // Serialize the container's elements.
         if constexpr (
             concepts::contiguous_container<container_type> &&
-            concepts::trivially_serializable<element_type>
+            concepts::trivially_serializable<element_type, Opt>
         ) {
             // Optimized path: memory copy elements.            
             return write_bytes(container);   
@@ -362,6 +393,8 @@ private:
         }
     }
 
+    ///  \brief Serializes the given owning pointer.
+    ///  
     template <class T> requires (concepts::owning_ptr<T>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& ptr) -> error  {
         if (ptr == nullptr) [[unlikely]] {
@@ -371,6 +404,8 @@ private:
         return serialize_one(*ptr);
     }
 
+    ///  \brief Serializes the given optional.
+    ///  
     template <class T> requires (concepts::optional<T>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& optional) -> error {
         if (!optional.has_value()) [[unlikely]] {
@@ -380,10 +415,11 @@ private:
         }
     }
 
+    ///  \brief Serializes the given tuple-like object. 
+    ///
     template <class T> 
         requires (concepts::tuple<T>) 
-              && (!concepts::container<T>)
-              && (!concepts::trivially_serializable<T>)
+              //&& (!concepts::trivially_serializable<T, Opt>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& tuple) -> error {    
         return std::apply(
             [&](auto&&... elements) constexpr {
@@ -393,6 +429,8 @@ private:
         );
     }
 
+    ///  \brief Serializes the given variant.
+    ///   
     template <class T> requires (concepts::variant<T>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& variant) -> error {
         // Check valueless by exception.
@@ -415,45 +453,68 @@ private:
         );
     }
 
+    ///  \brief Copies the underlying bytes of the given trivially serializable object
+    ///  directly into the buffer.
+    ///  
+    ///  \details Endian-aware algorithm.
+    ///  
     template <class T>
-        requires (concepts::trivially_serializable<T>)
+        requires (concepts::trivially_serializable<T, Opt>)
     [[nodiscard]] constexpr inline auto write_bytes(T const& obj) -> error {
+
         if (std::is_constant_evaluated()) {
-            // Serialize at compile-time.
-            using src_array_type = std::array<byte_type, sizeof(obj)>;
-            
+            // Compile-time serialization.
+            constexpr auto size = sizeof(obj);
+            using src_array_type = std::array<byte_type, size>;
             auto src_array = std::bit_cast<src_array_type>(obj);
-            for (auto& src_byte : src_array) {
-                m_buffer[m_position++] = src_byte;
+
+
+            for (std::size_t i = 0; i < size; ++i) {
+                if constexpr (!requires_endian_swap) {
+                    m_buffer[m_position + i] = src_array[i];
+                }
+                else {
+                    m_buffer[m_position + i] = src_array[size - 1 - i];
+                }
             }
 
-            return {};
-        }
-        else {
-            // Serialize at run-time.
-            auto* dst = m_buffer.data() + m_position;
-            auto* const src = reinterpret_cast<byte_type const*>(&obj);
-            auto const size = sizeof(obj);
-
-            std::memcpy(dst, src, size);
             m_position += size;
             return {};
         }
+        else {
+            // Run-time serialization.
+            auto* dst = m_buffer.data() + m_position;
+            auto* const src = reinterpret_cast<byte_type const*>(&obj);
+            auto const size = sizeof(obj);
+            m_position += size;
+
+            if constexpr (!requires_endian_swap) {       
+                std::memcpy(dst, src, size);
+                return {};
+            }
+            else {
+                std::reverse_copy(src, src + size, dst);
+                return {};
+            }
+        }
     }
 
+    ///  \brief Copies the underlying bytes of the given contiguous container
+    ///  directly into the buffer.
+    ///  
     template <class T>
         requires (concepts::contiguous_container<T>)
-              && (concepts::trivially_serializable<typename T::value_type>)
-              && (!concepts::trivially_serializable<T>)
+              && (concepts::trivially_serializable<typename T::value_type, Opt>)
+              //&& (!concepts::endian_swap_required<Opt> || sizeof(typename T::value_type) == 1)
     [[nodiscard]] constexpr inline auto write_bytes(T const& container) -> error {
-        // Serialization at compile-time is not possible in this case.
-        // Serialize at run-time.
+
         auto* dst = m_buffer.data() + m_position;
         auto const* src = reinterpret_cast<byte_type const*>(container.data());
         auto const size = container.size() * sizeof(typename T::value_type);
         
         std::memcpy(dst, src, size);
         m_position += size;
+        
         return {};
     }
 
@@ -466,7 +527,7 @@ template <options Opt = default_mode, class B, class... T>
     requires (concepts::byte_buffer<B>) 
           && (concepts::serializable<T> && ...)
 constexpr inline auto serialize(B& output_buffer, T const&... objs) -> error {
-    return binary_serializer<B, Opt>{output_buffer}.serialize(objs...);
+    return binary_serializer<Opt, B>{output_buffer}.serialize(objs...);
 }
 
 } // namespace teg

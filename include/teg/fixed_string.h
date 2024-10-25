@@ -27,6 +27,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -123,6 +124,7 @@ public:
     // Conversions.
     [[nodiscard]] constexpr operator string_view_type() const noexcept { return { m_data, N }; }
 
+private:
     // Storage.
     value_type m_data[N+1] = {};
 };
@@ -205,5 +207,24 @@ template <std::size_t N>
 using fixed_wstring = basic_fixed_string<wchar_t, N>;
 
 } // namespace teg
+
+namespace std {
+
+///  \brief Provides access to the number of elements in an `teg::basic_fixed_string` as a
+///  compile-time constant expression.
+///  
+template< class T, std::size_t N >
+struct tuple_size<teg::basic_fixed_string<T, N>> : std::integral_constant<std::size_t, N>
+{ };
+
+///  \brief Provides compile-time indexed access to the type of the elements of 
+///  `teg::basic_fixed_string` using tuple-like interface.
+///  
+template <std::size_t I, class T, std::size_t N>
+struct tuple_element<I, teg::basic_fixed_string<T, N>> {
+    using type = T;
+};
+
+} // namespace std
 
 #endif // TEG_FIXED_STRING_H

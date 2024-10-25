@@ -16,24 +16,34 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-#ifndef TEG_H
-#define TEG_H
+#ifndef TEG_ENDIAN_H
+#define TEG_ENDIAN_H
 
-#include "alignment.h"
-#include "buffer.h"
-#include "c_array.h"
-#include "container_concepts.h"
-#include "core_concepts.h"
-#include "deserialization.h"
-#include "endian.h"
-#include "error.h"
-#include "fixed_string.h"
-#include "index_table.h"
-#include "md5.h"
-#include "members_count.h"
-#include "members_visitor.h"
+#include <bit>
 #include "options.h"
-#include "serialization.h"
-#include "unreachable.h"
 
-#endif // TEG_H
+namespace teg {
+
+template <options Opt>
+constexpr auto requires_endian_swap() -> bool {
+    if constexpr (Opt == options::native_endian) {
+        return false;
+    }
+    else {
+        constexpr auto system_endian = std::endian::native;
+        constexpr auto config_endian = (Opt & options::big_endian) ? std::endian::big : std::endian::little;
+
+        return system_endian != config_endian;
+    }
+}
+
+} // namespace teg
+
+namespace teg::concepts {
+
+template <options Opt>
+concept endian_swap_required = requires_endian_swap<Opt>();
+
+} // namespace teg::concepts
+
+#endif // TEG_ENDIAN_H
