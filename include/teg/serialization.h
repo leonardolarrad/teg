@@ -55,8 +55,14 @@ concept memory_copyable =
     || (trivially_copyable<T> && packed_layout<T> && !endian_swap_required<Opt>);
 
 template <class T, options Opt>
+concept trivially_serializable_container =
+       (fixed_size_container<T>) 
+    && (memory_copyable<typename T::value_type, Opt>)
+    && (!endian_swap_required<Opt>);
+    
+template <class T, options Opt>
 concept trivially_serializable = 
-       memory_copyable<T, Opt> && !non_trivially_serializable<T>;
+    memory_copyable<T, Opt> && !non_trivially_serializable<T>;
 
 } // namespace teg::concepts
 
@@ -296,8 +302,9 @@ private:
 
     template <class T>
         requires (concepts::trivially_serializable<T, Opt>)
-    [[nodiscard]] constexpr inline auto serialize_one(T const& obj) -> error {
-        return write_bytes(obj);
+              || (concepts::trivially_serializable_container<T, Opt>)
+    [[nodiscard]] constexpr inline auto serialize_one(T const& trivial) -> error {
+        return write_bytes(trivial);
     }
 
     template <class T>
@@ -334,7 +341,9 @@ private:
     ///  including fixed-size containers, contiguous containers, and associative containers, 
     ///  in a generic approach.
     ///  
-    template <class T> requires (concepts::container<T>)
+    template <class T> 
+        requires (concepts::container<T>)
+              && (!concepts::trivially_serializable_container<T, Opt>)
     [[nodiscard]] constexpr inline auto serialize_one(T const& container) -> error {
 
         using container_type = std::remove_reference_t<T>;
@@ -458,15 +467,23 @@ private:
     ///  
     ///  \details Endian-aware algorithm.
     ///  
-    template <class T> requires (concepts::trivially_serializable<T, Opt>)
+    template <class T> 
+        requires (concepts::trivially_serializable<T, Opt>)
+              || (concepts::trivially_serializable_container<T, Opt>)
     [[nodiscard]] constexpr inline auto write_bytes(T const& obj) -> error {
+
+        auto constexpr size = []() constexpr { // Calculate the object's size.
+            if constexpr (concepts::trivially_serializable_container<T, Opt>) {
+                return T{}.size() * sizeof(typename T::value_type);
+            }
+            else {
+                return sizeof(T);
+            }}();
 
         if (std::is_constant_evaluated()) {
             // Compile-time serialization.
-            constexpr auto size = sizeof(obj);
-            using src_array_type = std::array<byte_type, size>;
+            using src_array_type = std::array<byte_type, sizeof(T)>;
             auto src_array = std::bit_cast<src_array_type>(obj);
-
 
             for (std::size_t i = 0; i < size; ++i) {
                 if constexpr (!requires_endian_swap) {
@@ -484,7 +501,7 @@ private:
             // Run-time serialization.
             auto* dst = m_buffer.data() + m_position;
             auto* const src = reinterpret_cast<byte_type const*>(&obj);
-            auto const size = sizeof(obj);
+            //auto const size = sizeof(obj);
             m_position += size;
 
             if constexpr (!requires_endian_swap) {       
@@ -504,6 +521,7 @@ private:
     template <class T>
         requires (concepts::contiguous_container<T>)
               && (concepts::trivially_serializable<typename T::value_type, Opt>)
+              && (!concepts::trivially_serializable_container<T, Opt>)
     [[nodiscard]] constexpr inline auto write_bytes(T const& container) -> error {
 
         auto* dst = m_buffer.data() + m_position;

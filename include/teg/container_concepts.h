@@ -476,4 +476,13 @@ concept map_container = associative_container<C> && requires { typename C::mappe
 
 } // namespace teg::concepts
 
+namespace teg {
+
+template <class T> requires concepts::sized_container<T>
+consteval typename T::size_type get_fixed_size() {
+    return T{}.size();
+}
+
+} // namespace teg
+
 #endif // TEG_CONTAINER_CONCEPTS_H

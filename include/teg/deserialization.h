@@ -111,6 +111,7 @@ private:
     
     template <class T>
         requires (concepts::trivially_deserializable<T, Opt>)
+              || (concepts::trivially_serializable_container<T, Opt>)
     [[nodiscard]] constexpr inline auto deserialize_one(T& obj) -> error {
         return read_bytes(obj);
     }
@@ -133,6 +134,7 @@ private:
     template <class T>
         requires (concepts::bounded_c_array<T> || concepts::fixed_size_container<T>)
               && (!concepts::trivially_deserializable<T, Opt>)
+              && (!concepts::trivially_serializable_container<T, Opt>)
     [[nodiscard]] inline constexpr auto deserialize_one(T& array) -> error {
         // Deserialize the elements.            
         for (auto& element : array) {
@@ -320,14 +322,21 @@ private:
 
     template <class T>
         requires (concepts::trivially_deserializable<T, Opt>)
+              || (concepts::trivially_serializable_container<T, Opt>)
     [[nodiscard]] constexpr inline auto read_bytes(T& obj) -> error {        
+
+        auto constexpr size = []() constexpr { // Calculate the object's size.
+            if constexpr (concepts::trivially_serializable_container<T, Opt>) {
+                return T{}.size() * sizeof(typename T::value_type);
+            }
+            else {
+                return sizeof(T);
+            }}();
 
         if (std::is_constant_evaluated()) {
             // Compile-time deserialization.
-            constexpr auto size = sizeof(T);
-
             using type = std::remove_cvref_t<T>;
-            using src_array_type = std::array<std::remove_cv_t<byte_type>, size>;
+            using src_array_type = std::array<std::remove_cv_t<byte_type>, sizeof(type)>;
             src_array_type src_array{};
 
             if constexpr (!requires_endian_swap) {
@@ -362,8 +371,6 @@ private:
         }
         else {
             // Run-time deserialization.
-            auto const size = sizeof(T);
-
             if (m_position + size > m_buffer.size()) {
                 return error { std::errc::value_too_large };
             }
@@ -386,6 +393,7 @@ private:
     template <class T> 
         requires (concepts::contiguous_container<T>)
               && (concepts::trivially_serializable<typename T::value_type, Opt>)
+              && (!concepts::trivially_serializable_container<T, Opt>)
     [[nodiscard]] constexpr inline auto read_bytes(T& container) -> error {
         // Deserialization at compile-time is not possible in this case.
         // Deserialize at run-time.

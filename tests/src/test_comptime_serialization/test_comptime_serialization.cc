@@ -111,11 +111,11 @@ TEST_CASE("Compile-time de/serialization") {
     constexpr auto cx2 = cx_md_c_array();
     COMPTIME_ASSERT_EQ(cx2, 22);
 
-    //constexpr auto cx3 = cx_std_array();
-    //COMPTIME_ASSERT_EQ(cx3, 77);
+    constexpr auto cx3 = cx_std_array();
+    COMPTIME_ASSERT_EQ(cx3, 77);
 
-    //constexpr auto cx4 = cx_fixed_string();
-    //COMPTIME_ASSERT_EQ(cx4, "Hello World!");
+    constexpr auto cx4 = cx_fixed_string();
+    COMPTIME_ASSERT_EQ(cx4, "Hello World!");
 
     constexpr auto cx5 = cx_struct();
     COMPTIME_ASSERT((cx5 == vec2{ 11, 99 }));

@@ -210,7 +210,3 @@ TEST_CASE("De/serialize aggregates with c-arrays members") {
 
     //ASSERT(agg0 == agg1);
 }
-
-TEST_CASE("AAAA") {
-    constexpr auto cx0 = std::extend_v<std::array<int, 5>>;
-}
