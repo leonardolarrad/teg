@@ -46,11 +46,14 @@ template <class T>
 concept endian_neutral = sizeof(T) == 1;
 
 template <class T>
-concept endian_neutral_container = contiguous_container<T> && endian_neutral<typename T::value_type>;
+concept endian_neutral_container = container<T> && endian_neutral<typename T::value_type>;
+
+template <class T>
+concept endian_neutral_c_array = bounded_c_array<T> && endian_neutral<std::remove_all_extents_t<T>>;
 
 template <class T, options Opt>
-concept endian_swap_required = 
-    requires_endian_swap<Opt>() && !(endian_neutral<T> || endian_neutral_container<T>);
+concept endian_swap_required = requires_endian_swap<Opt>() 
+    && !(endian_neutral<T> || endian_neutral_container<T> || endian_neutral_c_array<T>);
 
 } // namespace teg::concepts
 

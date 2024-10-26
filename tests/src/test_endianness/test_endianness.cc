@@ -87,6 +87,30 @@ TEST_CASE("Check fundamental encoding with big-endian and little-endian") {
 }
 
 TEST_CASE("A 1-byte size element fixed contiguous container") {
+    SECTION("De/serialize a c-str") {
+        teg::byte_buffer buffer_b{};
+        teg::byte_buffer buffer_l{};
+        constexpr auto big_endian = teg::options::big_endian;
+        constexpr auto little_endian = teg::options::little_endian;
+
+        //COMPTIME_ASSERT(!(teg::concepts::endian_swap_required<const char[13], big_endian>));
+        //COMPTIME_ASSERT(!(teg::concepts::endian_swap_required<const char[13], little_endian>));
+
+        const char s0[] = "Hello World!";
+        teg::serialize<big_endian>(buffer_b, s0).or_throw();
+        teg::serialize<little_endian>(buffer_l, s0).or_throw();
+
+        ASSERT(buffer_b == buffer_l);
+
+        char s1[13];
+        char s2[13];
+        teg::deserialize<big_endian>(buffer_b, s1).or_throw();
+        teg::deserialize<little_endian>(buffer_l, s2).or_throw();
+
+        ASSERT_EQ(std::string(s0), std::string(s1));
+        ASSERT_EQ(std::string(s0), std::string(s2));
+        ASSERT_EQ(std::string(s1), std::string(s2));
+    }
     SECTION("Fixed array") {
         teg::byte_buffer buffer_b{};
         teg::byte_buffer buffer_l{};

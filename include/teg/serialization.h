@@ -45,14 +45,14 @@ namespace teg::concepts {
 template <class T>
 concept serializable = true;
 
-template <class T>
-concept non_trivially_serializable = 
-    container<T> || optional<T> || owning_ptr<T> || tuple<T> || variant<T>;
-
 template <class T, options Opt>
 concept memory_copyable = 
        (fundamental<T> || is_enum<T>)
     || (trivially_copyable<T> && packed_layout<T> && !endian_swap_required<T, Opt>);
+
+template <class T>
+concept non_trivially_serializable = 
+    container<T> || optional<T> || owning_ptr<T> || tuple<T> || variant<T>;
 
 template <class T, options Opt>
 concept trivially_serializable_container =
@@ -91,8 +91,6 @@ public:
     static constexpr uint64_t max_container_size = std::numeric_limits<container_size_type>::max();
 
     static constexpr uint64_t max_variant_index = std::numeric_limits<variant_index_type>::max();
-
-    static constexpr bool requires_endian_swap = requires_endian_swap<Opt>();
 
     binary_serializer() = delete;
     binary_serializer(binary_serializer const&) = delete;
