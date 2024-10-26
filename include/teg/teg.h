@@ -35,6 +35,7 @@
 #include "members_visitor.h"
 #include "options.h"
 #include "serialization.h"
+#include "serialization_concepts.h"
 #include "unreachable.h"
 
 #endif // TEG_H

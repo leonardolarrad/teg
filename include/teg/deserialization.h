@@ -38,20 +38,7 @@
 #include "members_visitor.h"
 #include "options.h"
 #include "serialization.h"
-
-namespace teg::concepts {
-
-///  \brief A type that can be deserialized.
-///  
-///  Determines whether a type can be deserialized or not.
-///  
-template <class T>
-concept deserializable = serializable<T>;
-
-template <class T, options Opt>
-concept trivially_deserializable = trivially_serializable<T, Opt>;
-
-} // namespace teg::concepts
+#include "serialization_concepts.h"
 
 namespace teg {
 

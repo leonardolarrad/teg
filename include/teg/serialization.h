@@ -39,55 +39,7 @@
 #include "error.h"
 #include "members_visitor.h"
 #include "options.h"
-
-namespace teg::concepts {
-
-///  \brief A serializable type.
-///  
-///  Determines whether a type is serializable or not.
-///  
-template <class T>
-concept serializable = true;
-
-///  \brief A memory copyable type.
-///  
-///  A type if memory copyable if it is a fundamental type or a enum type, or
-///  if it is trivially copyable type that does not have padding bits and does not require
-///  endian-swapping.
-///  
-template <class T, options Opt>
-concept memory_copyable = 
-       (fundamental<T> || is_enum<T>)
-    || (trivially_copyable<T> && packed_standard_layout<T> && !endian_swapping_required<T, Opt>);
-
-///  \brief A type that cannot be trivially serialized.
-///  
-template <class T>
-concept non_trivially_serializable = 
-    container<T> || optional<T> || owning_ptr<T> || tuple<T> || variant<T>;
-
-///  \brief A trivially serializable container.
-///  
-///  A fixed-size container that contains memory copyable elements.
-///  
-///  \details If endian-swapping is required a container can still be trivially serialized
-///  but its elements must be endian-neutral.
-///  
-template <class T, options Opt>
-concept trivially_serializable_container =
-       (fixed_size_container<T>) 
-    && (memory_copyable<typename T::value_type, Opt>)
-    && (!endian_swapping_required<T, Opt>);
-
-///  \brief A trivially serializable type.
-///  
-///  A type that can be memory copied directly into a buffer.
-///  
-template <class T, options Opt>
-concept trivially_serializable = 
-    memory_copyable<T, Opt> && !non_trivially_serializable<T>;
-
-} // namespace teg::concepts
+#include "serialization_concepts.h"
 
 namespace teg {
 
