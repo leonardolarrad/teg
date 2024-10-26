@@ -37,30 +37,52 @@
 #include "def.h"
 #include "endian.h"
 #include "error.h"
-#include "fixed_string.h"
 #include "members_visitor.h"
 #include "options.h"
 
 namespace teg::concepts {
 
+///  \brief A serializable type.
+///  
+///  Determines whether a type is serializable or not.
+///  
 template <class T>
 concept serializable = true;
 
+///  \brief A memory copyable type.
+///  
+///  A type if memory copyable if it is a fundamental type or a enum type, or
+///  if it is trivially copyable type that does not have padding bits and does not require
+///  endian-swapping.
+///  
 template <class T, options Opt>
 concept memory_copyable = 
        (fundamental<T> || is_enum<T>)
     || (trivially_copyable<T> && packed_standard_layout<T> && !endian_swapping_required<T, Opt>);
 
+///  \brief A type that cannot be trivially serialized.
+///  
 template <class T>
 concept non_trivially_serializable = 
     container<T> || optional<T> || owning_ptr<T> || tuple<T> || variant<T>;
 
+///  \brief A trivially serializable container.
+///  
+///  A fixed-size container that contains memory copyable elements.
+///  
+///  \details If endian-swapping is required a container can still be trivially serialized
+///  but its elements must be endian-neutral.
+///  
 template <class T, options Opt>
 concept trivially_serializable_container =
        (fixed_size_container<T>) 
     && (memory_copyable<typename T::value_type, Opt>)
     && (!endian_swapping_required<T, Opt>);
-    
+
+///  \brief A trivially serializable type.
+///  
+///  A type that can be memory copied directly into a buffer.
+///  
 template <class T, options Opt>
 concept trivially_serializable = 
     memory_copyable<T, Opt> && !non_trivially_serializable<T>;
@@ -69,13 +91,30 @@ concept trivially_serializable =
 
 namespace teg {
 
-template <options Opt = default_mode, class B = byte_buffer>
-    requires concepts::byte_buffer<B>
+///  \brief A binary serializer.
+///  
+///  Encodes data into a given buffer using a binary format.
+///  
+///  \tparam  Buf  The type of the buffer to serialize into.
+///  \tparam  Opt  The options for serialization.
+///  
+template <options Opt = default_mode, class Buf = byte_buffer>
+    requires concepts::byte_buffer<Buf>
 class binary_serializer {
-public:
-    using span_type = decltype(std::span{std::declval<B&>()});
-    using buffer_type = std::conditional_t<concepts::resizable_container<B>, B&, span_type>;
-    using byte_type = typename std::remove_reference_t<buffer_type>::value_type;
+public:    
+    ///  \brief A type used to represent a portion of the buffer or the entire buffer itself.
+    ///  
+    using span_type = decltype(std::span{std::declval<Buf&>()});
+    
+    ///  \brief The type used to represent the buffer in which the data will be serialized.
+    ///  \see `teg::concepts::byte_buffer`
+    ///
+    using buffer_type = std::conditional_t<concepts::resizable_container<Buf>, Buf&, span_type>;
+    
+    ///  \brief The type used to represent a byte.
+    ///  \see `teg::concepts::byte`
+    ///  
+    using byte_type = std::remove_const_t<typename std::remove_reference_t<buffer_type>::value_type>;
     
     ///  \brief The type used to represent the size of the container being serialized.
     ///  
@@ -85,21 +124,49 @@ public:
     ///  
     using variant_index_type = get_variant_index_type<Opt>;
 
-    static constexpr bool has_resizable_buffer = concepts::resizable_container<B>;
+    ///  \brief Defines whether the buffer is resizable or not.
+    ///  
+    static constexpr bool has_resizable_buffer = concepts::resizable_container<Buf>;
 
+    ///  \brief The buffer's maximum in-memory size.
+    ///
     static constexpr uint64_t allocation_limit = get_allocation_limit<Opt>();
 
+    ///  \brief The maximum size of elements a container can have.
+    ///  
     static constexpr uint64_t max_container_size = std::numeric_limits<container_size_type>::max();
 
+    ///  \brief The maximum number of alternatives a variant can have.
+    ///  
     static constexpr uint64_t max_variant_index = std::numeric_limits<variant_index_type>::max();
-
+    
+    // Non-default-initializable and non-copyable.
     binary_serializer() = delete;
     binary_serializer(binary_serializer const&) = delete;
     binary_serializer& operator=(binary_serializer const&) = delete;
 
-    constexpr explicit binary_serializer(B & buffer) : m_buffer(buffer), m_position(0) {}
-    constexpr explicit binary_serializer(B && buffer) : m_buffer(buffer), m_position(0) {}
+    ///  \brief Construct a new binary serializer.
+    ///  \param buffer The buffer to serialize into.
+    ///  
+    constexpr explicit binary_serializer(Buf & buffer) : m_buffer(buffer), m_position(0) {}
+    constexpr explicit binary_serializer(Buf && buffer) : m_buffer(buffer), m_position(0) {}
 
+    ///  \brief The encoding size of the given objects.
+    ///  
+    ///  Calculates the number of bytes needed to serialize the given objects.
+    ///  
+    ///  \tparam ...T The types of the objects to serialize.
+    ///  \param ...objs The objects to serialize.
+    ///  \return The number of bytes needed to serialize the given objects.
+    ///  
+    ///  \example
+    ///  \code
+    ///      constexpr auto encoding_size = 
+    ///         teg::binary_serializer::encoding_size("A string!", 55, 9.99f);
+    ///      
+    ///      static_assert(encoding_size == 22);
+    ///  \endcode
+    ///  
     template <class... T> requires (concepts::serializable<T> && ...)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size(T const&... objs) -> uint64_t {
         return encoding_size_many(objs...);
@@ -168,9 +235,10 @@ public:
         }
     }
 
-private:
-    // Buffer size implementation.
+    private:
 
+    ///  \brief Calculates the encoding size of the given objects.
+    ///  
     template <class T0, class... TN> 
     TEG_NODISCARD TEG_INLINE static constexpr auto 
         encoding_size_many(T0 const& first_obj, TN const&... remaining_objs) -> uint64_t 
@@ -178,15 +246,21 @@ private:
         return encoding_size_one(first_obj) + encoding_size_many(remaining_objs...);
     }
 
+    ///  \brief Case where theres no objects to encode.
+    ///  
     TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_many() -> uint64_t {
         return 0;
     }
 
+    ///  \brief Calculates the encoding size of the given trivially serializable type.
+    ///  
     template <class T> requires (concepts::trivially_serializable<T, Opt>)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& trivial) -> uint64_t {        
         return sizeof(trivial);
     }
 
+    ///  \brief Calculates the encoding size of the given aggregate.
+    ///  
     template <class T> 
         requires (concepts::aggregate<T>) 
               && (!concepts::bounded_c_array<T>)
@@ -202,6 +276,8 @@ private:
         );
     }
 
+    ///  \brief Calculates the encoding size of the given c-array.
+    ///  
     template <class T> requires 
            (concepts::bounded_c_array<T>) 
         && (!concepts::trivially_serializable<T, Opt>)
@@ -209,6 +285,8 @@ private:
         return std::size(c_array) * encoding_size_one(c_array[0]);
     }
 
+    ///  \brief Calculates the encoding size of the given container.
+    ///  
     template <class T> requires (concepts::container<T>)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& container) -> uint64_t {
         using container_type = std::remove_reference_t<T>;
@@ -244,6 +322,8 @@ private:
         }        
     }
 
+    ///  \brief Calculates the encoding size of the given owning pointer.
+    ///  
     template <class T> requires (concepts::owning_ptr<T>)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& ptr) -> uint64_t {
         if (ptr == nullptr) {
@@ -252,6 +332,8 @@ private:
         return encoding_size_one(*ptr);
     }
 
+    ///  \brief Calculates the encoding size of the given optional.
+    ///  
     template <class T> requires (concepts::optional<T>)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& optional) -> uint64_t {    
         if (optional.has_value()) {
@@ -262,6 +344,8 @@ private:
         }
     }
 
+    ///  \brief Calculates the encoding size of the given tuple-like object.
+    ///  
     template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& tuple) -> uint64_t {    
         return std::apply(
@@ -272,6 +356,8 @@ private:
         );
     }
 
+    ///  \brief Calculates the encoding size of the given variant.
+    ///  
     template <class T> requires (concepts::variant<T>)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& variant) -> uint64_t {
         const uint64_t index_size = sizeof(variant_index_type);
@@ -284,8 +370,8 @@ private:
         return index_size + element_size;
     }
 
-    // Serialization implementation.
-
+    ///  \brief Serializes the given objects.
+    ///  
     template <class T0, class... TN> 
     TEG_NODISCARD TEG_INLINE 
     constexpr auto serialize_many(T0 const& first_obj, TN const&... remaining_objs) -> error {        
@@ -296,10 +382,14 @@ private:
         return serialize_many(remaining_objs...);
     }
 
+    ///  \brief Serialize zero objects.
+    ///  
     TEG_NODISCARD TEG_INLINE constexpr auto serialize_many() -> error {
         return {};
     }
 
+    ///  \brief Serialize a trivially serializable object.
+    ///  
     template <class T>
         requires (concepts::trivially_serializable<T, Opt>)
               || (concepts::trivially_serializable_container<T, Opt>)
@@ -307,6 +397,8 @@ private:
         return write_bytes(trivial);
     }
 
+    ///  \brief Serialize the given aggregate.
+    ///  
     template <class T>
         requires (concepts::aggregate<T>)
               && (!concepts::bounded_c_array<T>) 
@@ -322,6 +414,8 @@ private:
         );
     }
 
+    ///  \brief Serialize the given bounded c-array.
+    ///  
     template <class T> 
         requires (concepts::bounded_c_array<T>) 
               && (!concepts::trivially_serializable<T, Opt>)
@@ -427,7 +521,7 @@ private:
     }
 
     ///  \brief Serializes the given tuple-like object. 
-    ///
+    ///  
     template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& tuple) -> error {    
         return std::apply(
@@ -439,7 +533,7 @@ private:
     }
 
     ///  \brief Serializes the given variant.
-    ///   
+    ///  
     template <class T> requires (concepts::variant<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& variant) -> error {
         // Check valueless by exception.
@@ -535,15 +629,43 @@ private:
     }
 
 private:
-    buffer_type m_buffer = {};
-    uint64_t m_position = 0;
+    buffer_type m_buffer = {}; // A reference to a contiguous container or a span of data.
+    uint64_t m_position = 0;   // The current position in the buffer.
 };
 
-template <options Opt = default_mode, class B, class... T>
-    requires (concepts::byte_buffer<B>) 
+///  \brief Serializes the provided objects into the specified buffer using a binary format.
+///  
+///  \tparam  Opt   The options for serialization.
+///  \tparam  ...T  The types of the objects to serialize.
+///  \tparam  Buf   The type of the buffer to serialize into.
+///  
+///  \param  output_buffer  The buffer to serialize the data into.
+///  \param  objs...        The objects to be serialized.
+///  
+///  \return An error code indicating the success or failure of the serialization process.
+///  
+///  \example 
+///  \code
+///      teg::byte_buffer buffer{};
+///      auto result = teg::serialize(buffer, "A string!", 55, 9.99f);
+///      
+///      if (success(result)) { 
+///          // Use the serialized bytes
+///          for (auto const& byte : buffer) {
+///              std::cout << static_cast<int>(byte); 
+///          }
+///      }
+///      else { 
+///          // Handle the error.
+///          std::cout << result.message(); 
+///      }
+///  \endcode
+///  
+template <options Opt = default_mode, class Buf, class... T>
+    requires (concepts::byte_buffer<Buf>) 
           && (concepts::serializable<T> && ...)
-TEG_NODISCARD TEG_INLINE constexpr auto serialize(B& output_buffer, T const&... objs) -> error {
-    return binary_serializer<Opt, B>{output_buffer}.serialize(objs...);
+TEG_NODISCARD TEG_INLINE constexpr auto serialize(Buf& output_buffer, T const&... objs) -> error {
+    return binary_serializer<Opt, Buf>{output_buffer}.serialize(objs...);
 }
 
 } // namespace teg

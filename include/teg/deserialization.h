@@ -36,12 +36,15 @@
 #include "core_concepts.h"
 #include "error.h"
 #include "members_visitor.h"
-#include "serialization.h"
 #include "options.h"
-#include "fixed_string.h"
+#include "serialization.h"
 
 namespace teg::concepts {
 
+///  \brief A type that can be deserialized.
+///  
+///  Determines whether a type can be deserialized or not.
+///  
 template <class T>
 concept deserializable = serializable<T>;
 
@@ -52,19 +55,31 @@ concept trivially_deserializable = trivially_serializable<T, Opt>;
 
 namespace teg {
 
-template <options Opt = default_mode, class B = byte_buffer>
-    requires concepts::byte_buffer<B>
+///  \brief A binary deserializer.
+///  
+///  Decodes data from a given buffer using a binary format.
+///  
+///  \tparam  Buf  The type of the buffer to deserialize from.
+///  \tparam  Opt  The options for deserialization.
+///  
+template <options Opt = default_mode, class Buf = byte_buffer>
+    requires concepts::byte_buffer<Buf>
 class binary_deserializer {
 public:
+    ///  \brief A type used to represent a portion of the buffer or the entire buffer itself.
+    ///  
+    using span_type = decltype(std::span{std::declval<Buf&>()});
     
-    using span_type = decltype(std::span{std::declval<B&>()});
-    using buffer_type = std::conditional_t<concepts::resizable_container<B>, B&, span_type>;
-    using byte_type = typename std::remove_reference_t<buffer_type>::value_type;
-
-    binary_deserializer() = delete;
-    binary_deserializer(binary_deserializer const&) = delete;
-    binary_deserializer& operator=(binary_deserializer const&) = delete;
-
+    ///  \brief The type used to represent the buffer in which the data will be serialized.
+    ///  \see `teg::concepts::byte_buffer`
+    ///
+    using buffer_type = std::conditional_t<concepts::resizable_container<Buf>, Buf&, span_type>;
+    
+    ///  \brief The type used to represent a byte.
+    ///  \see `teg::concepts::byte`
+    ///  
+    using byte_type = std::remove_const_t<typename std::remove_reference_t<buffer_type>::value_type>;
+    
     ///  \brief The type used to represent the size of the container being serialized.
     ///  
     using container_size_type = get_container_size_type<Opt>;
@@ -73,21 +88,35 @@ public:
     ///  
     using variant_index_type = get_variant_index_type<Opt>;
 
-    static constexpr bool has_resizable_buffer = concepts::resizable_container<B>;
+    ///  \brief Defines whether the buffer is resizable or not.
+    ///  
+    static constexpr bool has_resizable_buffer = concepts::resizable_container<Buf>;
 
+    ///  \brief The buffer's maximum in-memory size.
+    ///
     static constexpr uint64_t allocation_limit = get_allocation_limit<Opt>();
 
+    ///  \brief The maximum size of elements a container can have.
+    ///  
     static constexpr uint64_t max_container_size = std::numeric_limits<container_size_type>::max();
 
+    ///  \brief The maximum number of alternatives a variant can have.
+    ///  
     static constexpr uint64_t max_variant_index = std::numeric_limits<variant_index_type>::max();
 
-    static constexpr bool requires_endian_swap = requires_endian_swap<Opt>();
+    // Non-default-initializable and non-copyable.
+    binary_deserializer() = delete;
+    binary_deserializer(binary_deserializer const&) = delete;
+    binary_deserializer& operator=(binary_deserializer const&) = delete;
 
-    constexpr explicit binary_deserializer(B & buffer) : m_buffer(buffer), m_position(0) {}
-    constexpr explicit binary_deserializer(B && buffer) : m_buffer(buffer), m_position(0) {}
+    ///  \brief Construct a new binary deserializer.
+    ///  \param buffer The buffer to deserialize from.
+    ///  
+    constexpr explicit binary_deserializer(Buf & buffer)  : m_buffer(buffer), m_position(0) {}
+    constexpr explicit binary_deserializer(Buf && buffer) : m_buffer(buffer), m_position(0) {}
 
     template <class... T> requires (concepts::deserializable<T> && ...)
-    [[nodiscard]] TEG_INLINE constexpr auto deserialize(T&... objs) -> error {        
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize(T&... objs) -> error {        
         if constexpr (sizeof...(objs) == 0) {
             return {};
         }        
@@ -95,8 +124,10 @@ public:
     }
 
 private:
+    ///  \brief Deserializes the given objects.
+    ///  
     template <class T0, class... TN>
-    [[nodiscard]] TEG_INLINE constexpr auto deserialize_many(T0& first_obj, TN&... remaining_objs) -> error {        
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_many(T0& first_obj, TN&... remaining_objs) -> error {        
         if (auto result = deserialize_one(first_obj); failure(result)) [[unlikely]] {
             return result;
         }
@@ -104,24 +135,30 @@ private:
         return deserialize_many(remaining_objs...);
     }
 
-    [[nodiscard]] TEG_INLINE constexpr auto deserialize_many() -> error {
+    ///  \brief Case where there is no more objects to deserialize.
+    ///  
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_many() -> error {
         return {};
     }
     
+    ///  \brief Deserializes a trivially serializable object.
+    ///  
     template <class T>
         requires (concepts::trivially_deserializable<T, Opt>)
               || (concepts::trivially_serializable_container<T, Opt>)
-    [[nodiscard]] TEG_INLINE constexpr auto deserialize_one(T& obj) -> error {
-        return read_bytes(obj);
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& trivial) -> error {
+        return read_bytes(trivial);
     }
 
+    ///  \brief Deserializes an aggregate.
+    ///  
     template <class T>
         requires (concepts::aggregate<T>)
               && (!concepts::bounded_c_array<T>)
               && (!concepts::container<T>)
               && (!concepts::tuple<T>)
               && (!concepts::trivially_deserializable<T, Opt>)
-    [[nodiscard]] TEG_INLINE constexpr auto deserialize_one(T& aggregate) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& aggregate) -> error {
         return visit_members(
             [&](auto&... members) {
                 return deserialize_many(members...);
@@ -130,24 +167,34 @@ private:
         );
     }
 
+    ///  \brief Deserializes a bounded c-array or a fixed-size container.
+    ///  
+    ///  \details This functions handles the deserialization only if they are not 
+    ///  trivially serializable. Otherwise they get deserialized using the trivial deserialization.
+    ///  
     template <class T>
         requires (concepts::bounded_c_array<T> || concepts::fixed_size_container<T>)
               && (!concepts::trivially_deserializable<T, Opt>)
               && (!concepts::trivially_serializable_container<T, Opt>)
-    [[nodiscard]] TEG_INLINE constexpr auto deserialize_one(T& array) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& array) -> error {
         // Deserialize the elements.            
         for (auto& element : array) {
             if (auto result = deserialize_one(element); failure(result)) [[unlikely]] {
                 return result;
             }
         }
-        return {};        
+        return {};
     }
 
+    ///  \brief Deserialize a container.
+    ///  
+    ///  \details This function handles the deserialization of most container types, 
+    ///  including contiguous containers, and associative containers, in a generic approach.
+    ///  
     template <class T> 
         requires (concepts::container<T>)
               && (!concepts::fixed_size_container<T>)
-    [[nodiscard]] TEG_INLINE constexpr auto deserialize_one(T& container) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& container) -> error {
         using container_type = std::remove_reference_t<T>;
         using element_type = typename container_type::value_type;
 
@@ -235,8 +282,10 @@ private:
         }
     }
 
+    ///  \brief Deserializes the given owning pointer.
+    ///  
     template <class T> requires (concepts::owning_ptr<T>)
-    [[nodiscard]] TEG_INLINE constexpr auto deserialize_one(T& pointer) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& pointer) -> error {
         using type = std::remove_reference_t<T>;
         using element_type = typename type::element_type;
 
@@ -251,8 +300,10 @@ private:
         return {};
     }
 
+    ///  \brief Deserializes the given optional.
+    ///  
     template <class T> requires (concepts::optional<T>)
-    [[nodiscard]] TEG_INLINE constexpr auto deserialize_one(T& optional) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& optional) -> error {
         using type = std::remove_reference_t<T>;
         using value_type = typename type::value_type;
         
@@ -279,7 +330,7 @@ private:
     ///  \brief Deserializes the given tuple-like object. 
     ///
     template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
-    [[nodiscard]] TEG_INLINE constexpr auto deserialize_one(T& tuple) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& tuple) -> error {
         return std::apply(
             [&](auto&&... elements) constexpr {
                 return deserialize_many(elements...);
@@ -288,8 +339,10 @@ private:
         );
     }
 
+    ///  \brief Deserializes the given variant.
+    ///  
     template <class T> requires (concepts::variant<T>)
-    [[nodiscard]] TEG_INLINE constexpr auto deserialize_one(T& variant) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& variant) -> error {
         using variant_type = std::remove_reference_t<T>;
 
         // Deserialize the index.
@@ -298,7 +351,7 @@ private:
             return result;
         }
 
-        // Deserialize the element.
+        // Deserialize the alternative.
         constexpr std::size_t table_size = std::variant_size_v<variant_type>;
 
         if (runtime_index >= table_size) [[unlikely]] {
@@ -319,10 +372,15 @@ private:
         });
     }
 
+    ///  \brief Copies the underlying bytes of the given trivially serializable object
+    ///  directly from the buffer.
+    ///  
+    ///  \details Performs endian-swapping if needed.
+    ///  
     template <class T>
         requires (concepts::trivially_deserializable<T, Opt>)
               || (concepts::trivially_serializable_container<T, Opt>)
-    [[nodiscard]] TEG_INLINE constexpr auto read_bytes(T& obj) -> error {        
+    TEG_NODISCARD TEG_INLINE constexpr auto read_bytes(T& obj) -> error {        
 
         auto constexpr size = []() constexpr { // Calculate the object's size.
             if constexpr (concepts::trivially_serializable_container<T, Opt>) {
@@ -389,11 +447,14 @@ private:
         }
     }
 
+    ///  \brief Copies the underlying bytes of the given contiguous container
+    ///  directly from the buffer.
+    ///  
     template <class T> 
         requires (concepts::contiguous_container<T>)
               && (concepts::trivially_serializable<typename T::value_type, Opt>)
               && (!concepts::trivially_serializable_container<T, Opt>)
-    [[nodiscard]] TEG_INLINE constexpr auto read_bytes(T& container) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto read_bytes(T& container) -> error {
         // Deserialization at compile-time is not possible in this case.
         // Deserialize at run-time.
         auto* dst = reinterpret_cast<byte_type*>(container.data());
@@ -411,14 +472,14 @@ private:
     }
 
 private:
-    buffer_type m_buffer = {};
-    std::size_t m_position = 0;
+    buffer_type m_buffer = {}; // A reference to a contiguous container or a span of data.
+    uint64_t m_position = 0;   // The current position in the buffer.
 };
 
-template <options Opt = default_mode, class B, class... T>
-    requires (concepts::byte_buffer<B>) && (concepts::deserializable<T> && ...)
-[[nodiscard]] TEG_INLINE constexpr auto deserialize(B& input_buffer, T&... objs) -> error {
-    return binary_deserializer<Opt, B>{input_buffer}.deserialize(objs...);
+template <options Opt = default_mode, class Buf, class... T>
+    requires (concepts::byte_buffer<Buf>) && (concepts::deserializable<T> && ...)
+TEG_NODISCARD TEG_INLINE constexpr auto deserialize(Buf& input_buffer, T&... objs) -> error {
+    return binary_deserializer<Opt, Buf>{input_buffer}.deserialize(objs...);
 }
 
 } // namespace teg
