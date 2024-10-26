@@ -23,6 +23,7 @@
 #include <type_traits>
 #include <tuple>
 
+#include "def.h"
 #include "core_concepts.h"
 #include "container_concepts.h"
 
@@ -69,7 +70,7 @@ concept aggregate = std::is_aggregate_v<T> && !unbounded_c_array<T>;
 
 namespace teg::internal {
 
-constexpr inline auto copy_md_c_array_impl(auto& dst, auto const& src, std::size_t& i) -> void {
+TEG_INLINE constexpr auto copy_md_c_array_impl(auto& dst, auto const& src, std::size_t& i) -> void {
     using dst_type = std::remove_cvref_t<decltype(dst)>;
     constexpr auto rank = std::rank_v<dst_type>;
     constexpr auto extent = std::extent_v<dst_type>;
@@ -110,7 +111,7 @@ requires
     && ((!concepts::bounded_c_array<S>) || std::rank_v<S> == 1)
     && (sizeof(D) == sizeof(S))
     && (std::same_as<std::remove_all_extents_t<D>, typename S::value_type>)
-constexpr inline auto copy_md_c_array(D & dst, S const& src) -> void {
+TEG_INLINE constexpr auto copy_md_c_array(D & dst, S const& src) -> void {
     std::size_t i = 0;
     internal::copy_md_c_array_impl(dst, src, i);
 }

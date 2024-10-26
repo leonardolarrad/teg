@@ -24,6 +24,7 @@
 #include <utility>
 #include <tuple>
 
+#include "def.h"
 #include "core_concepts.h"
 #include "members_count.h"
 
@@ -739,7 +740,7 @@ concept structure_bindable =
 ///  
 template<class F, class T> 
         requires (concepts::structure_bindable<std::remove_cvref_t<T>>)
-constexpr inline decltype(auto) visit_members(F&& f, T&& t) noexcept {
+TEG_INLINE constexpr decltype(auto) visit_members(F&& f, T&& t) noexcept {
     if constexpr (teg::concepts::tuple<std::remove_cvref_t<T>>) {
         return internal::visit_members_impl(
             std::forward<F>(f),

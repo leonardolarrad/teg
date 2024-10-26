@@ -25,20 +25,21 @@
 #include <cstddef>
 #include <cstring>
 #include <span>
+#include <tuple>
 #include <type_traits>
 #include <utility>
-#include <tuple>
 
 #include "alignment.h"
 #include "buffer.h"
 #include "c_array.h"
 #include "container_concepts.h"
 #include "core_concepts.h"
+#include "def.h"
 #include "endian.h"
 #include "error.h"
+#include "fixed_string.h"
 #include "members_visitor.h"
 #include "options.h"
-#include "fixed_string.h"
 
 namespace teg::concepts {
 
@@ -100,7 +101,7 @@ public:
     constexpr explicit binary_serializer(B && buffer) : m_buffer(buffer), m_position(0) {}
 
     template <class... T> requires (concepts::serializable<T> && ...)
-    [[nodiscard]] static constexpr inline auto encoding_size(T const&... objs) -> uint64_t {
+    TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size(T const&... objs) -> uint64_t {
         return encoding_size_many(objs...);
     }
 
@@ -132,7 +133,7 @@ public:
     ///  to `serialize_many` and `serialize_one` using overload resolution through concepts.
     ///  
     template <class... T> requires (concepts::serializable<T> && ...)
-    [[nodiscard]] constexpr inline auto serialize(T const&... objs) -> error {        
+    TEG_NODISCARD TEG_INLINE constexpr auto serialize(T const&... objs) -> error {        
         if constexpr (sizeof...(objs) == 0) {
             return {};
         }
@@ -171,18 +172,18 @@ private:
     // Buffer size implementation.
 
     template <class T0, class... TN> 
-    [[nodiscard]] static constexpr inline auto 
+    TEG_NODISCARD TEG_INLINE static constexpr auto 
         encoding_size_many(T0 const& first_obj, TN const&... remaining_objs) -> uint64_t 
     {
         return encoding_size_one(first_obj) + encoding_size_many(remaining_objs...);
     }
 
-    [[nodiscard]] static constexpr inline auto encoding_size_many() -> uint64_t {
+    TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_many() -> uint64_t {
         return 0;
     }
 
     template <class T> requires (concepts::trivially_serializable<T, Opt>)
-    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& trivial) -> uint64_t {        
+    TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& trivial) -> uint64_t {        
         return sizeof(trivial);
     }
 
@@ -192,7 +193,7 @@ private:
               && (!concepts::container<T>)
               && (!concepts::tuple<T>)
               && (!concepts::trivially_serializable<T, Opt>)
-    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& aggregate) -> uint64_t {
+    TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& aggregate) -> uint64_t {
         return visit_members(
             [&](auto&&... member) constexpr {
                 return encoding_size_many(member...);
@@ -204,12 +205,12 @@ private:
     template <class T> requires 
            (concepts::bounded_c_array<T>) 
         && (!concepts::trivially_serializable<T, Opt>)
-    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& c_array) -> uint64_t {
+    TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& c_array) -> uint64_t {
         return std::size(c_array) * encoding_size_one(c_array[0]);
     }
 
     template <class T> requires (concepts::container<T>)
-    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& container) -> uint64_t {
+    TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& container) -> uint64_t {
         using container_type = std::remove_reference_t<T>;
         using element_type = typename container_type::value_type;
         
@@ -244,7 +245,7 @@ private:
     }
 
     template <class T> requires (concepts::owning_ptr<T>)
-    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& ptr) -> uint64_t {
+    TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& ptr) -> uint64_t {
         if (ptr == nullptr) {
             return 0;
         }    
@@ -252,7 +253,7 @@ private:
     }
 
     template <class T> requires (concepts::optional<T>)
-    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& optional) -> uint64_t {    
+    TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& optional) -> uint64_t {    
         if (optional.has_value()) {
             return sizeof(byte_type) + encoding_size_one(optional.value());
         }
@@ -262,7 +263,7 @@ private:
     }
 
     template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
-    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& tuple) -> uint64_t {    
+    TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& tuple) -> uint64_t {    
         return std::apply(
             [](auto&&... elements) constexpr {
                 return encoding_size_many(elements...);
@@ -272,7 +273,7 @@ private:
     }
 
     template <class T> requires (concepts::variant<T>)
-    [[nodiscard]] static constexpr inline auto encoding_size_one(T const& variant) -> uint64_t {
+    TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& variant) -> uint64_t {
         const uint64_t index_size = sizeof(variant_index_type);
         const uint64_t element_size = std::visit(
             [](auto&& value) constexpr {
@@ -285,8 +286,9 @@ private:
 
     // Serialization implementation.
 
-    template <class T0, class... TN>
-    [[nodiscard]] constexpr inline auto serialize_many(T0 const& first_obj, TN const&... remaining_objs) -> error {        
+    template <class T0, class... TN> 
+    TEG_NODISCARD TEG_INLINE 
+    constexpr auto serialize_many(T0 const& first_obj, TN const&... remaining_objs) -> error {        
         if (auto result = serialize_one(first_obj); failure(result)) [[unlikely]] {
             return result;
         }
@@ -294,14 +296,14 @@ private:
         return serialize_many(remaining_objs...);
     }
 
-    [[nodiscard]] constexpr inline auto serialize_many() -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto serialize_many() -> error {
         return {};
     }
 
     template <class T>
         requires (concepts::trivially_serializable<T, Opt>)
               || (concepts::trivially_serializable_container<T, Opt>)
-    [[nodiscard]] constexpr inline auto serialize_one(T const& trivial) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& trivial) -> error {
         return write_bytes(trivial);
     }
 
@@ -311,7 +313,7 @@ private:
               && (!concepts::container<T>)
               && (!concepts::tuple<T>)
               && (!concepts::trivially_serializable<T, Opt>)
-    [[nodiscard]] constexpr inline auto serialize_one(T const& aggregate) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& aggregate) -> error {
         return visit_members(
             [&](auto&&... members) {
                 return serialize_many(members...);
@@ -323,7 +325,7 @@ private:
     template <class T> 
         requires (concepts::bounded_c_array<T>) 
               && (!concepts::trivially_serializable<T, Opt>)
-    [[nodiscard]] constexpr inline auto serialize_one(T const& c_array) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& c_array) -> error {
         // Serialize elements.            
         for (auto const& element : c_array) {
             if (auto result = serialize_one(element); failure(result)) [[unlikely]] {
@@ -342,7 +344,7 @@ private:
     template <class T> 
         requires (concepts::container<T>)
               && (!concepts::trivially_serializable_container<T, Opt>)
-    [[nodiscard]] constexpr inline auto serialize_one(T const& container) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& container) -> error {
 
         using container_type = std::remove_reference_t<T>;
         using element_type = typename container_type::value_type;
@@ -405,7 +407,7 @@ private:
     ///  \brief Serializes the given owning pointer.
     ///  
     template <class T> requires (concepts::owning_ptr<T>)
-    [[nodiscard]] constexpr inline auto serialize_one(T const& ptr) -> error  {
+    TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& ptr) -> error  {
         if (ptr == nullptr) [[unlikely]] {
             return std::errc::invalid_argument;
         }
@@ -416,7 +418,7 @@ private:
     ///  \brief Serializes the given optional.
     ///  
     template <class T> requires (concepts::optional<T>)
-    [[nodiscard]] constexpr inline auto serialize_one(T const& optional) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& optional) -> error {
         if (!optional.has_value()) [[unlikely]] {
             return serialize_one(byte_type(false));
         } else {
@@ -427,7 +429,7 @@ private:
     ///  \brief Serializes the given tuple-like object. 
     ///
     template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
-    [[nodiscard]] constexpr inline auto serialize_one(T const& tuple) -> error {    
+    TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& tuple) -> error {    
         return std::apply(
             [&](auto&&... elements) constexpr {
                 return serialize_many(elements...);
@@ -439,7 +441,7 @@ private:
     ///  \brief Serializes the given variant.
     ///   
     template <class T> requires (concepts::variant<T>)
-    [[nodiscard]] constexpr inline auto serialize_one(T const& variant) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& variant) -> error {
         // Check valueless by exception.
         if (variant.valueless_by_exception()) [[unlikely]] {
             return error { std::errc::invalid_argument };
@@ -463,12 +465,12 @@ private:
     ///  \brief Copies the underlying bytes of the given trivially serializable object
     ///  directly into the buffer.
     ///  
-    ///  \details Endian-aware algorithm.
+    ///  \details Performs endian-swapping if needed.
     ///  
     template <class T> 
         requires (concepts::trivially_serializable<T, Opt>)
               || (concepts::trivially_serializable_container<T, Opt>)
-    [[nodiscard]] constexpr inline auto write_bytes(T const& obj) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto write_bytes(T const& obj) -> error {
 
         auto constexpr size = []() constexpr { // Calculate the object's size.
             if constexpr (concepts::trivially_serializable_container<T, Opt>) {
@@ -520,7 +522,7 @@ private:
         requires (concepts::contiguous_container<T>)
               && (concepts::trivially_serializable<typename T::value_type, Opt>)
               && (!concepts::trivially_serializable_container<T, Opt>)
-    [[nodiscard]] constexpr inline auto write_bytes(T const& container) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto write_bytes(T const& container) -> error {
 
         auto* dst = m_buffer.data() + m_position;
         auto const* src = reinterpret_cast<byte_type const*>(container.data());
@@ -540,7 +542,7 @@ private:
 template <options Opt = default_mode, class B, class... T>
     requires (concepts::byte_buffer<B>) 
           && (concepts::serializable<T> && ...)
-constexpr inline auto serialize(B& output_buffer, T const&... objs) -> error {
+TEG_NODISCARD TEG_INLINE constexpr auto serialize(B& output_buffer, T const&... objs) -> error {
     return binary_serializer<Opt, B>{output_buffer}.serialize(objs...);
 }
 
