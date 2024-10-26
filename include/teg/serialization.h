@@ -52,13 +52,13 @@ concept non_trivially_serializable =
 template <class T, options Opt>
 concept memory_copyable = 
        (fundamental<T> || is_enum<T>)
-    || (trivially_copyable<T> && packed_layout<T> && !endian_swap_required<Opt>);
+    || (trivially_copyable<T> && packed_layout<T> && !endian_swap_required<T, Opt>);
 
 template <class T, options Opt>
 concept trivially_serializable_container =
        (fixed_size_container<T>) 
     && (memory_copyable<typename T::value_type, Opt>)
-    && (!endian_swap_required<Opt>);
+    && (!endian_swap_required<T, Opt>);
     
 template <class T, options Opt>
 concept trivially_serializable = 
@@ -88,11 +88,11 @@ public:
 
     static constexpr uint64_t allocation_limit = get_allocation_limit<Opt>();
 
-    static constexpr bool requires_endian_swap = requires_endian_swap<Opt>();
-
     static constexpr uint64_t max_container_size = std::numeric_limits<container_size_type>::max();
 
     static constexpr uint64_t max_variant_index = std::numeric_limits<variant_index_type>::max();
+
+    static constexpr bool requires_endian_swap = requires_endian_swap<Opt>();
 
     binary_serializer() = delete;
     binary_serializer(binary_serializer const&) = delete;
@@ -486,7 +486,7 @@ private:
             auto src_array = std::bit_cast<src_array_type>(obj);
 
             for (std::size_t i = 0; i < size; ++i) {
-                if constexpr (!requires_endian_swap) {
+                if constexpr (!concepts::endian_swap_required<T, Opt>) {
                     m_buffer[m_position + i] = src_array[i];
                 }
                 else {
@@ -504,7 +504,7 @@ private:
             //auto const size = sizeof(obj);
             m_position += size;
 
-            if constexpr (!requires_endian_swap) {       
+            if constexpr (!concepts::endian_swap_required<T, Opt>) {
                 std::memcpy(dst, src, size);
                 return {};
             }

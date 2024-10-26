@@ -21,6 +21,7 @@
 
 #include <bit>
 #include "options.h"
+#include "container_concepts.h"
 
 namespace teg {
 
@@ -41,8 +42,15 @@ constexpr auto requires_endian_swap() -> bool {
 
 namespace teg::concepts {
 
-template <options Opt>
-concept endian_swap_required = requires_endian_swap<Opt>();
+template <class T>
+concept endian_neutral = sizeof(T) == 1;
+
+template <class T>
+concept endian_neutral_container = contiguous_container<T> && endian_neutral<typename T::value_type>;
+
+template <class T, options Opt>
+concept endian_swap_required = 
+    requires_endian_swap<Opt>() && !(endian_neutral<T> || endian_neutral_container<T>);
 
 } // namespace teg::concepts
 

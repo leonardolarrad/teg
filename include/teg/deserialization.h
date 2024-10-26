@@ -339,7 +339,7 @@ private:
             using src_array_type = std::array<std::remove_cv_t<byte_type>, sizeof(type)>;
             src_array_type src_array{};
 
-            if constexpr (!requires_endian_swap) {
+            if constexpr (!concepts::endian_swap_required<T, Opt>) {
                 for (std::size_t i = 0; i < size; ++i) {
                     src_array[i] = m_buffer[m_position + i];
                 }
@@ -379,7 +379,7 @@ private:
             auto* const src = m_buffer.data() + m_position;            
             m_position += size;
 
-            if constexpr (!requires_endian_swap) {       
+            if constexpr (!concepts::endian_swap_required<T, Opt>) {
                 std::memcpy(dst, src, size);
                 return {};
             }
