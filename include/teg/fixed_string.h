@@ -236,25 +236,33 @@ struct tuple_element<I, teg::basic_fixed_string<T, N>> {
 } // namespace std
 
 namespace teg {
-    
+
+///  \brief Extracts the Ith element from the fixed string using tuple-like interface.
+///  
 template<std::size_t I, class T, std::size_t N>
 constexpr T& get(teg::basic_fixed_string<T, N>& a) noexcept {
     static_assert(I < N);
     return a.m_data[I];
 }
 
+///  \brief Extracts the Ith element from the fixed string using tuple-like interface.
+///  
 template<std::size_t I, class T, std::size_t N>
 constexpr const T& get(const teg::basic_fixed_string<T, N>& a) noexcept {
     static_assert(I < N);
     return a[I];
 }
 
+///  \brief Extracts the Ith element from the fixed string using tuple-like interface.
+///  
 template<std::size_t I, class T, std::size_t N>
 constexpr T&& get(teg::basic_fixed_string<T, N>&& a) noexcept {
     static_assert(I < N);
     return std::move(a[I]);
 }
 
+///  \brief Extracts the Ith element from the fixed string using tuple-like interface.
+///  
 template<std::size_t I, class T, std::size_t N>
 constexpr const T&& get(const teg::basic_fixed_string<T, N>&& a) noexcept {
     static_assert(I < N);

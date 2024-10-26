@@ -147,7 +147,7 @@ namespace teg::concepts {
 ///  \see https://en.cppreference.com/w/c/language/object
 ///
 template <class T>
-concept packed_layout = standard_layout<T> && !has_padding_bits<T>();
+concept packed_standard_layout = standard_layout<T> && !has_padding_bits<T>();
 
 } // namespace teg::concepts
 

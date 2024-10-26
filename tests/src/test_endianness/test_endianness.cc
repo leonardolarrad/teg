@@ -66,8 +66,8 @@ TEST_CASE("Check fundamental encoding with big-endian and little-endian") {
         constexpr auto big_endian = teg::options::big_endian;
         constexpr auto little_endian = teg::options::little_endian;
 
-        COMPTIME_ASSERT((teg::concepts::endian_swap_required<int64_t, big_endian>));
-        COMPTIME_ASSERT(!(teg::concepts::endian_swap_required<int64_t, little_endian>));
+        COMPTIME_ASSERT((teg::concepts::endian_swapping_required<int64_t, big_endian>));
+        COMPTIME_ASSERT(!(teg::concepts::endian_swapping_required<int64_t, little_endian>));
 
         int64_t i0 = 1234567891;
         teg::serialize<big_endian>(buffer_b, i0).or_throw();
@@ -93,8 +93,8 @@ TEST_CASE("A 1-byte size element fixed contiguous container") {
         constexpr auto big_endian = teg::options::big_endian;
         constexpr auto little_endian = teg::options::little_endian;
 
-        //COMPTIME_ASSERT(!(teg::concepts::endian_swap_required<const char[13], big_endian>));
-        //COMPTIME_ASSERT(!(teg::concepts::endian_swap_required<const char[13], little_endian>));
+        //COMPTIME_ASSERT(!(teg::concepts::endian_swapping_required<const char[13], big_endian>));
+        //COMPTIME_ASSERT(!(teg::concepts::endian_swapping_required<const char[13], little_endian>));
 
         const char s0[] = "Hello World!";
         teg::serialize<big_endian>(buffer_b, s0).or_throw();
@@ -117,8 +117,8 @@ TEST_CASE("A 1-byte size element fixed contiguous container") {
         constexpr auto big_endian = teg::options::big_endian;
         constexpr auto little_endian = teg::options::little_endian;
 
-        COMPTIME_ASSERT(!(teg::concepts::endian_swap_required<std::array<int8_t, 8>, big_endian>));
-        COMPTIME_ASSERT(!(teg::concepts::endian_swap_required<std::array<int8_t, 8>, little_endian>));
+        COMPTIME_ASSERT(!(teg::concepts::endian_swapping_required<std::array<int8_t, 8>, big_endian>));
+        COMPTIME_ASSERT(!(teg::concepts::endian_swapping_required<std::array<int8_t, 8>, little_endian>));
 
         std::array<int8_t, 8> a0 = { 1, 2, 3, 4, 5, 6, 7, 8 };
         teg::serialize<big_endian>(buffer_b, a0).or_throw();
@@ -141,8 +141,8 @@ TEST_CASE("A 1-byte size element fixed contiguous container") {
         constexpr auto big_endian = teg::options::big_endian;
         constexpr auto little_endian = teg::options::little_endian;
 
-        COMPTIME_ASSERT(!(teg::concepts::endian_swap_required<teg::fixed_string<12>, big_endian>));
-        COMPTIME_ASSERT(!(teg::concepts::endian_swap_required<teg::fixed_string<12>, little_endian>));
+        COMPTIME_ASSERT(!(teg::concepts::endian_swapping_required<teg::fixed_string<12>, big_endian>));
+        COMPTIME_ASSERT(!(teg::concepts::endian_swapping_required<teg::fixed_string<12>, little_endian>));
         
         constexpr auto s0 = teg::make_fixed_string("Hello World!");
         teg::serialize<big_endian>(buffer_b, s0).or_throw();

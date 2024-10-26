@@ -22,7 +22,7 @@ def generate_function(i):
     """ Generate the function implementation `visit_members` for `i` members:
         
         template <class F, class T>
-        constexpr inline decltype(auto) visit_members(F&& f, T&& t, std::integral_constant<std::size_t, 3>) {
+        constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 3>) {
             auto&& [_001, _002, _003] = std::forward<T>(t);
             return std::forward<F>(f)(
                 std::forward<decltype(_001)>(_001), std::forward<decltype(_002)>(_002), std::forward<decltype(_003)>(_003));
@@ -31,7 +31,7 @@ def generate_function(i):
 
     function_template = \
 f"""template <class F, class T>
-constexpr inline decltype(auto) visit_members(F&& f, T&& t, std::integral_constant<std::size_t, {i}>) {{
+constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, {i}>) {{
     auto&& [{format_bindings(i)}] = std::forward<T>(t);
     
     return std::forward<F>(f)(
