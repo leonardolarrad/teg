@@ -158,8 +158,7 @@ public:
         }
 
         if constexpr (has_resizable_buffer) {
-            uint64_t const old_size = m_buffer.size();
-            uint64_t const new_size = old_size + encoding_size(objs...);
+            uint64_t const new_size = m_position + encoding_size(objs...);
 
             // Check allocation limit.
             if (new_size > allocation_limit) [[unlikely]] {
@@ -170,9 +169,8 @@ public:
             using buffer_size_type = std::remove_cvref_t<buffer_type>::size_type;
             m_buffer.resize(static_cast<buffer_size_type>(new_size));
 
-            if (auto const result = serialize_many(objs...); failure(result)) [[unlikely]] {
-                // Restore the old buffer size.
-                m_buffer.resize(static_cast<buffer_size_type>(old_size));
+            if (auto const result = serialize_many(objs...); failure(result)) [[unlikely]] {                
+                clear();
                 return result;
             }
             return {};
@@ -180,6 +178,7 @@ public:
         else {
             // Check buffer space.
             if (m_buffer.size() < m_position + encoding_size(objs...)) [[unlikely]] {
+                clear();
                 return error { std::errc::no_buffer_space };
             }
 
@@ -187,8 +186,49 @@ public:
         }
     }
 
-    private:
+    ///  \brief Binary serialization of the given objects.
+    ///  \see `binary_serilizer::serialize`
+    ///  
+    template <class... T> requires (concepts::serializable<T> && ...)
+    TEG_NODISCARD TEG_INLINE constexpr operator()(T const&... objs) { 
+        return serialize(objs...); 
+    }
 
+    TEG_NODISCARD TEG_INLINE constexpr auto position() const -> uint64_t { 
+        return m_position; 
+    }
+
+    TEG_NODISCARD TEG_INLINE constexpr auto position() -> uint64_t& {
+        return m_position;
+    }
+
+    TEG_NODISCARD TEG_INLINE constexpr auto data() const -> buffer_type const& {
+        return m_buffer;
+    }
+
+    TEG_NODISCARD TEG_INLINE constexpr auto size() const -> uint64_t {
+        return m_buffer.size();
+    }
+
+    TEG_INLINE constexpr auto clear() -> void {
+        m_position = 0;
+        
+        if constexpr (teg::concepts::clearable_container<Buf>) {
+            m_buffer.clear();
+        }
+    }
+
+    TEG_INLINE constexpr auto reset(bool clear = false) -> void {
+        m_position = 0;
+        
+        //if constexpr (teg::concepts::clearable_container<Buf>) {
+        //    if (clear) {
+        //        m_buffer.clear();
+        //    }
+        //}
+    }
+
+private:
     ///  \brief Calculates the encoding size of the given objects.
     ///  
     template <class T0, class... TN> 
@@ -385,7 +425,7 @@ public:
     ///
     ///  \details This function handles the serialization all container types, 
     ///  including fixed-size containers, contiguous containers, and associative containers, 
-    ///  in a generic approach.
+    ///  in a generic way.
     ///  
     template <class T> 
         requires (concepts::container<T>)

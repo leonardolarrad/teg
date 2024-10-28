@@ -26,13 +26,20 @@ static bool test_lib() {
 static void benchmark() {   
     std::vector<bm::ecommerce_page> data_out_10_2048bb;
 
+    teg::byte_buffer buffer{};
+    teg::binary_serializer serializer{buffer};
+
     bm::benchmark()
         .warmup(128)
         .iterations(746667)
         .repetitions(10)
         .run("teg:serialization:10_2048b", [&](){
-            teg::byte_buffer buffer;
-            teg::serialize(buffer, data_in_10_2048b).or_throw();
+            serializer.reset();
+            serializer.serialize(data_in_10_2048b).or_throw();
+        })
+        .run("teg:serialization:10_2048b", [&](){
+            teg::byte_buffer b2{};
+            teg::serialize(b2, data_in_10_2048b).or_throw();
         })
         //.run("teg:deserialization:10_1024b", [&](){
         //    teg::deserialize(buffer, data_out_10_1024b).or_throw();
