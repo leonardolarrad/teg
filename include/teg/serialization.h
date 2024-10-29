@@ -362,7 +362,10 @@ private:
     ///  
     template <class T> requires (concepts::user_defined_serialization<T>)
     teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& usr_obj) -> uint64_t {
-        return usr_encoding_size(usr_obj);
+        return usr_encoding_size(
+            [&](auto&&... objs) constexpr {
+                return encoding_size_many(objs...);
+            }, usr_obj);
     }
 
     ///  \brief Serializes the given objects.

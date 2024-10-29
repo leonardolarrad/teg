@@ -29,10 +29,10 @@ namespace teg::concepts {
 
 template <class T>
 concept user_defined_serialization = 
-    requires(T& type, std::function<teg::error()>&& encode) {
-        { usr_encoding_size(type) }   -> std::convertible_to<u64>; // usr_encode, usr_decode
-        { usr_encode(encode, type) } -> std::same_as<teg::error>;
-        { usr_decode(encode, type) } -> std::same_as<teg::error>;
+    requires(T& type, std::function<teg::error()>&& encoder) {
+        { usr_encoding_size(encoder, type) }   -> std::convertible_to<u64>;
+        { usr_encode(encoder, type) } -> std::same_as<teg::error>;
+        { usr_decode(encoder, type) } -> std::same_as<teg::error>;
     };
 
 ///  \brief A serializable type.

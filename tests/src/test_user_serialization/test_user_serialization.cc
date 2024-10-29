@@ -26,8 +26,9 @@ private:
     teg::u32 x, y, z;
 };
 
-teg_nodiscard teg_inline constexpr auto usr_encoding_size(vec3 const& vec) -> teg::u64 {
-    return sizeof(teg::u32) * 3;
+template <class F>
+teg_nodiscard teg_inline constexpr auto usr_encoding_size(F&& encoding_size, vec3 const& vec) -> teg::u64 {
+    return encoding_size(vec.get_x(), vec.get_y(), vec.get_z());
 }
 
 template <class F>
