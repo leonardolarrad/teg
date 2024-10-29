@@ -21,21 +21,21 @@
 
 #include <cstdint>
 
-#if !defined(TEG_NODISCARD)
-#define TEG_NODISCARD [[nodiscard]]
+#if !defined(teg_nodiscard)
+#define teg_nodiscard [[nodiscard]]
 #endif
 
-#if !defined(TEG_INLINE)
+#if !defined(teg_inline)
 
 #if defined(_MSC_VER)
-#define TEG_INLINE __forceinline
+#define teg_inline __forceinline
 #elif defined(__GNUC__) || defined(__clang__)
-#define TEG_INLINE __attribute__((always_inline)) inline
+#define teg_inline __attribute__((always_inline)) inline
 #else
-#define TEG_INLINE inline
+#define teg_inline inline
 #endif
 
-#endif // TEG_INLINE
+#endif // teg_inline
 
 namespace teg {
 
