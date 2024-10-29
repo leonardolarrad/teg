@@ -16,7 +16,21 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
+#include <tuple>
+
+#include "def.h"
+#include "error.h"
+#include "serialization_concepts.h"
+
 #ifndef TEG_VARINT_H
 #define TEG_VARINT_H
+
+namespace teg {
+
+
+
+
+}
+
 
 #endif // TEG_VARINT_H

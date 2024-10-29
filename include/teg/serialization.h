@@ -210,23 +210,19 @@ public:
         return m_buffer.size();
     }
 
-    TEG_INLINE constexpr auto clear() -> void {
+    TEG_INLINE constexpr auto reset() -> void {
         m_position = 0;
+    }
+
+    TEG_INLINE constexpr auto clear() -> void {
+        reset();
         
         if constexpr (teg::concepts::clearable_container<Buf>) {
             m_buffer.clear();
         }
     }
 
-    TEG_INLINE constexpr auto reset(bool clear = false) -> void {
-        m_position = 0;
-        
-        //if constexpr (teg::concepts::clearable_container<Buf>) {
-        //    if (clear) {
-        //        m_buffer.clear();
-        //    }
-        //}
-    }
+
 
 private:
     ///  \brief Calculates the encoding size of the given objects.
@@ -360,6 +356,13 @@ private:
             variant
         );
         return index_size + element_size;
+    }
+
+    ///  \brief Calculates the encoding size of a user-defined serializable type.
+    ///  
+    template <class T> requires (concepts::user_defined_serialization<T>)
+    TEG_NODISCARD TEG_INLINE static constexpr auto encoding_size_one(T const& usr_obj) -> uint64_t {
+        return usr_encoding_size(usr_obj);
     }
 
     ///  \brief Serializes the given objects.
@@ -546,6 +549,16 @@ private:
             },
             variant
         );
+    }
+
+    ///  \brief Serializes the given user-defined serializable object.
+    ///  
+    template <class T> requires (concepts::user_defined_serialization<T>)
+    TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& usr_obj) -> error {
+        return usr_encode(
+            [&](auto&&... objs) constexpr {
+                return serialize_many(objs...);
+            }, usr_obj);
     }
 
     ///  \brief Copies the underlying bytes of the given trivially serializable object

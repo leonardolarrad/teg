@@ -19,7 +19,21 @@
 #ifndef TEG_SERIALIZATION_CONCEPTS_H
 #define TEG_SERIALIZATION_CONCEPTS_H
 
+#include "def.h"
+#include "error.h"
+
+#include <type_traits>
+#include <functional>
+
 namespace teg::concepts {
+
+template <class T>
+concept user_defined_serialization = 
+    requires(T& type, std::function<teg::error()>&& encode) {
+        { usr_encoding_size(type) }   -> std::convertible_to<u64>; // usr_encode, usr_decode
+        { usr_encode(encode, type) } -> std::same_as<teg::error>;
+        { usr_decode(encode, type) } -> std::same_as<teg::error>;
+    };
 
 ///  \brief A serializable type.
 ///  
@@ -50,7 +64,7 @@ concept memory_copyable =
 ///  
 template <class T>
 concept non_trivially_serializable = 
-    container<T> || optional<T> || owning_ptr<T> || tuple<T> || variant<T>;
+    container<T> || optional<T> || owning_ptr<T> || tuple<T> || variant<T> || user_defined_serialization<T>;
 
 ///  \brief A trivially serializable container.
 ///  

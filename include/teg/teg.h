@@ -37,5 +37,6 @@
 #include "serialization.h"
 #include "serialization_concepts.h"
 #include "unreachable.h"
+#include "varint.h"
 
 #endif // TEG_H

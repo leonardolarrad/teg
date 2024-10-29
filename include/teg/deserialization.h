@@ -359,6 +359,16 @@ private:
         });
     }
 
+    ///  \brief Deserializes the given user-defined serializable object.
+    ///  
+    template <class T> requires (concepts::user_defined_serialization<T>)
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& usr_obj) -> error {
+        return usr_decode(
+            [&](auto&&... objs) constexpr {
+                return deserialize_many(objs...);
+            }, usr_obj);
+    }
+
     ///  \brief Copies the underlying bytes of the given trivially serializable object
     ///  directly from the buffer.
     ///  
