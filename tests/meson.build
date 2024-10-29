@@ -24,6 +24,7 @@ subdir('src/test_tuple')
 subdir('src/test_variant')
 subdir('src/test_aggregates')
 subdir('src/test_comptime_serialization')
+subdir('src/test_user_serialization')
 subdir('src/test_alignment')
 subdir('src/test_endianness')
 
