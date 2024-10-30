@@ -16,25 +16,53 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-#include <tuple>
+#ifndef TEG_VARINT_H
+#define TEG_VARINT_H
 
+#include <tuple>
 #include <limits>
+#include <span>
 
 #include "def.h"
 #include "error.h"
 #include "serialization_concepts.h"
-#include <span>
-
-#ifndef TEG_VARINT_H
-#define TEG_VARINT_H
 
 namespace teg {
 
 class uleb128 {
 public:
+    ///  \brief Constructs an uninitialized ULEB-128 value.
+    ///  
+    teg_inline constexpr uleb128() = default;
 
-    teg_nodiscard teg_inline 
-    static constexpr auto size(u64 value) -> u8 {
+    ///  \brief Constructs a ULEB-128 value from a given 64-bit unsigned integer.
+    ///  
+    teg_inline constexpr uleb128(u64 value) : m_value(value) {}
+
+    ///  \brief Converts the ULEB-128 value to a 64-bit unsigned integer.
+    ///  \details Implicit conversion.
+    ///  
+    teg_inline constexpr operator u64() const { return m_value; }
+
+    ///  \brief Converts the ULEB-128 value to a 64-bit unsigned integer reference.
+    ///  \details Implicit conversion.
+    ///  
+    teg_inline constexpr operator u64&() & { return m_value; }
+
+    ///  \brief Calculates the size in bytes needed to encode the given value 
+    ///  to ULEB-128 format.
+    ///  
+    ///  \param value The value to encode.
+    ///  \return The size in bytes needed to encode the given value to ULEB-128 format.
+    ///  
+    ///  \example
+    ///  \code
+    ///      constexpr auto value = 777;
+    ///      constexpr auto size = teg::uleb128::size(value);
+    ///      static_assert(size == 2);
+    ///  \endcode
+    ///  
+    teg_nodiscard teg_inline static constexpr auto size(u64 value) -> u8 {
         u8 size = 0;
 
         do {
@@ -45,6 +73,20 @@ public:
         return size;
     }
 
+    ///  \brief Encodes the given value to ULEB-128 format.
+    ///  
+    ///  \param data The buffer to store the encoded value.
+    ///  \param value The value to encode.
+    ///  \return The number of bytes stored in the buffer. In case of failure, returns 0.
+    ///  
+    ///  \example
+    ///  \code
+    ///      constexpr auto value = 777;
+    ///      teg::u8 data[2];
+    ///      teg::uleb128::encode(data, value);
+    ///      assert(data[0] == 0b10001001 && data[1] == 0b00000110);
+    ///  \endcode
+    ///  
     teg_inline static constexpr auto encode(std::span<u8> data, u64 value) -> u8 {
         u8 size = 0;
 
@@ -66,6 +108,20 @@ public:
         return size;
     }
 
+    ///  \brief Decodes the given value from ULEB-128 format.
+    ///  
+    ///  \param data The buffer containing the encoded value.
+    ///  \param value The value to decode.
+    ///  \return The number of bytes read from the buffer. In case of failure, returns 0.
+    ///  
+    ///  \example
+    ///  \code
+    ///      teg::u8 data[2] = { 0b10001001, 0b00000110 };
+    ///      teg::u64 value;
+    ///      teg::uleb128::decode(data, value);
+    ///      assert(value == 777);
+    ///  \endcode
+    ///  
     teg_inline static constexpr auto decode(std::span<u8 const> data, u64& value) -> u8 {
         value = 0;
         u64 shift = 0;
@@ -89,12 +145,14 @@ public:
 
         return size;
     }
+
+private:
+    u64 m_value;
 };
 
 class ileb128 {
 
-    teg_nodiscard teg_inline 
-    static constexpr auto size(i64 value) -> u8 {
+    teg_nodiscard teg_inline static constexpr auto size(i64 value) -> u8 {
         u8 size = 0;
         i8 const sign = value >> (sizeof(i64) * 8 - 1);
         bool more = false;

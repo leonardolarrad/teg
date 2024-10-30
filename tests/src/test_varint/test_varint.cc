@@ -10,6 +10,54 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
+
+TEST_CASE("`teg::uleb128` should include definitions for all uint64_t operations.") {
+    teg::uleb128 v; // uninitialized
+    
+    v = 777ull;
+    ASSERT(v == 777ull);
+
+    v += 1ull;
+    ASSERT(v == 778ull);
+
+    v -= 1ull;
+    ASSERT(v == 777ull);
+
+    v *= 2ull;
+    ASSERT(v == 1554ull);
+
+    v /= 2ull;
+    ASSERT(v == 777ull);
+
+    v %= 2ull;
+    ASSERT(v == 1ull);
+
+    v <<= 1ull;
+    ASSERT(v == 2ull);
+
+    v >>= 1ull;
+    ASSERT(v == 1ull);
+
+    v &= 1ull;
+    ASSERT(v == 1ull);
+
+    v |= 1ull;
+    ASSERT(v == 1ull);
+
+    v ^= 1ull;
+    ASSERT(v == 0ull);
+}
+
+TEST_CASE("Debug") {
+    teg::u8 data[10] = {};
+
+    teg::uleb128::encode(data, 777ull);
+    
+    for (auto i = 0; i < 10; ++i) {
+        std::cout << std::bitset<8>(data[i]) << std::endl;
+    }
+}
+
 static constexpr std::array<teg::u64, 9> u64_values = {
     128ull - 1ull, // 2^7 - 1
     16'384ull - 1ull, // 2^14 - 1
@@ -22,7 +70,7 @@ static constexpr std::array<teg::u64, 9> u64_values = {
     9'223'372'036'854'775'808ull - 1ull, // 2^63 - 1    
 };
 
-TEST_CASE("Unsigned LEB128 varint") {
+TEST_CASE("Encode and decode unsigned LEB128 varint") {
     COMPTIME_ASSERT(teg::uleb128::size(std::numeric_limits<teg::u64>::max()) == 10);
     COMPTIME_ASSERT(teg::uleb128::size(std::numeric_limits<teg::u64>::min()) == 1);
     
