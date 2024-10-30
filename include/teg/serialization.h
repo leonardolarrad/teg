@@ -190,7 +190,7 @@ public:
     ///  \see `binary_serilizer::serialize`
     ///  
     template <class... T> requires (concepts::serializable<T> && ...)
-    teg_nodiscard teg_inline constexpr operator()(T const&... objs) { 
+    teg_nodiscard teg_inline constexpr auto operator()(T const&... objs) -> error { 
         return serialize(objs...); 
     }
 
