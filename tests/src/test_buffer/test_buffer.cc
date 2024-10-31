@@ -20,5 +20,5 @@ TEST_CASE("Reset buffer") {
         serializer.serialize(str0).or_throw();
     }
 
-    ASSERT(buffer.size() == serializer.encoding_size(str0));
+    ASSERT(buffer.size() == serializer.serialized_size(str0));
 }

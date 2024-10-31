@@ -220,7 +220,7 @@ using vuint64 = varint<u64>;
 ///  \details User-defined serialization.
 ///  
 template <class F, class T>
-teg_nodiscard teg_inline auto usr_encoding_size(F&& encoding_size, varint<T> var) -> u64 {
+teg_nodiscard teg_inline auto usr_serialized_size(F&& serialized_size, varint<T> var) -> u64 {
     if constexpr (std::is_signed_v<T>) {
         return uleb128::encoded_size(zigzag::encode((T)var));
     }
@@ -233,7 +233,7 @@ teg_nodiscard teg_inline auto usr_encoding_size(F&& encoding_size, varint<T> var
 ///  \details User-defined serialization.
 ///  
 template <class F, class T>
-teg_nodiscard teg_inline auto usr_encode(F&& encode, varint<T> var) -> error {
+teg_nodiscard teg_inline auto usr_serialize(F&& encode, varint<T> var) -> error {
     
     using value_type = std::make_unsigned_t<typename varint<T>::value_type>;
     value_type value = [var]() constexpr {
@@ -266,7 +266,7 @@ teg_nodiscard teg_inline auto usr_encode(F&& encode, varint<T> var) -> error {
 ///  \details User-defined serialization.
 ///  
 template <class F, class T>
-teg_nodiscard teg_inline auto usr_decode(F&& decode, varint<T>& var) -> error {
+teg_nodiscard teg_inline auto usr_deserialize(F&& decode, varint<T>& var) -> error {
     
     using value_type = std::make_unsigned_t<typename varint<T>::value_type>;
         

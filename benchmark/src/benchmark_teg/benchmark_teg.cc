@@ -27,7 +27,7 @@ static void benchmark() {
     std::vector<bm::ecommerce_page> data_out_10_2048bb;
 
     teg::byte_buffer buffer{};
-    teg::binary_serializer serializer{buffer};
+    teg::binary_serializer<teg::default_mode> serializer{buffer};
 
     bm::benchmark()
         .warmup(128)
@@ -37,14 +37,12 @@ static void benchmark() {
             serializer.reset();
             serializer.serialize(data_in_10_2048b).or_throw();
         })
-        .run("teg:serialization:10_2048b", [&](){
-            teg::byte_buffer b2{};
-            teg::serialize(b2, data_in_10_2048b).or_throw();
-        })
         //.run("teg:deserialization:10_1024b", [&](){
         //    teg::deserialize(buffer, data_out_10_1024b).or_throw();
         //})
         ;
+
+    std::cout << "Buffer size: " << buffer.size() << std::endl;
 }
 
 int main() {

@@ -366,7 +366,7 @@ private:
     ///  
     template <class T> requires (concepts::user_defined_serialization<T>)
     teg_nodiscard teg_inline constexpr auto deserialize_one(T& usr_obj) -> error {
-        return usr_decode(
+        return usr_deserialize(
             [&](auto&&... objs) constexpr {
                 return deserialize_many(objs...);
             }, usr_obj);

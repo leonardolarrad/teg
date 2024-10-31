@@ -28,16 +28,20 @@
 
 namespace teg::concepts {
 
+///  \brief A user type with custom serialization.
+///  
+///  Determines whether a type has user-defined serialization or not.
+///  
 template <class T>
 concept user_defined_serialization = 
     requires(
-        T& type, 
+        T const& const_type, T & type, 
         std::function<teg::u64()> && size_func,
-        std::function<teg::error()>&& encode_func) 
+        std::function<teg::error()>&& serialize_func) 
     {
-        { usr_encoding_size(size_func, type) } -> std::convertible_to<u64>;
-        { usr_encode(encode_func, type) } -> std::same_as<teg::error>;
-        { usr_decode(encode_func, type) } -> std::same_as<teg::error>;
+        { usr_serialized_size(size_func, const_type) } -> std::convertible_to<u64>;
+        { usr_serialize(serialize_func, const_type) }  -> std::same_as<teg::error>;
+        { usr_deserialize(serialize_func, type) }      -> std::same_as<teg::error>;
     };
 
 ///  \brief A serializable type.
