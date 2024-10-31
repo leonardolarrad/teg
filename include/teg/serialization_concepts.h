@@ -19,11 +19,12 @@
 #ifndef TEG_SERIALIZATION_CONCEPTS_H
 #define TEG_SERIALIZATION_CONCEPTS_H
 
-#include "def.h"
-#include "error.h"
-
 #include <type_traits>
 #include <functional>
+
+#include "def.h"
+#include "error.h"
+#include "options.h"
 
 namespace teg::concepts {
 
@@ -31,10 +32,10 @@ template <class T>
 concept user_defined_serialization = 
     requires(
         T& type, 
-        std::function<teg::u64>&& size_func, 
+        std::function<teg::u64()> && size_func,
         std::function<teg::error()>&& encode_func) 
     {
-        { usr_encoding_size(size_func, type) }   -> std::convertible_to<u64>;
+        { usr_encoding_size(size_func, type) } -> std::convertible_to<u64>;
         { usr_encode(encode_func, type) } -> std::same_as<teg::error>;
         { usr_decode(encode_func, type) } -> std::same_as<teg::error>;
     };

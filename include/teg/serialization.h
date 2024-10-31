@@ -82,15 +82,15 @@ public:
 
     ///  \brief The buffer's maximum in-memory size.
     ///
-    static constexpr uint64_t allocation_limit = get_allocation_limit<Opt>();
+    static constexpr u64 allocation_limit = get_allocation_limit<Opt>();
 
     ///  \brief The maximum size of elements a container can have.
     ///  
-    static constexpr uint64_t max_container_size = std::numeric_limits<container_size_type>::max();
+    static constexpr u64 max_container_size = std::numeric_limits<container_size_type>::max();
 
     ///  \brief The maximum number of alternatives a variant can have.
     ///  
-    static constexpr uint64_t max_variant_index = std::numeric_limits<variant_index_type>::max();
+    static constexpr u64 max_variant_index = std::numeric_limits<variant_index_type>::max();
     
     // Non-default-initializable and non-copyable.
     binary_serializer() = delete;
@@ -120,7 +120,7 @@ public:
     ///  \endcode
     ///  
     template <class... T> requires (concepts::serializable<T> && ...)
-    teg_nodiscard teg_inline static constexpr auto encoding_size(T const&... objs) -> uint64_t {
+    teg_nodiscard teg_inline static constexpr auto encoding_size(T const&... objs) -> u64 {
         return encoding_size_many(objs...);
     }
 
@@ -137,7 +137,7 @@ public:
     ///  \code
     ///      auto buffer = teg::byte_buffer{};
     ///      auto serializer = teg::binary_serializer{buffer};
-    ///      auto result = serializer.serialize("A string!", 55, 9.99f);
+    ///      auto const result = serializer.serialize("A string!", 55, 9.99f);
     ///      
     ///      if (success(result)) {
     ///          for (auto const& byte : buffer) {
@@ -158,7 +158,7 @@ public:
         }
 
         if constexpr (has_resizable_buffer) {
-            uint64_t const new_size = m_position + encoding_size(objs...);
+            u64 const new_size = m_position + encoding_size(objs...);
 
             // Check allocation limit.
             if (new_size > allocation_limit) [[unlikely]] {
@@ -194,11 +194,11 @@ public:
         return serialize(objs...); 
     }
 
-    teg_nodiscard teg_inline constexpr auto position() const -> uint64_t { 
+    teg_nodiscard teg_inline constexpr auto position() const -> u64 { 
         return m_position; 
     }
 
-    teg_nodiscard teg_inline constexpr auto position() -> uint64_t& {
+    teg_nodiscard teg_inline constexpr auto position() -> u64& {
         return m_position;
     }
 
@@ -206,7 +206,7 @@ public:
         return m_buffer;
     }
 
-    teg_nodiscard teg_inline constexpr auto size() const -> uint64_t {
+    teg_nodiscard teg_inline constexpr auto size() const -> u64 {
         return m_buffer.size();
     }
 
@@ -229,21 +229,21 @@ private:
     ///  
     template <class T0, class... TN> 
     teg_nodiscard teg_inline static constexpr auto 
-        encoding_size_many(T0 const& first_obj, TN const&... remaining_objs) -> uint64_t 
+        encoding_size_many(T0 const& first_obj, TN const&... remaining_objs) -> u64 
     {
         return encoding_size_one(first_obj) + encoding_size_many(remaining_objs...);
     }
 
     ///  \brief Case where theres no objects to encode.
     ///  
-    teg_nodiscard teg_inline static constexpr auto encoding_size_many() -> uint64_t {
+    teg_nodiscard teg_inline static constexpr auto encoding_size_many() -> u64 {
         return 0;
     }
 
     ///  \brief Calculates the encoding size of the given trivially serializable type.
     ///  
     template <class T> requires (concepts::trivially_serializable<T, Opt>)
-    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& trivial) -> uint64_t {        
+    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& trivial) -> u64 {        
         return sizeof(trivial);
     }
 
@@ -255,7 +255,7 @@ private:
               && (!concepts::container<T>)
               && (!concepts::tuple<T>)
               && (!concepts::trivially_serializable<T, Opt>)
-    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& aggregate) -> uint64_t {
+    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& aggregate) -> u64 {
         return visit_members(
             [&](auto&&... member) constexpr {
                 return encoding_size_many(member...);
@@ -269,37 +269,74 @@ private:
     template <class T> requires 
            (concepts::bounded_c_array<T>) 
         && (!concepts::trivially_serializable<T, Opt>)
-    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& c_array) -> uint64_t {
+    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& c_array) -> u64 {
         return std::size(c_array) * encoding_size_one(c_array[0]);
+    }
+
+    ///  \brief Calculates the encoding size of the given fixed-size container.
+    ///  
+    template <class T> requires (concepts::fixed_size_container<T>)
+    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& fixed_container) -> u64 {
+
+        using container_type = std::remove_reference_t<T>;
+        using element_type = typename container_type::value_type;
+
+        if constexpr (concepts::trivially_serializable<element_type, Opt>) {
+            return sizeof(element_type) * fixed_container.size();
+        } 
+        else {
+            u64 result = 0;
+            for (auto const& element : fixed_container) {
+                result += encoding_size_one(element);
+            }
+            return result;
+        }
     }
 
     ///  \brief Calculates the encoding size of the given container.
     ///  
     template <class T> requires (concepts::container<T>)
-    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& container) -> uint64_t {
+    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& container) -> u64 {
+
         using container_type = std::remove_reference_t<T>;
         using element_type = typename container_type::value_type;
         
-        uint64_t encoding_size = 0;
+        u64 const container_size = [&]() constexpr {
+            if constexpr (concepts::sized_container<container_type>) {
+                return static_cast<u64>(container.size());
+            } else {
+                return static_cast<u64>(std::distance(container.begin(), container.end()));
+            }
+        }();
 
-        if constexpr (!concepts::fixed_size_container<container_type>) {
-            encoding_size = sizeof(container_size_type);
+        u64 result = encoding_size_one(static_cast<container_size_type>(container_size));
+
+        if constexpr (concepts::trivially_serializable<element_type, Opt>) {
+            result += sizeof(element_type) * container_size;
+            return result;
         }
-
+        else {
+            for (auto const& element : container) {
+                result += encoding_size_one(element);
+            }
+            return result;
+        }
+        
+        /*
         if constexpr (
             concepts::sized_container<container_type> &&
             concepts::trivially_serializable<element_type, Opt>
         ) {
-            uint64_t const container_size = std::min(
-                static_cast<uint64_t>(container.size()), max_container_size);
+            u64 const container_size = std::min(
+                static_cast<u64>(container.size()), max_container_size);
             encoding_size += sizeof(element_type) * container_size;
             return encoding_size;
         } 
         else if constexpr (
             concepts::trivially_serializable<element_type, Opt>
         ) {
-            uint64_t const container_size = std::min(
-                static_cast<uint64_t>(std::distance(container.begin(), container.end())), max_container_size);
+            u64 const container_size = std::min(
+                static_cast<u64>(std::distance(container.begin(), container.end())), max_container_size);
             encoding_size += sizeof(element_type) * container_size;
             return encoding_size;        
         } else {
@@ -307,13 +344,14 @@ private:
                 encoding_size += encoding_size_one(element);
             }
             return encoding_size;
-        }        
+        }
+        */
     }
 
     ///  \brief Calculates the encoding size of the given owning pointer.
     ///  
     template <class T> requires (concepts::owning_ptr<T>)
-    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& ptr) -> uint64_t {
+    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& ptr) -> u64 {
         if (ptr == nullptr) {
             return 0;
         }    
@@ -323,7 +361,7 @@ private:
     ///  \brief Calculates the encoding size of the given optional.
     ///  
     template <class T> requires (concepts::optional<T>)
-    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& optional) -> uint64_t {    
+    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& optional) -> u64 {    
         if (optional.has_value()) {
             return sizeof(byte_type) + encoding_size_one(optional.value());
         }
@@ -335,7 +373,7 @@ private:
     ///  \brief Calculates the encoding size of the given tuple-like object.
     ///  
     template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
-    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& tuple) -> uint64_t {    
+    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& tuple) -> u64 {    
         return std::apply(
             [](auto&&... elements) constexpr {
                 return encoding_size_many(elements...);
@@ -347,9 +385,9 @@ private:
     ///  \brief Calculates the encoding size of the given variant.
     ///  
     template <class T> requires (concepts::variant<T>)
-    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& variant) -> uint64_t {
-        const uint64_t index_size = sizeof(variant_index_type);
-        const uint64_t element_size = std::visit(
+    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& variant) -> u64 {
+        const u64 index_size = sizeof(variant_index_type);
+        const u64 element_size = std::visit(
             [](auto&& value) constexpr {
                 return encoding_size_one(value);
             },
@@ -361,7 +399,7 @@ private:
     ///  \brief Calculates the encoding size of a user-defined serializable type.
     ///  
     template <class T> requires (concepts::user_defined_serialization<T>)
-    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& usr_obj) -> uint64_t {
+    teg_nodiscard teg_inline static constexpr auto encoding_size_one(T const& usr_obj) -> u64 {
         return usr_encoding_size(
             [&](auto&&... objs) constexpr {
                 return encoding_size_many(objs...);
@@ -373,7 +411,7 @@ private:
     template <class T0, class... TN> 
     teg_nodiscard teg_inline 
     constexpr auto serialize_many(T0 const& first_obj, TN const&... remaining_objs) -> error {        
-        if (auto result = serialize_one(first_obj); failure(result)) [[unlikely]] {
+        if (auto const result = serialize_one(first_obj); failure(result)) [[unlikely]] {
             return result;
         }
 
@@ -420,7 +458,7 @@ private:
     teg_nodiscard teg_inline constexpr auto serialize_one(T const& c_array) -> error {
         // Serialize elements.            
         for (auto const& element : c_array) {
-            if (auto result = serialize_one(element); failure(result)) [[unlikely]] {
+            if (auto const result = serialize_one(element); failure(result)) [[unlikely]] {
                 return result;
             }
         }
@@ -428,7 +466,7 @@ private:
     }
 
     ///  \brief Serialize a container.
-    ///
+    ///  
     ///  \details This function handles the serialization all container types, 
     ///  including fixed-size containers, contiguous containers, and associative containers, 
     ///  in a generic way.
@@ -456,7 +494,7 @@ private:
                     return error { std::errc::value_too_large };
                 }
 
-                auto result = serialize_one(static_cast<container_size_type>(size));
+                auto const result = serialize_one(static_cast<container_size_type>(size));
                 if (failure(result)) [[unlikely]] {
                     return result;
                 }
@@ -470,7 +508,7 @@ private:
                     return error { std::errc::value_too_large };
                 }
 
-                auto result = serialize_one(static_cast<container_size_type>(size));
+                auto const result = serialize_one(static_cast<container_size_type>(size));
                 if (failure(result)) [[unlikely]] {
                     return result;
                 }
@@ -488,7 +526,7 @@ private:
         else {
             // Non-optimized path: serialize each element one by one.
             for (auto const& element : container) {
-                if (auto result = serialize_one(element); failure(result)) [[unlikely]] {
+                if (auto const result = serialize_one(element); failure(result)) [[unlikely]] {
                     return result;
                 }
             }
@@ -540,7 +578,7 @@ private:
         }
 
         // Serialize the index.
-        auto result = serialize_one(static_cast<variant_index_type>(variant.index()));
+        auto const result = serialize_one(static_cast<variant_index_type>(variant.index()));
         if (failure(result)) [[unlikely]] {
             return result;        
         }    
@@ -638,7 +676,7 @@ private:
 
 private:
     buffer_type m_buffer = {}; // A reference to a contiguous container or a span of data.
-    uint64_t m_position = 0;   // The current position in the buffer.
+    u64 m_position = 0;   // The current position in the buffer.
 };
 
 ///  \brief Serializes the provided objects into the specified buffer using a binary format.
@@ -655,7 +693,7 @@ private:
 ///  \example 
 ///  \code
 ///      teg::byte_buffer buffer{};
-///      auto result = teg::serialize(buffer, "A string!", 55, 9.99f);
+///      auto const result = teg::serialize(buffer, "A string!", 55, 9.99f);
 ///      
 ///      if (success(result)) { 
 ///          // Use the serialized bytes
@@ -673,6 +711,7 @@ template <options Opt = default_mode, class Buf, class... T>
     requires (concepts::byte_buffer<Buf>) 
           && (concepts::serializable<T> && ...)
 teg_nodiscard teg_inline constexpr auto serialize(Buf& output_buffer, T const&... objs) -> error {
+    
     return binary_serializer<Opt, Buf>{output_buffer}.serialize(objs...);
 }
 

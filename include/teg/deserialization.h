@@ -34,6 +34,7 @@
 #include "c_array.h"
 #include "container_concepts.h"
 #include "core_concepts.h"
+#include "def.h"
 #include "error.h"
 #include "members_visitor.h"
 #include "options.h"
@@ -81,15 +82,15 @@ public:
 
     ///  \brief The buffer's maximum in-memory size.
     ///
-    static constexpr uint64_t allocation_limit = get_allocation_limit<Opt>();
+    static constexpr u64 allocation_limit = get_allocation_limit<Opt>();
 
     ///  \brief The maximum size of elements a container can have.
     ///  
-    static constexpr uint64_t max_container_size = std::numeric_limits<container_size_type>::max();
+    static constexpr u64 max_container_size = std::numeric_limits<container_size_type>::max();
 
     ///  \brief The maximum number of alternatives a variant can have.
     ///  
-    static constexpr uint64_t max_variant_index = std::numeric_limits<variant_index_type>::max();
+    static constexpr u64 max_variant_index = std::numeric_limits<variant_index_type>::max();
 
     // Non-default-initializable and non-copyable.
     binary_deserializer() = delete;
@@ -115,7 +116,7 @@ private:
     ///  
     template <class T0, class... TN>
     teg_nodiscard teg_inline constexpr auto deserialize_many(T0& first_obj, TN&... remaining_objs) -> error {        
-        if (auto result = deserialize_one(first_obj); failure(result)) [[unlikely]] {
+        if (auto const result = deserialize_one(first_obj); failure(result)) [[unlikely]] {
             return result;
         }
 
@@ -128,7 +129,7 @@ private:
         return {};
     }
     
-    ///  \brief Deserializes a trivially serializable object.
+    ///  \brief Deserializes the given trivially-serializable object.
     ///  
     template <class T>
         requires (concepts::trivially_deserializable<T, Opt>)
@@ -137,7 +138,7 @@ private:
         return read_bytes(trivial);
     }
 
-    ///  \brief Deserializes an aggregate.
+    ///  \brief Deserializes the given aggregate.
     ///  
     template <class T>
         requires (concepts::aggregate<T>)
@@ -164,9 +165,9 @@ private:
               && (!concepts::trivially_deserializable<T, Opt>)
               && (!concepts::trivially_serializable_container<T, Opt>)
     teg_nodiscard teg_inline constexpr auto deserialize_one(T& array) -> error {
-        // Deserialize the elements.            
+        // Deserialize the array's elements.       
         for (auto& element : array) {
-            if (auto result = deserialize_one(element); failure(result)) [[unlikely]] {
+            if (auto const result = deserialize_one(element); failure(result)) [[unlikely]] {
                 return result;
             }
         }
@@ -176,12 +177,13 @@ private:
     ///  \brief Deserialize a container.
     ///  
     ///  \details This function handles the deserialization of most container types, 
-    ///  including contiguous containers, and associative containers, in a generic approach.
+    ///  including contiguous containers and associative containers with a generic approach.
     ///  
     template <class T> 
         requires (concepts::container<T>)
               && (!concepts::fixed_size_container<T>)
     teg_nodiscard teg_inline constexpr auto deserialize_one(T& container) -> error {
+        
         using container_type = std::remove_reference_t<T>;
         using element_type = typename container_type::value_type;
 
@@ -192,7 +194,7 @@ private:
 
         // Deserialize the size.
         container_size_type size;
-        if (auto result = deserialize_one(size); failure(result)) [[unlikely]] {
+        if (auto const result = deserialize_one(size); failure(result)) [[unlikely]] {
             return result;
         }
 
@@ -222,7 +224,7 @@ private:
                 key_value_element element;
 
                 for (container_size_type i = 0; i < size; ++i) {                    
-                    if (auto result = deserialize_one(element); failure(result)) [[unlikely]] {
+                    if (auto const result = deserialize_one(element); failure(result)) [[unlikely]] {
                         return result;
                     }
                     container.emplace(std::move(element));
@@ -233,7 +235,7 @@ private:
                 // Construct the elements and then move them into the container.
                 element_type element;
                 for (container_size_type i = 0; i < size; ++i) {
-                    if (auto result = deserialize_one(element); failure(result)) [[unlikely]] {
+                    if (auto const result = deserialize_one(element); failure(result)) [[unlikely]] {
                         return result;
                     }
                     container.emplace(std::move(element));
@@ -243,7 +245,7 @@ private:
             else if constexpr (concepts::back_inplace_constructing_container<container_type>) {
                 // Emplace the elements at the back of the container.
                 for (container_size_type i = 0; i < size; ++i) {                
-                    if (auto result = deserialize_one(container.emplace_back()); failure(result)) [[unlikely]] {
+                    if (auto const result = deserialize_one(container.emplace_back()); failure(result)) [[unlikely]] {
                         return result;
                     }
                 }
@@ -253,7 +255,7 @@ private:
                 // Worst-case scenario: the container constructs its elements at the front of its storage.
                 // We may need to reverse the container after deserialization.
                 for (container_size_type i = 0; i < size; ++i) {
-                    if (auto result = deserialize_one(container.emplace_front()); failure(result)) [[unlikely]] {
+                    if (auto const result = deserialize_one(container.emplace_front()); failure(result)) [[unlikely]] {
                         return result;
                     }
                 }
@@ -278,7 +280,7 @@ private:
 
         // Deserialize the element.
         auto data = std::make_unique<element_type>();
-        if (auto result = deserialize_one(*data); failure(result)) [[unlikely]] {
+        if (auto const result = deserialize_one(*data); failure(result)) [[unlikely]] {
             return result;
         }
 
@@ -296,7 +298,7 @@ private:
         
         // Deserialize the `has_value` flag.
         byte_type has_value;    
-        if (auto result = deserialize_one(has_value); failure(result)) [[unlikely]] {
+        if (auto const result = deserialize_one(has_value); failure(result)) [[unlikely]] {
             return result;
         }
 
@@ -311,6 +313,7 @@ private:
             // The optional may have a default value. If not, we default-construct one.
             optional = value_type{};
         }
+
         return deserialize_one(*optional);
     }
 
@@ -334,7 +337,7 @@ private:
 
         // Deserialize the index.
         variant_index_type runtime_index;
-        if (auto result = deserialize_one(runtime_index); failure(result)) [[unlikely]] {
+        if (auto const result = deserialize_one(runtime_index); failure(result)) [[unlikely]] {
             return result;
         }
 
@@ -350,7 +353,7 @@ private:
             // With this technique we can then deserialize the variant alternative (based on the index)
             // at run-time.
             std::variant_alternative_t<comptime_index, variant_type> element;        
-            if (auto result = deserialize_one(element); failure(result)) [[unlikely]] {
+            if (auto const result = deserialize_one(element); failure(result)) [[unlikely]] {
                 return result;
             }
 
@@ -469,13 +472,15 @@ private:
     }
 
 private:
-    buffer_type m_buffer = {}; // A reference to a contiguous container or a span of data.
-    uint64_t m_position = 0;   // The current position in the buffer.
+    buffer_type m_buffer = {};  // A reference to a contiguous container or span of data.
+    u64 m_position = 0;         // The current position in the buffer.
 };
 
 template <options Opt = default_mode, class Buf, class... T>
     requires (concepts::byte_buffer<Buf>) && (concepts::deserializable<T> && ...)
 teg_nodiscard teg_inline constexpr auto deserialize(Buf& input_buffer, T&... objs) -> error {
+    
+    // Create a binary deserializer and deserialize the given objects.
     return binary_deserializer<Opt, Buf>{input_buffer}.deserialize(objs...);
 }
 

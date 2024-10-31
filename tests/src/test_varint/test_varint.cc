@@ -100,7 +100,7 @@ TEST_CASE("ZigZag encoding") {
     }
 }
 
-TEST_CASE("De/encode ULEB128 varint") {
+TEST_CASE("De/encode ULEB-128") {
     COMPTIME_ASSERT(teg::uleb128::encoded_size(std::numeric_limits<teg::u64>::max()) == 10);
     COMPTIME_ASSERT(teg::uleb128::encoded_size(std::numeric_limits<teg::u64>::min()) == 1);
     
@@ -137,6 +137,11 @@ TEST_CASE("De/encode ULEB128 varint") {
 }
 
 TEST_CASE("De/serialize varints") {
+    SECTION("Numeric limits") {
+        std::cout << "HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE" << std::endl;
+        std::cout << std::numeric_limits<teg::vuint64>::max() << std::endl;
+    }
+
     SECTION("Variant unsigned 64-bit") {
         COMPTIME_ASSERT(teg::concepts::user_defined_serialization<teg::vuint64>);
         COMPTIME_ASSERT(!(teg::concepts::trivially_serializable<teg::vuint64, teg::default_mode>));

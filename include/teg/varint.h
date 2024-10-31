@@ -19,14 +19,13 @@
 #ifndef TEG_VARINT_H
 #define TEG_VARINT_H
 
+#include <concepts>
 #include <limits>
 #include <span>
 #include <type_traits>
-#include <concepts>
 
 #include "def.h"
 #include "error.h"
-#include "serialization_concepts.h"
 
 namespace teg {
 
@@ -172,8 +171,7 @@ public:
 
 ///  \brief A variable-length integer.
 ///  
-template <class T = usize>
-    requires (std::integral<T>) && (sizeof(T) >= 4 && sizeof(T) <= 8)
+template <class T = usize> requires (std::integral<T>)
 class varint {
 public:
     ///  \brief The underlying integral type.
@@ -304,5 +302,47 @@ teg_nodiscard teg_inline auto usr_decode(F&& decode, varint<T>& var) -> error {
 
 } // namespace teg
 
+namespace std {
+
+// Numeric limits interface for varint.
+
+template <class T>
+class numeric_limits<teg::varint<T>> {
+public:
+    static constexpr bool is_specialized = true;
+
+    static constexpr T min() noexcept { return T(std::numeric_limits<T>::min()); }
+    static constexpr T max() noexcept { return T(std::numeric_limits<T>::max()); }
+
+    static constexpr T lowest() noexcept { return T(std::numeric_limits<T>::lowest()); }
+
+    static constexpr int digits = std::numeric_limits<T>::digits;
+    static constexpr int digits10 = std::numeric_limits<T>::digits10;
+    static constexpr int max_digits10 = std::numeric_limits<T>::max_digits10;
+
+    static constexpr bool is_signed = std::numeric_limits<T>::is_signed;
+    static constexpr bool is_integer = std::numeric_limits<T>::is_integer;
+    static constexpr bool is_exact = std::numeric_limits<T>::is_exact;
+    static constexpr bool has_infinity = std::numeric_limits<T>::has_infinity;
+    static constexpr bool has_quiet_NaN = std::numeric_limits<T>::has_quiet_NaN;
+    static constexpr bool has_signaling_NaN = std::numeric_limits<T>::has_signaling_NaN;
+    static constexpr std::float_denorm_style has_denorm = std::numeric_limits<T>::has_denorm;
+    static constexpr bool has_denorm_loss = std::numeric_limits<T>::has_denorm_loss;
+
+    static constexpr T infinity() noexcept { return T(std::numeric_limits<T>::infinity()); }
+    static constexpr T quiet_NaN() noexcept { return T(std::numeric_limits<T>::quiet_NaN()); }
+    static constexpr T signaling_NaN() noexcept { return T(std::numeric_limits<T>::signaling_NaN()); }
+    static constexpr T denorm_min() noexcept { return T(std::numeric_limits<T>::denorm_min()); }
+
+    static constexpr bool is_iec559  = std::numeric_limits<T>::is_iec559;
+    static constexpr bool is_bounded = std::numeric_limits<T>::is_bounded;
+    static constexpr bool is_modulo  = std::numeric_limits<T>::is_modulo;
+
+    static constexpr bool traps = std::numeric_limits<T>::traps;
+    static constexpr bool tinyness_before = std::numeric_limits<T>::tinyness_before;
+    static constexpr std::float_round_style round_style = std::numeric_limits<T>::round_style;
+};
+
+} // namespace std
 
 #endif // TEG_VARINT_H

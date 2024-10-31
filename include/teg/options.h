@@ -24,11 +24,14 @@
 #include <limits>
 #include <bit>
 
+#include "def.h"
+#include "varint.h"
+
 namespace teg {
 
 ///  \brief Serialization options.
 ///  
-enum class options : uint64_t {
+enum class options : u64 {
 
     // An asterisk (*) indicates the default option.
 
@@ -45,7 +48,8 @@ enum class options : uint64_t {
     allocation_limit_2gib   = 1 << 7,   // (*) Limit byte buffer allocation to 2 GiB.
     allocation_limit_4gib   = 1 << 8,   //     Limit byte buffer allocation to 4 GiB.
 
-    container_size_native   = 1 << 12,  //     Use native container size type (std::size_t).
+    container_size_native   = 1 << 11,  //     Use native container size type (std::size_t).
+    container_size_varint   = 1 << 12,  //     Use varint container size type (teg::variant<uint64_t>).
     container_size_1b       = 1 << 13,  //     Use 1-byte container size type (uint8_t).
     container_size_2b       = 1 << 14,  //     Use 2-byte container size type (uint16_t).
     container_size_4b       = 1 << 15,  // (*) Use 4-byte container size type (uint32_t). 
@@ -60,11 +64,11 @@ enum class options : uint64_t {
 };
 
 constexpr auto operator|(options a, options b) -> options { 
-    return options(static_cast<uint64_t>(a) | static_cast<uint64_t>(b));
+    return options(static_cast<u64>(a) | static_cast<u64>(b));
 }
 
 constexpr auto operator&(options a, options b) -> bool {
-    return static_cast<uint64_t>(a) & static_cast<uint64_t>(b);
+    return static_cast<u64>(a) & static_cast<u64>(b);
 }
 
 ///  \brief Default de/serialization mode.
@@ -79,7 +83,7 @@ static constexpr options default_mode =
 
 static constexpr options compact_mode = 
     options::little_endian | options::allocation_limit_1gib | 
-    options::container_size_1b | options::variant_index_1b;
+    options::container_size_varint | options::variant_index_1b;
 
 ///  \warning Fast mode is not portable.
 static constexpr options fast_mode = 
@@ -95,13 +99,14 @@ static constexpr options secure_mode = default_mode | options::enable_all_checks
 ///  
 template <options Opt>
 using get_container_size_type = 
-    std::conditional_t<Opt & options::container_size_8b, std::uint64_t,
-    std::conditional_t<Opt & options::container_size_4b, std::uint32_t,
-    std::conditional_t<Opt & options::container_size_2b, std::uint16_t,
-    std::conditional_t<Opt & options::container_size_1b, std::uint8_t,
-    std::conditional_t<Opt & options::container_size_native, std::size_t,
-    std::uint32_t // Default case.
-    >>>>>;
+    std::conditional_t<Opt & options::container_size_8b, u64,
+    std::conditional_t<Opt & options::container_size_4b, u32,
+    std::conditional_t<Opt & options::container_size_2b, u16,
+    std::conditional_t<Opt & options::container_size_1b, u8,
+    std::conditional_t<Opt & options::container_size_varint, vuint64,
+    std::conditional_t<Opt & options::container_size_native, usize,
+    u32 // Default case.
+    >>>>>>;
 
 ///  \brief Variant index type.
 ///  \tparam Opt Options flag.
@@ -110,12 +115,12 @@ using get_container_size_type =
 ///  
 template <options Opt>
 using get_variant_index_type = 
-    std::conditional_t<Opt & options::variant_index_8b, std::uint64_t,
-    std::conditional_t<Opt & options::variant_index_4b, std::uint32_t,
-    std::conditional_t<Opt & options::variant_index_2b, std::uint16_t,
-    std::conditional_t<Opt & options::variant_index_1b, std::uint8_t,
-    std::conditional_t<Opt & options::variant_index_native, std::size_t,
-    std::uint8_t // Default case.
+    std::conditional_t<Opt & options::variant_index_8b, u64,
+    std::conditional_t<Opt & options::variant_index_4b, u32,
+    std::conditional_t<Opt & options::variant_index_2b, u16,
+    std::conditional_t<Opt & options::variant_index_1b, u8,
+    std::conditional_t<Opt & options::variant_index_native, usize,
+    u8 // Default case.
     >>>>>;
 
 ///  \brief Allocation limit.
