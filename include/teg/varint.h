@@ -30,6 +30,11 @@
 
 namespace teg {
 
+///  \brief The ZigZag encoding format.
+///
+///  ZigZag is a simple encoding format that can be used to encode signed integers 
+///  as unsigned integers.
+///  
 class zigzag {
 public:
     ///  \brief Encodes a signed integer to an unsigned integer using the zigzag encoding.
@@ -49,6 +54,8 @@ public:
     }
 };
 
+///  \brief The ULEB-128 encoding format.
+///  
 class uleb128 {
 public:
     ///  \brief Calculates the size in bytes needed to encode the given value 
@@ -77,14 +84,14 @@ public:
 
     ///  \brief Returns the maximum size in bytes that an encoded ULEB-128 value can have.
     ///  
-    template <class T> requires std::integral<T>
+    template <class T> requires std::unsigned_integral<T>
     teg_nodiscard teg_inline static constexpr auto max_encoded_size() -> u8 {
         return encoded_size(std::numeric_limits<T>::max());
     }
 
     ///  \brief Returns the minimum size in bytes that an encoded ULEB-128 value can have.
     ///  
-    template <class T> requires std::integral<T>
+    template <class T> requires std::unsigned_integral<T>
     teg_nodiscard teg_inline static constexpr auto min_encoded_size() -> u8 {
         return encoded_size(std::numeric_limits<T>::min());
     }
@@ -163,7 +170,9 @@ public:
     }
 };
 
-template <class T = usize> 
+///  \brief A variable-length integer.
+///  
+template <class T = usize>
     requires (std::integral<T>) && (sizeof(T) >= 4 && sizeof(T) <= 8)
 class varint {
 public:
@@ -209,6 +218,9 @@ using vuint32 = varint<u32>;
 ///  
 using vuint64 = varint<u64>;
 
+///  \brief Returns the number of bytes required to serialize the given variable-length integer.
+///  \details User-defined serialization.
+///  
 template <class F, class T>
 teg_nodiscard teg_inline auto usr_encoding_size(F&& encoding_size, varint<T> var) -> u64 {
     if constexpr (std::is_signed_v<T>) {
@@ -219,6 +231,9 @@ teg_nodiscard teg_inline auto usr_encoding_size(F&& encoding_size, varint<T> var
     }
 }
 
+///  \brief Serializes the given variable-length integer.
+///  \details User-defined serialization.
+///  
 template <class F, class T>
 teg_nodiscard teg_inline auto usr_encode(F&& encode, varint<T> var) -> error {
     
@@ -249,6 +264,9 @@ teg_nodiscard teg_inline auto usr_encode(F&& encode, varint<T> var) -> error {
     return {};
 }
 
+///  \brief Deserializes the given variable-length integer.
+///  \details User-defined serialization.
+///  
 template <class F, class T>
 teg_nodiscard teg_inline auto usr_decode(F&& decode, varint<T>& var) -> error {
     
