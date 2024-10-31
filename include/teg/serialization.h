@@ -603,7 +603,7 @@ private:
             // Run-time serialization.
             auto* dst = m_buffer.data() + m_position;
             auto* const src = reinterpret_cast<byte_type const*>(&obj);
-            //auto const size = sizeof(obj);
+            
             m_position += size;
 
             if constexpr (!concepts::endian_swapping_required<T, Opt>) {
