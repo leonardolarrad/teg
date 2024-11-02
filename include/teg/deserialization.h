@@ -187,11 +187,6 @@ private:
         using container_type = std::remove_reference_t<T>;
         using element_type = typename container_type::value_type;
 
-        if constexpr (concepts::clearable_container<container_type>) {
-            // Pre-condition: the container should be empty.
-            container.clear();
-        }
-
         // Deserialize the size.
         container_size_type size;
         if (auto const result = deserialize_one(size); failure(result)) [[unlikely]] {
@@ -208,9 +203,25 @@ private:
             container.resize(size);
             return read_bytes(container);
         }
+        else if(
+            concepts::resizable_container<container_type>
+        ) {
+            container.resize(size);
+            for (auto& element : container) {
+                if (auto const result = deserialize_one(element); failure(result)) [[unlikely]] {
+                    return result;
+                }
+            }
+            return {};
+        }
         else {
             // Unoptimized path: deserialize elements one by one.
             // Select the most suitable method to emplace the elements based on the container type.
+
+            if constexpr (concepts::clearable_container<container_type>) {
+                // Pre-condition: the container should be empty.
+                container.clear();
+            }
 
             if constexpr (concepts::reservable_container<container_type>) {
                 // Optimization: pre-allocate uninitialized memory whenever possible.
