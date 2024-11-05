@@ -27,7 +27,7 @@
 
 #if !defined(teg_inline)
 #if defined(_MSC_VER)
-#define teg_inline __forceinline
+#define teg_inline [[msvc::forceinline]]
 #elif defined(__GNUC__) || defined(__clang__)
 #define teg_inline __attribute__((always_inline)) inline
 #else

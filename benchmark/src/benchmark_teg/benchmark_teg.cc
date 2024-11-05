@@ -28,7 +28,7 @@ static void benchmark_lib() {
 
     bm::benchmark()
         .warmup(128)
-        .iterations(1024 * 5) // 5 GiB
+        .iterations(512)
         .repetitions(10)
         .run("teg:serialization:1mib", [&](){
             buffer.clear();
