@@ -203,7 +203,7 @@ private:
             container.resize(size);
             return read_bytes(container);
         }
-        else if(
+        else if constexpr (
             concepts::resizable_container<container_type>
         ) {
             container.resize(size);
