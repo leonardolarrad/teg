@@ -28,7 +28,7 @@
 #include "core_concepts.h"
 #include "members_count.h"
 
-namespace internal {
+namespace teg::internal {
 
 template <class F, class T>
 constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 1>) {
@@ -686,7 +686,7 @@ constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_c
             _061, _062, _063, _064);
 }
 
-}
+} // namespace teg::internal
 
 namespace teg {
 
@@ -740,7 +740,7 @@ concept structure_bindable =
 ///  
 template<class F, class T> 
         requires (concepts::structure_bindable<std::remove_cvref_t<T>>)
-constexpr decltype(auto) visit_members(F&& f, T&& t) noexcept {
+teg_inline constexpr decltype(auto) visit_members(F&& f, T&& t) noexcept {
     if constexpr (teg::concepts::tuple<std::remove_cvref_t<T>>) {
         return internal::visit_members_impl(
             std::forward<F>(f),
