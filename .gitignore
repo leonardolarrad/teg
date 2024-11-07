@@ -1,7 +1,6 @@
 **/build
 **/build_msvc
 
-**/benchmark/src/benchmark_zppbits
 **/benchmark/deps/*/*
 
 **/misc/*.tmp
