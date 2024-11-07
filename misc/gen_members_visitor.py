@@ -32,9 +32,9 @@ def generate_function(i):
     function_template = \
 f"""template <class F, class T>
 constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, {i}>) {{
-    auto&& [{format_bindings(i)}] = std::forward<T>(t);
+    auto&& [{format_bindings(i)}] = t;
     
-    return std::forward<F>(f)(
+    return f(
             {format_forward_arguments(i)});
 }}
 """
