@@ -19,6 +19,7 @@
 #ifndef TEG_SERIALIZATION_H
 #define TEG_SERIALIZATION_H
 
+#include <iostream>
 #include <algorithm>
 #include <bit>
 #include <concepts>
@@ -666,7 +667,7 @@ private:
         
         std::memcpy(dst, src, size);
         m_position += size;
-        
+
         return {};
     }
 

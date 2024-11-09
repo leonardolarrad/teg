@@ -27,7 +27,7 @@ static void benchmark_lib() {
     std::vector<std::byte> buffer{};
 
     bm::benchmark()
-        .warmup(128)
+        .warmup(10)
         .iterations(512)
         .repetitions(10)
         .run("zppbits:serialization:1mib", [&](){

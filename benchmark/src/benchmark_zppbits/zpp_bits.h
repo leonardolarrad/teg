@@ -1,6 +1,8 @@
 #ifndef ZPP_BITS_H
 #define ZPP_BITS_H
 
+static int memcount = 0;
+
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -23,6 +25,7 @@
 #include <utility>
 #include <variant>
 #include <vector>
+#include <iostream>
 #if __has_include("zpp_throwing.h")
 #include "zpp_throwing.h"
 #endif
@@ -2032,6 +2035,8 @@ protected:
                 } else {
                     std::memcpy(
                         m_data.data() + m_position, &item, sizeof(item));
+                    //memcount++;
+                    //std::cout << memcount << std::endl;
                 }
             }
             m_position += sizeof(item);
@@ -2085,6 +2090,8 @@ protected:
                 std::memcpy(m_data.data() + m_position,
                             item.data(),
                             item_size_in_bytes);
+                //memcount++;
+                //std::cout << memcount << std::endl;
 #if !defined __clang__ && defined __GNUC__
 #pragma GCC diagnostic pop
 #endif
@@ -2587,6 +2594,8 @@ private:
                 } else {
                     std::memcpy(
                         &item, m_data.data() + m_position, sizeof(item));
+                    //memcount++;
+                    //std::cout << memcount << std::endl;
                 }
             }
             m_position += sizeof(item);
@@ -2632,6 +2641,8 @@ private:
                 std::memcpy(item.data(),
                             m_data.data() + m_position,
                             item_size_in_bytes);
+                //memcount++;
+                //std::cout << memcount << std::endl;
             }
             m_position += item_size_in_bytes;
             return {};
@@ -3453,6 +3464,8 @@ struct [[nodiscard]] value_or_errc
         } else {
             m_failure = other.m_failure;
             std::memcpy(&m_error, &other.m_error, sizeof(m_error));
+            //memcount++;
+            //std::cout << memcount << std::endl;
         }
     }
 

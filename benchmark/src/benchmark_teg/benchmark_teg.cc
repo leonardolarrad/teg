@@ -27,7 +27,7 @@ static void benchmark_lib() {
     teg::byte_buffer buffer{};
 
     bm::benchmark()
-        .warmup(128)
+        .warmup(10)
         .iterations(512)
         .repetitions(10)
         .run("teg:serialization:1mib", [&](){

@@ -28,4 +28,5 @@ subdir('src/test_comptime_serialization')
 subdir('src/test_user_serialization')
 subdir('src/test_alignment')
 subdir('src/test_endianness')
+subdir('src/test_stream')
 
