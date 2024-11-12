@@ -15,8 +15,6 @@
 #include "teg/teg.h"
 #include "test/test.h"
 
-#include "zppbits/zpp_bits.h"
-
 TEST_CASE("Check fundamental encoding with big-endian and little-endian") {
     SECTION("8-bit integer") {
         teg::byte_buffer buffer_b{};
