@@ -148,7 +148,7 @@ private:
               && (!concepts::trivially_deserializable<T, Opt>)
     teg_nodiscard teg_inline constexpr auto deserialize_one(T& aggregate) -> error {
         return visit_members(
-            [&](auto&... members) {
+            [&](auto&&... members) teg_inline_lambda {
                 return deserialize_many(members...);
             },
             aggregate

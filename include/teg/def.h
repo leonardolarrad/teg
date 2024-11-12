@@ -29,19 +29,31 @@
 #if defined(_MSC_VER)
 #define teg_inline [[msvc::forceinline]]
 #elif defined(__GNUC__) || defined(__clang__)
-#define teg_inline __attribute__((always_inline)) inline
+#define teg_inline __attribute__((always_inline))
 #else
 #define teg_inline inline
 #endif
 #endif // teg_inline
 
+#if !defined(teg_inline_lambda)
+#if defined(_MSC_VER)
+#define teg_inline_lambda [[msvc::forceinline]]
+#elif defined(__GNUC__)
+#define teg_inline_lambda constexpr __attribute__((always_inline))
+#elif defined(__clang__)
+#define teg_inline_lambda __attribute__((always_inline)) constexpr
+#else
+#define teg_inline_lambda constexpr
+#endif
+#endif // teg_inline_lambda
+
 #if !defined(teg_unlikely)
 #define teg_unlikely [[unlikely]]
-#endif
+#endif // teg_unlikely
 
 #if !defined(teg_likely)
 #define teg_likely   [[likely]]
-#endif
+#endif // teg_likely
 
 namespace teg {
 

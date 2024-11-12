@@ -254,8 +254,8 @@ private:
               && (!concepts::trivially_serializable<T, Opt>)
     teg_nodiscard teg_inline static constexpr auto serialized_size_one(T const& aggregate) -> u64 {
         return visit_members(
-            [&](auto&&... member) constexpr {
-                return serialized_size_many(member...);
+            [&](auto&&... members) teg_inline_lambda {
+                return serialized_size_many(members...);
             },
             aggregate
         );
