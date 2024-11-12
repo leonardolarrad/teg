@@ -101,8 +101,8 @@ public:
     ///  \brief Construct a new binary serializer.
     ///  \param buffer The buffer to serialize into.
     ///  
-    constexpr explicit binary_serializer(Buf & buffer) : m_buffer(buffer), m_position(0) {}
-    constexpr explicit binary_serializer(Buf && buffer) : m_buffer(buffer), m_position(0) {}
+    teg_inline constexpr explicit binary_serializer(Buf & buffer) : m_buffer(buffer), m_position(0) {}
+    teg_inline constexpr explicit binary_serializer(Buf && buffer) : m_buffer(buffer), m_position(0) {}
 
     ///  \brief Calculates the number of bytes needed to serialize the given objects.
     ///  
@@ -372,7 +372,7 @@ private:
     template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
     teg_nodiscard teg_inline static constexpr auto serialized_size_one(T const& tuple) -> u64 {    
         return std::apply(
-            [](auto&&... elements) constexpr {
+            [](auto&&... elements) teg_inline_lambda {
                 return serialized_size_many(elements...);
             },
             tuple
@@ -558,7 +558,7 @@ private:
     template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
     teg_nodiscard teg_inline constexpr auto serialize_one(T const& tuple) -> error {    
         return std::apply(
-            [&](auto&&... elements) constexpr {
+            [&](auto&&... elements) teg_inline_lambda {
                 return serialize_many(elements...);
             },
             tuple
@@ -582,7 +582,7 @@ private:
 
         // Serialize the value.
         return std::visit(
-            [&](auto&& value) constexpr {
+            [&](auto&& value) teg_inline_lambda {
                 return serialize_one(value);
             },
             variant

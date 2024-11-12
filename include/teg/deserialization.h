@@ -100,8 +100,8 @@ public:
     ///  \brief Construct a new binary deserializer.
     ///  \param buffer The buffer to deserialize from.
     ///  
-    constexpr explicit binary_deserializer(Buf & buffer)  : m_buffer(buffer), m_position(0) {}
-    constexpr explicit binary_deserializer(Buf && buffer) : m_buffer(buffer), m_position(0) {}
+    teg_inline constexpr explicit binary_deserializer(Buf & buffer)  : m_buffer(buffer), m_position(0) {}
+    teg_inline constexpr explicit binary_deserializer(Buf && buffer) : m_buffer(buffer), m_position(0) {}
 
     template <class... T> requires (concepts::deserializable<T> && ...)
     teg_nodiscard teg_inline constexpr auto deserialize(T&... objs) -> error {        
@@ -333,7 +333,7 @@ private:
     template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
     teg_nodiscard teg_inline constexpr auto deserialize_one(T& tuple) -> error {
         return std::apply(
-            [&](auto&&... elements) constexpr {
+            [&](auto&&... elements) teg_inline_lambda {
                 return deserialize_many(elements...);
             },
             tuple
@@ -359,7 +359,7 @@ private:
             return error { std::errc::invalid_argument };
         }
         
-        return index_table_lookup<table_size>(runtime_index, [&](auto comptime_index) {
+        return index_table_lookup<table_size>(runtime_index, [&](auto comptime_index) teg_inline_lambda {
             // Using an index table we can transform a runtime index into a compile-time index. 
             // With this technique we can then deserialize the variant alternative (based on the index)
             // at run-time.
@@ -378,7 +378,7 @@ private:
     template <class T> requires (concepts::user_defined_serialization<T>)
     teg_nodiscard teg_inline constexpr auto deserialize_one(T& usr_obj) -> error {
         return usr_deserialize(
-            [&](auto&&... objs) constexpr {
+            [&](auto&&... objs) teg_inline_lambda {
                 return deserialize_many(objs...);
             }, usr_obj);
     }
