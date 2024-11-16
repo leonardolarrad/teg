@@ -165,7 +165,7 @@ public:
             }
 
             // Resize the buffer.
-            using buffer_size_type = std::remove_cvref_t<buffer_type>::size_type;
+            using buffer_size_type = typename std::remove_cvref_t<buffer_type>::size_type;
             m_buffer.resize(static_cast<buffer_size_type>(new_size));
 
             if (auto const result = serialize_many(objs...); failure(result)) [[unlikely]] {                

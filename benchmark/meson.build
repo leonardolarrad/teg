@@ -15,4 +15,4 @@ google_benchmark_dep = google_benchmark_proj.get_variable('google_benchmark_dep'
 subdir('src/benchmark_teg')
 subdir('src/benchmark_protobuf')
 subdir('src/benchmark_zppbits')
-subdir('src/gbm_teg')
+#subdir('src/gbm_teg')

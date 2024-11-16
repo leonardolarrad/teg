@@ -1,5 +1,9 @@
+.cache/
+.ccls-cache/
+
 **/build
 **/build_msvc
+**/__pycache__
 
 **/benchmark/deps/*/*
 
