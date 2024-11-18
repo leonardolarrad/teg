@@ -1,3 +1,4 @@
+#include "teg/md5.h"
 #include "teg/teg.h"
 #include "benchmark/benchmark.h"
 #include "benchmark/data.h"
@@ -25,20 +26,28 @@ static bool test_lib() {
 static void run_benchmark_00() {   
     std::vector<bm::ecommerce_page> data_in_1mib;
     teg::byte_buffer buffer{};
+    teg::byte_buffer buffer2{};
+    std::string schema_in{};
 
+    constexpr auto schema = teg::schema<decltype(teg::schema<bm::ecommerce_page>())>();
+    std::cout << "Schema size: " << schema.size() << std::endl;
+    std::cout << "Schema: " << schema.c_str() << std::endl;
     bm::benchmark()
         .warmup(10)
-        .iterations(1024)
+        .iterations(10)
         .repetitions(10)
         .run("teg:serialization:1mib", [&](){
             buffer.clear();
-            teg::serialize(buffer, data_out_1mib).or_throw();
+            buffer2.clear();
+            teg::serialize(buffer, std::string{schema.c_str(), schema.size()}, data_out_1mib).or_throw();
+            teg::serialize(buffer2, teg::xxhash::hash64(std::span<const std::byte>{buffer})).or_throw();
         })
-        .run("teg:deserialization:1mib", [&](){
-            teg::deserialize(buffer, data_in_1mib).or_throw();
-        });
+        ;//.run("teg:deserialization:1mib", [&](){
+        //    teg::deserialize(buffer, schema_in, data_in_1mib).or_throw();
+        //});
 
     std::cout << "\nBuffer size: " << buffer.size() << std::endl;
+    std::cout << "\nBuffer2 size: " << buffer2.size() << std::endl;
 }
 
 static void run_benchmark_01() {
@@ -77,11 +86,98 @@ static void run_benchmark_02() {
         });
 }
 
+static void run_benchmark_03() {
+    teg::byte_buffer buffer{};
+    teg::byte_buffer buffer2{};
+    std::string data = 
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+    ;
+
+    bm::benchmark()
+        .warmup(10)
+        .iterations(1000)
+        .repetitions(10)
+        .run("teg:serialization:checksum", [&](){
+            buffer.clear();
+            //buffer2.clear();
+            teg::serialize(buffer, data).or_throw();
+            //teg::serialize(buffer2, teg::md5_hash_u64(std::span<const std::byte>{buffer})).or_throw();
+        });
+}
+
+static void run_benchmark_04() {
+    teg::byte_buffer buffer{};
+    teg::byte_buffer buffer2{};
+    std::string data = 
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAxAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+        "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
+    ;
+
+    bm::benchmark()
+        .warmup(10)
+        .iterations(1000)
+        .repetitions(10)
+        .run("teg:serialization:xxhash", [&](){
+            buffer.clear();
+            buffer2.clear();
+            teg::serialize(buffer, data).or_throw();
+            teg::serialize(buffer2, teg::xxhash::hash64(std::span<const std::byte>{buffer})).or_throw();
+        });
+    for (auto b : buffer2) {
+        std::cout << std::hex << static_cast<int>(b) << " ";
+    }
+    std::cout << std::endl;
+}
+
 int main() {
     if (!test_lib()) {
         return 1;
     }
-    //benchmark_lib();
     run_benchmark_00();
     return 0;
 }

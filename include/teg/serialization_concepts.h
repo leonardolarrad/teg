@@ -22,6 +22,7 @@
 #include <type_traits>
 #include <functional>
 
+#include "core_concepts.h"
 #include "def.h"
 #include "error.h"
 #include "options.h"
@@ -57,6 +58,21 @@ concept serializable = true;
 ///  
 template <class T>
 concept deserializable = serializable<T>;
+
+template <class T>
+concept serializable_builtin = fundamental<T> || is_enum<T>;
+
+template <class T>
+concept serializable_aggregate = 
+        serializable<T> && aggregate<T>
+    && !optional<T> && !variant<T> && !tuple<T> && !container<T> 
+    && !owning_ptr<T> && !user_defined_serialization<T>;
+
+template <class T>
+concept serializable_container = 
+        serializable<T> && container<T> 
+    && !optional<T> && !variant<T> && !owning_ptr<T> 
+    && !user_defined_serialization<T>;
 
 ///  \brief A memory copyable type.
 ///  
@@ -95,8 +111,6 @@ concept trivially_serializable_container =
 template <class T, options Opt>
 concept trivially_serializable = 
     memory_copyable<T, Opt> && !non_trivially_serializable<T>;
-
-
 
 template <class T, options Opt>
 concept trivially_deserializable = trivially_serializable<T, Opt>;

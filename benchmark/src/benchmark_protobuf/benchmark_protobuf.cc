@@ -6,7 +6,7 @@
 
 namespace bm = benchmarking;    
 
-static std::vector<bm::ecommerce_page> data_out_1mib = bm::generate_benchmark_data(10, 2048);
+static std::vector<bm::ecommerce_page> data_out_1mib = bm::generate_benchmark_data(512, 1024*2);
 
 static bool test_lib() {
     std::string buffer;
@@ -27,15 +27,14 @@ static void benchmark() {
     std::string buffer;
 
     bm::benchmark()
-        .warmup(64)
-        .iterations(102400)
+        .warmup(10)
+        .iterations(10)
         .repetitions(10)
         .run("protobuf-25.2:serialization:10_1024b", [&](){
             pb::EcommercePages pages;
             for (auto const& data : data_out_1mib) {
                 convert_to_pb(data, pages.add_pages());
             }
-            pages.SerializeToOstream(&std::cout);
             pages.SerializeToString(&buffer);
         })
         .run("protobuf-25.2:deserialization:10_1024b", [&](){
@@ -47,6 +46,7 @@ static void benchmark() {
                 convert_from_pb(page, data_out_10_1024b.emplace_back());
             }
         });
+    std::cout << "Buffer size: " << buffer.size() << std::endl;
 }
 
 int main() {

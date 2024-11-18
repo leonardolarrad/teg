@@ -8,7 +8,6 @@ test_dep = declare_dependency(
 subdir('src/test_reflection')
 subdir('src/test_md5')
 subdir('src/test_overload_resolution')
-#subdir('src/test_type_code')
 subdir('src/test_buffer')
 subdir('src/test_fundamental')
 subdir('src/test_c_array')
@@ -29,4 +28,4 @@ subdir('src/test_user_serialization')
 subdir('src/test_alignment')
 subdir('src/test_endianness')
 subdir('src/test_stream')
-
+subdir('src/test_schema')

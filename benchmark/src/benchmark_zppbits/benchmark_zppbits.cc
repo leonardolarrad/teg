@@ -27,7 +27,7 @@ static void run_benchmark_00() {
 
     bm::benchmark()
         .warmup(10)
-        .iterations(1024)
+        .iterations(10)
         .repetitions(10)
         .run("zppbits:serialization:1mib", [&](){
             buffer.clear();

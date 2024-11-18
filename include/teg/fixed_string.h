@@ -129,6 +129,11 @@ public:
     value_type m_data[N+1] = {};
 };
 
+//template <class C>
+//constexpr basic_fixed_string<C, 1> make_fixed_string(const C str) noexcept {
+//    return basic_fixed_string<C, 1>(str);
+//}
+
 template <class C, std::size_t N>
 constexpr basic_fixed_string<C, N-1> make_fixed_string(const C (&str)[N]) noexcept {
     return basic_fixed_string<C, N-1>(str);

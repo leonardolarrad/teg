@@ -1,6 +1,6 @@
 project(
     'teg',
-    'cpp',
+    ['c', 'cpp'],
     version: '0.1.0',
     license: 'zlib',
     subproject_dir: 'benchmark/deps',
@@ -15,10 +15,17 @@ add_project_arguments(
 # Build project
 teg_dir = include_directories('include')
 teg_inc = [teg_dir]
+teg_src = ['src/xxhash.c']
+
+teg_lib = static_library(
+  'teg',
+  sources: teg_src,
+  include_directories: teg_inc
+)
 
 teg_dep = declare_dependency(
   include_directories : teg_inc,
-  link_with : [],
+  link_with : [teg_lib],
   link_args : [],
   compile_args : [],
 )

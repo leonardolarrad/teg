@@ -108,7 +108,7 @@ static constexpr auto extract_byte(u64 value, u32 i) -> u8 {
 
 template <concepts::byte T>
 static constexpr auto get_padded_message_byte
-    (std::span<T> data, u32 m, u32 i) -> u8 {
+    (std::span<T const> data, u32 m, u32 i) -> u8 {
 
     assert(i < m);
     assert(data.size() < m);
@@ -127,7 +127,7 @@ static constexpr auto get_padded_message_byte
 
 template <concepts::byte T>
 static constexpr auto get_padded_message_word
-    (std::span<T> data, u32 m, u32 i) -> u32 {
+    (std::span<T const> data, u32 m, u32 i) -> u32 {
 
     assert(i % 4 == 0);
     assert(i < m);
@@ -141,7 +141,7 @@ static constexpr auto get_padded_message_word
 }
 
 template <concepts::byte T>
-static constexpr auto get_round_data(std::span<T> data, u32 m, u32 i) -> round_data {
+static constexpr auto get_round_data(std::span<T const> data, u32 m, u32 i) -> round_data {
 
     assert(i % 64 == 0);
     assert(i < m);
@@ -236,7 +236,7 @@ static constexpr auto add(md5_digest d0, md5_digest d1) -> md5_digest {
 }
 
 template <concepts::byte T>
-static constexpr auto process_message(std::span<T> message) -> md5_digest {
+static constexpr auto process_message(std::span<T const> message) -> md5_digest {
     const u32 m = get_padded_message_length(static_cast<u32>(message.size()));
     
     md5_digest digest0 = initial_digest_data;
@@ -260,13 +260,13 @@ static constexpr auto swap_endian(u32 a) -> u32 {
 }
 
 template <concepts::byte T>
-static constexpr auto md5_hash_u32_impl(std::span<T> data) -> u32 {
+static constexpr auto md5_hash_u32_impl(std::span<T const> data) -> u32 {
     md5_digest md5_digest = process_message(data);
     return swap_endian(md5_digest.a);
 }
 
 template <concepts::byte T>
-static constexpr auto md5_hash_u64_impl(std::span<T> data) -> u64 {
+static constexpr auto md5_hash_u64_impl(std::span<T const> data) -> u64 {
     md5_digest md5_digest = process_message(data);
 
     return (static_cast<u64>(swap_endian(md5_digest.a)) << 32) 
@@ -274,7 +274,7 @@ static constexpr auto md5_hash_u64_impl(std::span<T> data) -> u64 {
 }
 
 template <concepts::byte T>
-static constexpr auto md5_hash_u128_impl(std::span<T> data) -> md5_digest {
+static constexpr auto md5_hash_u128_impl(std::span<T const> data) -> md5_digest {
     
     md5_digest digest = process_message(data);
 
@@ -302,7 +302,7 @@ static constexpr auto to_hex(u32 value) -> fixed_string<8> {
 }
 
 template <concepts::byte T>
-static constexpr auto md5_hash(std::span<T> data) -> fixed_string<32> {
+static constexpr auto md5_hash(std::span<T const> data) -> fixed_string<32> {
     md5_digest md5_digest = process_message(data);
 
     return to_hex(swap_endian(md5_digest.a)) 
@@ -325,7 +325,7 @@ static constexpr auto md5_hash(std::span<T> data) -> fixed_string<32> {
 /// \endcode
 ///
 template <concepts::byte T>
-constexpr auto md5_hash_u32(std::span<T> data) -> u32 {
+constexpr auto md5_hash_u32(std::span<T const> data) -> u32 {
     return internal::md5_hash_u32_impl(data);
 }
 
@@ -345,7 +345,7 @@ constexpr auto md5_hash_u32(std::string_view data) -> u32 {
 ///  \endcode
 ///  
 template <concepts::byte T>
-constexpr auto md5_hash_u64(std::span<T> data) -> u64 {
+constexpr auto md5_hash_u64(std::span<T const> data) -> u64 {
     return internal::md5_hash_u64_impl(data);
 }
 
@@ -368,7 +368,7 @@ constexpr auto md5_hash_u64(std::string_view data) -> u64 {
 ///      static_assert(hash == std::make_tuple(0xa77b5533, 0x2699835c, 0x035957df, 0x17630d28));    
 ///  \endcode
 template <concepts::byte T>
-constexpr auto md5_hash_u128(std::span<T> data) -> md5_digest {
+constexpr auto md5_hash_u128(std::span<T const> data) -> md5_digest {
     return internal::md5_hash_u128_impl(data);
 }
 
@@ -388,7 +388,7 @@ constexpr auto md5_hash_u128(std::string_view data) -> md5_digest {
 ///  \endcode
 ///  
 template <concepts::byte T>
-constexpr auto md5_hash(std::span<T> data) -> fixed_string<32> {
+constexpr auto md5_hash(std::span<T const> data) -> fixed_string<32> {
     return internal::md5_hash(data);
 }
 
