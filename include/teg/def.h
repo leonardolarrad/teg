@@ -21,6 +21,8 @@
 
 #include <cstdint>
 
+#define TEG_VERSION 1
+
 #if !defined(teg_nodiscard)
 #define teg_nodiscard [[nodiscard]]
 #endif

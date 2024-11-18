@@ -16,30 +16,17 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-#ifndef TEG_H
-#define TEG_H
+#ifndef TEG_VERSION_H
+#define TEG_VERSION_H
 
-#include "alignment.h"
-#include "buffer.h"
-#include "c_array.h"
-#include "container_concepts.h"
-#include "core_concepts.h"
 #include "def.h"
-#include "deserialization.h"
-#include "endian.h"
-#include "error.h"
-#include "fixed_string.h"
-#include "index_table.h"
-#include "md5.h"
-#include "members_count.h"
-#include "members_visitor.h"
-#include "options.h"
-#include "serialization.h"
-#include "serialization_concepts.h"
-#include "unreachable.h"
-#include "varint.h"
-#include "schema.h"
-#include "xxhash.h"
-#include "version.h"
 
-#endif // TEG_H
+namespace teg {
+
+teg_nodiscard teg_inline auto version() -> u8 {
+    return TEG_VERSION;
+}
+
+} // namespace teg
+
+#endif // TEG_VERSION_H

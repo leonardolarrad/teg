@@ -44,6 +44,11 @@
 
 namespace teg {
 
+struct header {
+    u32 magic;
+    options opts;
+};
+
 ///  \brief A binary serializer.
 ///  
 ///  Encodes data into a given buffer using a binary format.

@@ -65,6 +65,12 @@ concept serializable_builtin = fundamental<T> || is_enum<T>;
 template <class T>
 concept serializable_aggregate = 
         serializable<T> && aggregate<T>
+    && !bounded_c_array<T> && !optional<T> && !variant<T> && !tuple<T> 
+    && !container<T> && !owning_ptr<T> && !user_defined_serialization<T>;
+
+template <class T>
+concept serializable_c_array = 
+        serializable<T> && bounded_c_array<T>
     && !optional<T> && !variant<T> && !tuple<T> && !container<T> 
     && !owning_ptr<T> && !user_defined_serialization<T>;
 
@@ -73,6 +79,30 @@ concept serializable_container =
         serializable<T> && container<T> 
     && !optional<T> && !variant<T> && !owning_ptr<T> 
     && !user_defined_serialization<T>;
+
+template <class T>
+concept serializable_tuple =
+        serializable<T> && tuple<T>
+    && !optional<T> && !variant<T> && !container<T> 
+    && !owning_ptr<T> && !user_defined_serialization<T>;
+
+template <class T>
+concept serializable_variant = 
+        serializable<T> && variant<T>
+    && !optional<T> && !tuple<T> && !container<T> 
+    && !owning_ptr<T> && !user_defined_serialization<T>;
+
+template <class T>
+concept serializable_owning_ptr = 
+        serializable<T> && owning_ptr<T>
+    && !optional<T> && !variant<T> && !tuple<T> && !container<T> 
+    && !user_defined_serialization<T>;
+
+template <class T>
+concept serializable_optional = 
+        serializable<T> && optional<T>
+    && !variant<T> && !tuple<T> && !container<T> 
+    && !owning_ptr<T> && !user_defined_serialization<T>;
 
 ///  \brief A memory copyable type.
 ///  

@@ -6,6 +6,7 @@
 #include <string>
 #include <array>
 
+#include "teg/md5.h"
 #include "teg/teg.h"
 #include "test/test.h"
 
@@ -17,27 +18,41 @@ TEST_CASE("Test schema") {
         uint64_t d;
     };
 
-    enum et {
-    };
+    struct B {};
 
-    constexpr auto b = std::is_enum_v<et>;
-    using xt = std::underlying_type_t<et>;
-    xt x = 0;
-    constexpr auto b1 = std::is_enum_v<xt>;
-    std::cout << b << std::endl;
-
+    constexpr auto c0 = teg::schema_encoder::encode<A>();
+    constexpr auto m0 = teg::md5_hash_u64(c0);
 
     constexpr auto var = "Erm, hello?";
-    std::cout << teg::xxhash::hash64(std::span<const char>{var, std::strlen(var)}) << std::endl;
 
-    std::cout << sizeof(et) << std::endl;
-    std::cout << std::integral<et> << std::endl;
-    std::cout << std::signed_integral<et> << std::endl;
-    std::cout << std::unsigned_integral<et> << std::endl;
-
+    std::cout << m0 << std::endl;
     std::cout << teg::schema<std::array<A, 10>>().c_str() << std::endl;
     std::cout << teg::schema<std::string>().c_str() << std::endl;
     std::cout << teg::schema<std::vector<A>>().c_str() << std::endl;
     std::cout << teg::schema<A>().c_str() << std::endl;
     std::cout << teg::schema<int>().c_str() << std::endl; 
+}
+
+TEST_CASE("C-array schema") {
+    std::cout << teg::schema<int[10]>().c_str() << std::endl;
+}
+
+TEST_CASE("Optional schema") {
+    std::optional<int> opt0 = 100;
+    std::cout << teg::schema<std::optional<int>>().c_str() << std::endl;
+}
+
+TEST_CASE("Owning pointer schema") {
+    std::unique_ptr<int> opt0 = std::make_unique<int>(100);
+    std::cout << teg::schema<std::unique_ptr<int>>().c_str() << std::endl;
+}
+
+TEST_CASE("Variant schema") {
+    std::variant<int, float, std::string> v = 100;
+    std::cout << teg::schema<std::variant<int, float, std::string>>().c_str() << std::endl;
+}
+
+TEST_CASE("Tuple schema") {
+    std::tuple<int, float, std::string> v = std::make_tuple(100, 100.0f, "100");
+    std::cout << teg::schema<std::tuple<int, float, std::string>>().c_str() << std::endl;
 }
