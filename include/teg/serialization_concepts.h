@@ -22,10 +22,13 @@
 #include <type_traits>
 #include <functional>
 
-#include "core_concepts.h"
-#include "def.h"
-#include "error.h"
-#include "options.h"
+#include "teg/core_concepts.h"
+#include "teg/container_concepts.h"
+#include "teg/def.h"
+#include "teg/error.h"
+#include "teg/c_array.h"
+#include "teg/compatible.h"
+#include "teg/options.h"
 
 namespace teg::concepts {
 
@@ -100,9 +103,13 @@ concept serializable_owning_ptr =
 
 template <class T>
 concept serializable_optional = 
-        serializable<T> && optional<T>
-    && !variant<T> && !tuple<T> && !container<T> 
-    && !owning_ptr<T> && !user_defined_serialization<T>;
+        optional<T> && serializable<typename T::value_type>
+    && !variant<T> && !tuple<T> && !container<T> && !owning_ptr<T> 
+    && !compatible<T> && !user_defined_serialization<T>;
+
+template <class T>
+concept serializable_compatible = 
+        compatible<T> && serializable<typename T::value_type>;
 
 ///  \brief A memory copyable type.
 ///  

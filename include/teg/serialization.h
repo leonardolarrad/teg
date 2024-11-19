@@ -362,7 +362,7 @@ private:
 
     ///  \brief Calculates the encoding size of the given optional.
     ///  
-    template <class T> requires (concepts::optional<T>)
+    template <class T> requires (concepts::serializable_optional<T>)
     teg_nodiscard teg_inline static constexpr auto serialized_size_one(T const& optional) -> u64 {    
         if (optional.has_value()) {
             return sizeof(byte_type) + serialized_size_one(optional.value());
@@ -406,6 +406,16 @@ private:
             [&](auto&&... objs) constexpr {
                 return serialized_size_many(objs...);
             }, usr_obj);
+    }
+
+    template <class T> requires (concepts::serializable_compatible<T>)
+    teg_nodiscard teg_inline static constexpr auto serialized_size_one(T const& compatible) -> u64 {
+        if (compatible.has_value()) {
+            return sizeof(byte_type) + serialized_size_one(compatible.value());
+        }
+        else {
+            return sizeof(byte_type);
+        }
     }
 
     ///  \brief Serializes the given objects.
@@ -549,7 +559,7 @@ private:
 
     ///  \brief Serializes the given optional.
     ///  
-    template <class T> requires (concepts::optional<T>)
+    template <class T> requires (concepts::serializable_optional<T>)
     teg_nodiscard teg_inline constexpr auto serialize_one(T const& optional) -> error {
         if (!optional.has_value()) [[unlikely]] {
             return serialize_one(byte_type(false));
@@ -602,6 +612,16 @@ private:
             [&](auto&&... objs) constexpr {
                 return serialize_many(objs...);
             }, usr_obj);
+    }
+
+    template <class T> requires (concepts::serializable_compatible<T>)
+    teg_nodiscard teg_inline constexpr auto serialize_one(T const& compatible) -> error {
+        if (!compatible.has_value()) [[unlikely]] {
+            return serialize_one(byte_type(false));
+        }
+        else {
+            return serialize_many(byte_type(true), *compatible);
+        }
     }
 
     ///  \brief Copies the underlying bytes of the given trivially serializable object

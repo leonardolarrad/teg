@@ -41,5 +41,6 @@
 #include "schema.h"
 #include "xxhash.h"
 #include "version.h"
+#include "compatible.h"
 
 #endif // TEG_H

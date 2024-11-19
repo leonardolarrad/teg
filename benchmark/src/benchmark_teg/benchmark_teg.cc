@@ -29,7 +29,7 @@ static void run_benchmark_00() {
     teg::byte_buffer buffer2{};
     std::string schema_in{};
 
-    constexpr auto schema = teg::schema<decltype(teg::schema<bm::ecommerce_page>())>();
+    constexpr auto schema = teg::schema<bm::ecommerce_page>();
     std::cout << "Schema size: " << schema.size() << std::endl;
     std::cout << "Schema: " << schema.c_str() << std::endl;
     bm::benchmark()

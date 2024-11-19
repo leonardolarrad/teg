@@ -302,7 +302,7 @@ private:
 
     ///  \brief Deserializes the given optional.
     ///  
-    template <class T> requires (concepts::optional<T>)
+    template <class T> requires (concepts::serializable_optional<T>)
     teg_nodiscard teg_inline constexpr auto deserialize_one(T& optional) -> error {
         using type = std::remove_reference_t<T>;
         using value_type = typename type::value_type;
@@ -382,6 +382,38 @@ private:
                 return deserialize_many(objs...);
             }, usr_obj);
     }
+
+    template <class T> requires (concepts::serializable_compatible<T>)
+    teg_nodiscard teg_inline constexpr auto deserialize_one(T& compatible) -> error {
+        
+        using type = std::remove_reference_t<T>;
+        using value_type = typename type::value_type;
+        
+        // Deserialize the `has_value` flag.
+        byte_type has_value;    
+        if (auto const result = deserialize_one(has_value); failure(result)) [[unlikely]] {
+            // Cannot decode a single byte, in the case of compatible objects that means
+            // that the value is not present in the stream.
+            compatible = std::nullopt;
+            return {};
+        }
+
+        // Check if there is a value to deserialize.
+        if (!bool(has_value)) {
+            return {};
+        }
+
+        // Deserialize the value.
+        if (!compatible.has_value()) {
+            // The optional may have a default value. If not, we default-construct one.
+            compatible = value_type{};
+        }
+        
+        // At this point, the stream should contain a valid value. If not,
+        // the deserialization will fail.
+        return deserialize_one(*compatible);
+    }
+    
 
     ///  \brief Copies the underlying bytes of the given trivially serializable object
     ///  directly from the buffer.
