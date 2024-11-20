@@ -77,46 +77,6 @@ concept compatible = internal::is_compatible_v<T>;
 
 } // namespace concepts
 
-/*///  \brief Returns the number of bytes required to encode the given */
-/*///  compatible object.*/
-/*///*/
-/*///  \details User-defined serialization.*/
-/*///  */
-/*template <class F, class T, u64 V>*/
-/*teg_nodiscard teg_inline auto usr_serialized_size(F&& serialized_size, compatible<T, V>& comp) -> u64 {*/
-/*    return serialized_size(static_cast<std::optional<T>>(comp));*/
-/*}*/
-/**/
-/*///  \brief Serializes a compatible object.*/
-/*///  \details User-defined serialization.*/
-/*///  */
-/*template <class F, class T, u64 V>*/
-/*teg_nodiscard teg_inline auto usr_serialize(F&& encode, compatible<T, V>& comp) -> error {*/
-/*    auto const result = encode(static_cast<std::optional<T>>(comp));*/
-/**/
-/*    if (failure(result)) teg_unlikely {*/
-/*        return result;*/
-/*    }*/
-/**/
-/*    return {};*/
-/*}*/
-/**/
-/*///  \brief Deserializes a compatible object.*/
-/*///  \details User-defined serialization.*/
-/*///  */
-/*template <class F, class T, u64 V>*/
-/*teg_nodiscard teg_inline auto usr_deserialize(F&& decode, compatible<T, V>& comp) -> error {*/
-/*    std::optional<T> value;*/
-/**/
-/*    auto const result = decode(value);*/
-/*    if (failure(result)) teg_unlikely {*/
-/*        value = std::nullopt;*/
-/*    }*/
-/**/
-/*    comp = value;*/
-/*    return {};*/
-/*}*/
-
 } // namespace teg
 
 #endif // TEG_COMPATIBLE_H

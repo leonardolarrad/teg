@@ -22,9 +22,6 @@ TEST_CASE("Test schema") {
 
     constexpr auto c0 = teg::schema_encoder::encode<A>();
     constexpr auto m0 = teg::md5_hash_u64(c0);
-
-    constexpr auto var = "Erm, hello?";
-
     std::cout << m0 << std::endl;
     std::cout << teg::schema<std::array<A, 10>>().c_str() << std::endl;
     std::cout << teg::schema<std::string>().c_str() << std::endl;
@@ -38,7 +35,6 @@ TEST_CASE("C-array schema") {
 }
 
 TEST_CASE("Optional schema") {
-    std::optional<int> opt0 = 100;
     std::cout << teg::schema<std::optional<int>>().c_str() << std::endl;
 }
 
@@ -56,3 +52,29 @@ TEST_CASE("Tuple schema") {
     std::tuple<int, float, std::string> v = std::make_tuple(100, 100.0f, "100");
     std::cout << teg::schema<std::tuple<int, float, std::string>>().c_str() << std::endl;
 }
+
+TEST_CASE("Tuple!?") {
+    struct A {
+        teg::i32 x;
+        teg::i32 y;
+    };
+
+
+    constexpr auto a = A{1, 2};
+    auto t = teg::tie_members(a);
+    constexpr auto ax = teg::get_member<1>(a);
+    std::cout << std::get<0>(t) << std::endl;
+    std::cout << std::get<1>(t) << std::endl;
+}
+
+TEST_CASE("Versioning") {
+    struct v1 { teg::i32 x; teg::i32 y; };
+    struct v2 { teg::i32 x; teg::i32 y; teg::compatible<teg::f64, 2> z; };
+    struct v3 { teg::i32 x; teg::i32 y; teg::compatible<teg::f64, 2> z; teg::compatible<teg::f64, 3> w; };
+
+    auto cx3 = teg::schema_analyzer::version_count<v3>();
+    std::cout << cx3 << std::endl;
+    /*constexpr auto cx4 = teg::version_count<v3>();*/
+}
+
+

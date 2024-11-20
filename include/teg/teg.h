@@ -33,6 +33,8 @@
 #include "md5.h"
 #include "members_count.h"
 #include "members_visitor.h"
+#include "members_tie.h"
+#include "members_get.h"
 #include "options.h"
 #include "serialization.h"
 #include "serialization_concepts.h"

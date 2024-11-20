@@ -21,13 +21,42 @@
 
 #include <utility>
 
-#include "core_concepts.h"
-#include "fixed_string.h"
-#include "serialization_concepts.h"
-#include "members_visitor.h"
+#include "teg/core_concepts.h"
+#include "teg/fixed_string.h"
+#include "teg/serialization_concepts.h"
+#include "teg/members_visitor.h"
+#include "teg/compatible.h"
 
 namespace teg {
-    
+
+class schema_analyzer {
+public:
+    template <concepts::serializable T>
+    static constexpr auto version_count() -> u64 {
+        if constexpr (concepts::compatible<T>) {
+            return 0; // Compatible objects cannot be the root type.
+        if constexpr (concepts::aggregate<T>) {
+            return visit_members(
+                [](auto&&... members) constexpr {
+                    
+                },
+                T{}
+            );
+        }
+        } else {
+            return 1;
+        }
+    }
+};
+
+template <concepts::serializable T>
+teg_nodiscard teg_inline constexpr auto version_count() -> u64 {
+    return schema_analyzer::template version_count<T>();
+}
+
+template <concepts::serializable T>
+constexpr inline u64 version_count_v = version_count<T>();
+
 class schema_encoder {
 public:
     static constexpr auto builtin_char = make_fixed_string("char");
@@ -157,8 +186,8 @@ public:
 };
 
 template <class T>
-constexpr auto schema() -> decltype(auto) {
-    return schema_encoder::encode<T>();
+teg_nodiscard teg_inline constexpr auto schema() -> decltype(auto) {
+    return make_fixed_string("teg:") + schema_encoder::encode<T>();
 }
 
 } // namespace teg
