@@ -60,11 +60,17 @@ TEST_CASE("Tuple!?") {
     };
 
 
-    constexpr auto a = A{1, 2};
-    auto t = teg::tie_members(a);
-    constexpr auto ax = teg::get_member<1>(a);
-    std::cout << std::get<0>(t) << std::endl;
-    std::cout << std::get<1>(t) << std::endl;
+    auto a = A{1, 2};
+
+    teg::get_member<0>(a) = 9;
+    auto ax = teg::get_member<0>(a);
+    std::cout << ax << std::endl;
+
+    auto l = []<std::size_t... I>(std::index_sequence<I...>) {
+        ((std::cout << teg::get_member<I>(A{5, 6}) << std::endl), ...);
+    };
+    l(std::make_index_sequence<teg::members_count_v<A>>{});
+
 }
 
 TEST_CASE("Versioning") {

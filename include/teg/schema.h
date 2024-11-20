@@ -19,12 +19,13 @@
 #ifndef TEG_SCHEMA_H
 #define TEG_SCHEMA_H
 
+#include <array>
 #include <utility>
 
 #include "teg/core_concepts.h"
 #include "teg/fixed_string.h"
 #include "teg/serialization_concepts.h"
-#include "teg/members_visitor.h"
+#include "teg/members_get.h"
 #include "teg/compatible.h"
 
 namespace teg {
@@ -35,15 +36,29 @@ public:
     static constexpr auto version_count() -> u64 {
         if constexpr (concepts::compatible<T>) {
             return 0; // Compatible objects cannot be the root type.
-        if constexpr (concepts::aggregate<T>) {
-            return visit_members(
-                [](auto&&... members) constexpr {
-                    
-                },
-                T{}
-            );
         }
-        } else {
+        else if constexpr (concepts::aggregate<T>) {
+            auto const get_member_version = []<std::size_t I, class M>() constexpr -> u64 {
+                if constexpr (I == 0 && concepts::compatible<M>) {
+                    return 0; // Compatible objects cannot be the root type.
+                }
+                else if constexpr (concepts::compatible<M>) {
+                    return M::version;                    
+                } else {
+                    return 1;                                            
+                }
+            };
+
+            std::array<u64, members_count_v<T>> const version_control = 
+                [&get_member_version]<size_t... I>(std::index_sequence<I...>) constexpr {
+                    return std::array<u64, members_count_v<T>>{
+                        (get_member_version<I, decltype(std::remove_cvref_t<teg::get_member<I>(T{})>)>())...
+                    };
+                }(std::make_index_sequence<members_count_v<T>>{});
+                   
+            return 2;       
+        } 
+        else {
             return 1;
         }
     }
