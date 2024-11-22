@@ -63,7 +63,7 @@ template <class T>
 concept deserializable = serializable<T>;
 
 template <class T>
-concept serializable_builtin = fundamental<T> || is_enum<T>;
+concept builtin = fundamental<T> || is_enum<T>;
 
 template <class T>
 concept serializable_aggregate = 

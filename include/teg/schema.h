@@ -52,11 +52,19 @@ public:
             std::array<u64, members_count_v<T>> const version_control = 
                 [&get_member_version]<size_t... I>(std::index_sequence<I...>) constexpr {
                     return std::array<u64, members_count_v<T>>{
-                        (get_member_version<I, decltype(std::remove_cvref_t<teg::get_member<I>(T{})>)>())...
+                        (get_member_version.template operator()
+                            <I, std::remove_cvref_t<decltype(teg::get_member<I>(T{}))>>())...
                     };
                 }(std::make_index_sequence<members_count_v<T>>{});
-                   
-            return 2;       
+
+            u64 last_version = 1;
+            for (auto const version : version_control) {
+                if (version < last_version || version > last_version+1) {
+                    return 0;
+                }
+                last_version = version;
+            }
+            return last_version;       
         } 
         else {
             return 1;
@@ -70,7 +78,7 @@ teg_nodiscard teg_inline constexpr auto version_count() -> u64 {
 }
 
 template <concepts::serializable T>
-constexpr inline u64 version_count_v = version_count<T>();
+constexpr u64 version_count_v = version_count<T>();
 
 class schema_encoder {
 public:
@@ -90,16 +98,19 @@ public:
     static constexpr auto struct_end = make_fixed_string("}");
     static constexpr auto container_begin = make_fixed_string("[");
     static constexpr auto container_end = make_fixed_string("]");
+    static constexpr auto tuple_begin = make_fixed_string("(");
+    static constexpr auto tuple_end = make_fixed_string(")");
     static constexpr auto variant_begin = make_fixed_string("<");
     static constexpr auto variant_end = make_fixed_string(">");
     
     static constexpr auto fixed_container_prefix = make_fixed_string("#");
     static constexpr auto owning_ptr_prefix = make_fixed_string("*");
     static constexpr auto optional_prefix = make_fixed_string("?");
+    static constexpr auto compatible_prefix = make_fixed_string("@");
     static constexpr auto separator = make_fixed_string(" ");
     static constexpr auto union_separator = make_fixed_string("|");
 
-    template <concepts::serializable_builtin T>
+    template <concepts::builtin T>
     static constexpr auto get_builtin_token() -> decltype(auto) {
         using type = std::conditional_t<std::is_enum_v<T>, std::underlying_type<T>, T>;
 
@@ -121,7 +132,57 @@ public:
         else static_assert(!sizeof(type), "Unsupported builtin type");
     }
 
-    template <concepts::serializable_builtin T>
+    template <concepts::serializable T, u64 V>
+    static constexpr auto schema() {
+        if constexpr(concepts::serializable_aggregate<T>) {
+            auto member_encoder = []<std::size_t I, class M>() constexpr -> decltype(auto) {
+                if constexpr (concepts::compatible<M>) {
+                    if constexpr (M::version == V) {
+                        return encode<M>();
+                    }
+                    else {
+                        return make_fixed_string("");
+                    }
+                }
+                else {
+                    if constexpr (V == 1) {
+                        return encode<M>();
+                    }
+                    else {
+                        return make_fixed_string("");
+                    }
+                }
+            };
+            
+            auto encode_next = [&member_encoder]<std::size_t I, class M>() constexpr -> decltype(auto) {
+                const auto encode = member_encoder.template operator()<I, M>();
+                
+                if constexpr (encode == make_fixed_string("")) {
+                    return encode;
+                }
+                else {
+                    return encode + separator;
+                }
+            };
+
+            auto root_schema = struct_begin +  
+                [&encode_next]<size_t... I>(std::index_sequence<I...>) constexpr {
+                    return (
+                        (encode_next.template operator()
+                            <I, std::remove_cvref_t<decltype(get_member<I>(T{}))>>()
+                        ) + ...
+                    );
+                }(std::make_index_sequence<members_count_v<T>>{});
+
+            root_schema[root_schema.size() - 1] = struct_end[0];
+            return root_schema;
+        }
+        else {
+            return encode<T>();
+        }
+    }
+
+    template <concepts::builtin T>
     static constexpr auto encode() -> decltype(auto)    {
         return get_builtin_token<T>();
     }
@@ -188,21 +249,31 @@ public:
             }(std::make_index_sequence<std::variant_size_v<T>>{}); 
     }
 
-    template <concepts::serializable_tuple T>
+    template <concepts::serializable_tuple T> 
     static constexpr auto encode() -> decltype(auto) {
-        return struct_begin + 
+        return tuple_begin + 
             []<std::size_t... I>(std::index_sequence<I...>) constexpr {
                 auto tuple_schema = 
                     ((encode<std::tuple_element_t<I, T>>() + separator) + ...);
-                tuple_schema[tuple_schema.size() - 1] = struct_end[0];
+                tuple_schema[tuple_schema.size() - 1] = tuple_end[0];
                 return tuple_schema;
             }(std::make_index_sequence<std::tuple_size_v<T>>{}); 
     }
+
+    template <concepts::serializable_compatible T>
+    static constexpr auto encode() -> decltype(auto) {
+        return compatible_prefix + encode<typename T::value_type>();
+    }
 };
 
-template <class T>
+template <class T, u64 V = 1>
 teg_nodiscard teg_inline constexpr auto schema() -> decltype(auto) {
-    return make_fixed_string("teg:") + schema_encoder::encode<T>();
+    return schema_encoder::schema<T, V>();
+}
+
+template <class T, u64 V = 1>
+teg_nodiscard teg_inline constexpr auto pschema() -> decltype(auto) {
+    return schema_encoder::schema<T, V>();
 }
 
 } // namespace teg

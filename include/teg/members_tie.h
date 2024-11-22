@@ -52,7 +52,7 @@ constexpr decltype(auto) tie_members_impl(T& t, std::integral_constant<std::size
 template <class T>
 constexpr decltype(auto) tie_members_impl(T& t, std::integral_constant<std::size_t, 2>) {
     auto& [_001, _002] = const_cast<std::remove_cv_t<T>&>(t);
-    return tie(as_const<T, decltype(_001)>(_001), as_const<T, decltype(_002)>(_002));
+    return std::tie(_001, _002);
 }
 
 template <class T>
@@ -101,6 +101,66 @@ template <class T>
 constexpr decltype(auto) tie_members_impl(T& t, std::integral_constant<std::size_t, 10>) {
     auto& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010] = t;
     return std::tie(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010);
+}
+
+template <class T>
+constexpr decltype(auto) tie_members_impl(T& t, std::integral_constant<std::size_t, 11>) {
+    auto& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011] = t;
+    return std::tie(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011);
+}
+
+template <class T>
+constexpr decltype(auto) tie_members_impl(T& t, std::integral_constant<std::size_t, 12>) {
+    auto& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012] = t;
+    return std::tie(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012);
+}
+
+template <class T>
+constexpr decltype(auto) tie_members_impl(T& t, std::integral_constant<std::size_t, 13>) {
+    auto& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013] = t;
+    return std::tie(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013);
+}
+
+template <class T>
+constexpr decltype(auto) tie_members_impl(T& t, std::integral_constant<std::size_t, 14>) {
+    auto& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014] = t;
+    return std::tie(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014);
+}
+
+template <class T>
+constexpr decltype(auto) tie_members_impl(T& t, std::integral_constant<std::size_t, 15>) {
+    auto& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015] = t;
+    return std::tie(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015);
+}
+
+template <class T>
+constexpr decltype(auto) tie_members_impl(T& t, std::integral_constant<std::size_t, 16>) {
+    auto& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016] = t;
+    return std::tie(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016);
+}
+
+template <class T>
+constexpr decltype(auto) tie_members_impl(T& t, std::integral_constant<std::size_t, 17>) {
+    auto& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017] = t;
+    return std::tie(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017);
+}
+
+template <class T>
+constexpr decltype(auto) tie_members_impl(T& t, std::integral_constant<std::size_t, 18>) {
+    auto& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018] = t;
+    return std::tie(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018);
+}
+
+template <class T>
+constexpr decltype(auto) tie_members_impl(T& t, std::integral_constant<std::size_t, 19>) {
+    auto& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019] = t;
+    return std::tie(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019);
+}
+
+template <class T>
+constexpr decltype(auto) tie_members_impl(T& t, std::integral_constant<std::size_t, 20>) {
+    auto& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020] = t;
+    return std::tie(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020);
 }
 
 } // namespace teg::internal

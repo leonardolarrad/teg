@@ -19,10 +19,6 @@ TEST_CASE("Test schema") {
     };
 
     struct B {};
-
-    constexpr auto c0 = teg::schema_encoder::encode<A>();
-    constexpr auto m0 = teg::md5_hash_u64(c0);
-    std::cout << m0 << std::endl;
     std::cout << teg::schema<std::array<A, 10>>().c_str() << std::endl;
     std::cout << teg::schema<std::string>().c_str() << std::endl;
     std::cout << teg::schema<std::vector<A>>().c_str() << std::endl;
@@ -73,14 +69,41 @@ TEST_CASE("Tuple!?") {
 
 }
 
-TEST_CASE("Versioning") {
+TEST_CASE("Schema version") {
     struct v1 { teg::i32 x; teg::i32 y; };
     struct v2 { teg::i32 x; teg::i32 y; teg::compatible<teg::f64, 2> z; };
     struct v3 { teg::i32 x; teg::i32 y; teg::compatible<teg::f64, 2> z; teg::compatible<teg::f64, 3> w; };
+    struct e1 { teg::i32 x; teg::compatible<teg::f64, 2> z; teg::f64 y; };
+    struct e2 { teg::compatible<teg::f64, 2> z; };
+    struct e3 { teg::i32 x; teg::compatible<teg::f64, 2> y; teg::compatible<teg::f32, 1024> z; };
+    struct e4 { teg::i32 x; teg::compatible<teg::f64, 3> y; teg::compatible<teg::f32, 2> z; };
 
-    auto cx3 = teg::schema_analyzer::version_count<v3>();
-    std::cout << cx3 << std::endl;
-    /*constexpr auto cx4 = teg::version_count<v3>();*/
+    COMPTIME_ASSERT((teg::version_count_v<teg::compatible<teg::f64, 2>> == 0)); // Root cannot be a compatible object
+    COMPTIME_ASSERT(teg::version_count_v<int> == 1); // For non-agreggate types the version is always 1
+    COMPTIME_ASSERT(teg::version_count_v<v1> == 1);  // In this casse the aggregate dont have a compatible object, and therefore
+                                                     // is the original version
+    COMPTIME_ASSERT(teg::version_count_v<v2> == 2);  
+    COMPTIME_ASSERT(teg::version_count_v<v3> == 3);
+
+    COMPTIME_ASSERT(teg::version_count_v<e1> == 0);
+    COMPTIME_ASSERT(teg::version_count_v<e2> == 0);
+    COMPTIME_ASSERT(teg::version_count_v<e3> == 0);
+    COMPTIME_ASSERT(teg::version_count_v<e4> == 0);
 }
 
-
+TEST_CASE("Schema encoding with versions") {
+    struct v1 { teg::i32 x; teg::i32 y; };
+    struct v2 { teg::i32 x; teg::i32 y; teg::compatible<teg::f64, 2> z; };
+    struct v3 { teg::i32 x; teg::i32 y; teg::compatible<teg::f64, 2> z; teg::compatible<v1, 3> w; };
+    struct v4 { teg::i32 x; teg::i32 y; teg::compatible<teg::f64, 2> z; teg::compatible<teg::f64, 2> w; };
+        
+    std::cout << teg::schema<v1>().c_str() << std::endl;
+    std::cout << teg::schema<v2>().c_str() << std::endl;
+    std::cout << teg::schema<v2, 2>().c_str() << std::endl;
+    std::cout << teg::schema<v3>().c_str() << std::endl;
+    std::cout << teg::schema<v3, 2>().c_str() << std::endl;
+    std::cout << teg::schema<v3, 3>().c_str() << std::endl;
+    std::cout << teg::schema<v4>().c_str() << std::endl;
+    std::cout << teg::schema<v4, 2>().c_str() << std::endl;
+    std::cout << teg::schema<v4, 3>().c_str() << std::endl;
+}
