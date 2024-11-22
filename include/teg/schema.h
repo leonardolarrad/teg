@@ -207,7 +207,7 @@ public:
     static constexpr auto encode() -> decltype(auto) {
         return fixed_container_prefix
              + container_begin
-             + encode<std::remove_all_extents_t<T>>()
+             + encode<std::remove_extent_t<T>>()
              + container_end;
     }
 
@@ -268,11 +268,6 @@ public:
 
 template <class T, u64 V = 1>
 teg_nodiscard teg_inline constexpr auto schema() -> decltype(auto) {
-    return schema_encoder::schema<T, V>();
-}
-
-template <class T, u64 V = 1>
-teg_nodiscard teg_inline constexpr auto pschema() -> decltype(auto) {
     return schema_encoder::schema<T, V>();
 }
 
