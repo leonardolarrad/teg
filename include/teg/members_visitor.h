@@ -24,656 +24,528 @@
 namespace teg::internal {
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 1>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 1>) {
     auto&& [_001] = t;
-    
-    return f(
-            _001);
+    return f(_001);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 2>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 2>) {
     auto&& [_001, _002] = t;
-    
-    return f(
-            _001, _002);
+    return f(_001, _002);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 3>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 3>) {
     auto&& [_001, _002, _003] = t;
-    
-    return f(
-            _001, _002, _003);
+    return f(_001, _002, _003);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 4>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 4>) {
     auto&& [_001, _002, _003, _004] = t;
-    
-    return f(
-            _001, _002, _003, _004);
+    return f(_001, _002, _003, _004);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 5>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 5>) {
     auto&& [_001, _002, _003, _004, _005] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005);
+    return f(_001, _002, _003, _004, _005);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 6>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 6>) {
     auto&& [_001, _002, _003, _004, _005, _006] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006);
+    return f(_001, _002, _003, _004, _005, _006);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 7>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 7>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007);
+    return f(_001, _002, _003, _004, _005, _006, _007);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 8>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 8>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008);
+    return f(_001, _002, _003, _004, _005, _006, _007, _008);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 9>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 9>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009);
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 10>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 10>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010);
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 11>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 11>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011);
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 12>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 12>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012);
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 13>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 13>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013);
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 14>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 14>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014);
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 15>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 15>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015);
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 16>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 16>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016);
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 17>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 17>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017);
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 18>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 18>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018);
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 19>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 19>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019);
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 20>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 20>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020);
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 21>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 21>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 22>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 22>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 23>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 23>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 24>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 24>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 25>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 25>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 26>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 26>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 27>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 27>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 28>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 28>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 29>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 29>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 30>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 30>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 31>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 31>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 32>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 32>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 33>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 33>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 34>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 34>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 35>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 35>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 36>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 36>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 37>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 37>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 38>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 38>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 39>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 39>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 40>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 40>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 41>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 41>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 42>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 42>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 43>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 43>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 44>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 44>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 45>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 45>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 46>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 46>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 47>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 47>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 48>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 48>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 49>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 49>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 50>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 50>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 51>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 51>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 52>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 52>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 53>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 53>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 54>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 54>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 55>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 55>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 56>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 56>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 57>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 57>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 58>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 58>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057, _058] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057, _058);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 59>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 59>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057, _058, _059] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057, _058, _059);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 60>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 60>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057, _058, _059, _060] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057, _058, _059, _060);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 61>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 61>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057, _058, _059, _060, 
             _061] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057, _058, _059, _060, 
             _061);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 62>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 62>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057, _058, _059, _060, 
             _061, _062] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057, _058, _059, _060, 
             _061, _062);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 63>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 63>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057, _058, _059, _060, 
             _061, _062, _063] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057, _058, _059, _060, 
             _061, _062, _063);
 }
 
 template <class F, class T>
-constexpr inline decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 64>) {
+constexpr decltype(auto) visit_members_impl(F&& f, T&& t, std::integral_constant<std::size_t, 64>) {
     auto&& [_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057, _058, _059, _060, 
             _061, _062, _063, _064] = t;
-    
-    return f(
-            _001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
+    return f(_001, _002, _003, _004, _005, _006, _007, _008, _009, _010, _011, _012, _013, _014, _015, _016, _017, _018, _019, _020, 
             _021, _022, _023, _024, _025, _026, _027, _028, _029, _030, _031, _032, _033, _034, _035, _036, _037, _038, _039, _040, 
             _041, _042, _043, _044, _045, _046, _047, _048, _049, _050, _051, _052, _053, _054, _055, _056, _057, _058, _059, _060, 
             _061, _062, _063, _064);
@@ -703,17 +575,15 @@ namespace concepts {
 ///  \see https://en.cppreference.com/w/cpp/language/structured_binding
 ///  
 template <class T>
-concept structure_bindable = 
-           (aggregate<T> || tuple<T>)
-        && (!aggregate<std::remove_cvref_t<T>> || members_count_v<std::remove_cvref_t<T>> <= max_visit_members)
-        && (!tuple<std::remove_cvref_t<T>> || std::tuple_size_v<std::remove_cvref_t<T>> <= max_visit_members);
+concept accesible_aggregate = 
+    aggregate<T> && members_count_v<std::remove_cvref_t<T>> <= max_visit_members;
 
 } // namespace concepts
 
-///  \brief Invoke the callable object `f` with the members of `t` as arguments.
-///  \param   f  A callable object.
-///  \param   t  An object that can be bound to an identifier list using structured binding.
-///  \return  The return value of `f(m1, m2, ..., mN)` where `m1, m2, ..., mN` are the members of `t`.
+/// \brief Invoke the callable object `f` with the members of `t` as arguments.
+/// \param   f  A callable object.
+/// \param   t  An object that can be bound to an identifier list using structured binding.
+/// \return  The return value of `f(m1, m2, ..., mN)` where `m1, m2, ..., mN` are the members of `t`.
 ///  
 ///  \example
 ///  \code
@@ -732,7 +602,7 @@ concept structure_bindable =
 ///  \see https://en.cppreference.com/w/cpp/language/structured_binding
 ///  
 template<class F, class T> 
-        requires (concepts::structure_bindable<std::remove_cvref_t<T>>)
+    requires (concepts::accesible_aggregate<std::remove_cvref_t<T>>)
 TEG_INLINE constexpr decltype(auto) visit_members(F&& f, T&& t) noexcept {
     if constexpr (teg::concepts::tuple<std::remove_cvref_t<T>>) {
         return internal::visit_members_impl(

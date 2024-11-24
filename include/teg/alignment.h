@@ -27,14 +27,14 @@ namespace teg::internal {
 
 template <class T>
     requires (concepts::standard_layout<T>) 
-          && (!concepts::structure_bindable<T>)
+          && (!concepts::accesible_aggregate<T>)
 consteval auto packed_sizeof_impl() -> std::size_t {
     return sizeof(T);
 }
 
 template <class T>
     requires (concepts::standard_layout<T>) 
-          && (concepts::structure_bindable<T>)
+          && (concepts::accesible_aggregate<T>)
 consteval auto packed_sizeof_impl() -> std::size_t {
     return teg::visit_members(
         [](auto&&... members) constexpr {
@@ -66,7 +66,7 @@ constexpr bool has_padding_bits_impl() {
 
 template <class T>
     requires (concepts::standard_layout<T>)
-          && (concepts::structure_bindable<T>) 
+          && (concepts::accesible_aggregate<T>) 
           && (!concepts::c_array<T>)
 constexpr bool has_padding_bits_impl() {
     constexpr auto compiler_size = sizeof(T);

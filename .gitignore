@@ -7,7 +7,7 @@
 
 **/benchmark/deps/*/*
 
-**/misc/*.tmp
+**/scripts/*.tmp
 
 **/include/boost
 **/include/zppbits

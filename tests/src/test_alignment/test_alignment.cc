@@ -139,13 +139,13 @@ TEST_CASE("Check wheter tuple-like types model `packed_standard_layout`") {
         COMPTIME_ASSERT((teg::concepts::standard_layout<std::pair<const int64_t, int64_t>>));
     }
     SECTION("`std::tuple` types do not model `packed_standard_layout`") {
-        COMPTIME_ASSERT((teg::concepts::packed_standard_layout<std::tuple<char>>));
+        COMPTIME_ASSERT(!(teg::concepts::packed_standard_layout<std::tuple<char>>));
         COMPTIME_ASSERT(!(teg::concepts::packed_standard_layout<std::tuple<int8_t, int8_t>>));
         COMPTIME_ASSERT(!(teg::concepts::packed_standard_layout<std::tuple<int32_t, int64_t>>));
     }
     SECTION("Some `std::pair` types do model `packed_standard_layout`") {
-        COMPTIME_ASSERT((teg::concepts::packed_standard_layout<std::pair<char, char>>));
-        COMPTIME_ASSERT((teg::concepts::packed_standard_layout<std::pair<int32_t, int32_t>>));
+        COMPTIME_ASSERT(!(teg::concepts::packed_standard_layout<std::pair<char, char>>));
+        COMPTIME_ASSERT(!(teg::concepts::packed_standard_layout<std::pair<int32_t, int32_t>>));
 
         COMPTIME_ASSERT(!(teg::concepts::packed_standard_layout<std::pair<int8_t, int64_t>>));
         COMPTIME_ASSERT(!(teg::concepts::packed_standard_layout<std::pair<int32_t, std::string>>));
