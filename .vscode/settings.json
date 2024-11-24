@@ -104,7 +104,8 @@
         "typeindex": "cpp",
         "valarray": "cpp",
         "*.inc": "cpp",
-        "source_location": "cpp"
+        "source_location": "cpp",
+        "cassert": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled",
     "cmake.sourceDirectory": "/home/leo/dev/teg/benchmark/deps/abseil-cpp-20240722.0/absl/crc",

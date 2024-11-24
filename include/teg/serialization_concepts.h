@@ -19,16 +19,15 @@
 #ifndef TEG_SERIALIZATION_CONCEPTS_H
 #define TEG_SERIALIZATION_CONCEPTS_H
 
-#include <type_traits>
-#include <functional>
-
+#include "teg/def.h"
+#include "teg/alignment.h"
 #include "teg/core_concepts.h"
 #include "teg/container_concepts.h"
-#include "teg/def.h"
 #include "teg/error.h"
 #include "teg/c_array.h"
 #include "teg/compatible.h"
 #include "teg/options.h"
+#include "teg/endian.h"
 
 namespace teg::concepts {
 

@@ -19,14 +19,9 @@
 #ifndef TEG_ALIGNMENT_H
 #define TEG_ALIGNMENT_H
 
-#include <array>
-#include <bit>
-#include <cstddef>
-#include <cstdint>
-#include <tuple>
-
-#include "core_concepts.h"
-#include "members_visitor.h"
+#include "teg/def.h"
+#include "teg/core_concepts.h"
+#include "teg/members_visitor.h"
 
 namespace teg::internal {
 

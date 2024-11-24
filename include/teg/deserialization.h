@@ -19,27 +19,16 @@
 #ifndef TEG_DESERIALIZATION_H
 #define TEG_DESERIALIZATION_H
 
-#include <bit>
-#include <concepts>
-#include <cstddef>
-#include <cstring>
-#include <optional>
-#include <span>
-#include <tuple>
-#include <type_traits>
-#include <utility>
-#include <variant>
-
-#include "buffer.h"
-#include "c_array.h"
-#include "container_concepts.h"
-#include "core_concepts.h"
-#include "def.h"
-#include "error.h"
-#include "members_visitor.h"
-#include "options.h"
-#include "serialization.h"
-#include "serialization_concepts.h"
+#include "teg/def.h"
+#include "teg/buffer.h"
+#include "teg/c_array.h"
+#include "teg/container_concepts.h"
+#include "teg/core_concepts.h"
+#include "teg/error.h"
+#include "teg/members_visitor.h"
+#include "teg/options.h"
+#include "teg/serialization.h"
+#include "teg/serialization_concepts.h"
 
 namespace teg {
 
@@ -100,11 +89,11 @@ public:
     ///  \brief Construct a new binary deserializer.
     ///  \param buffer The buffer to deserialize from.
     ///  
-    teg_inline constexpr explicit binary_deserializer(Buf & buffer)  : m_buffer(buffer), m_position(0) {}
-    teg_inline constexpr explicit binary_deserializer(Buf && buffer) : m_buffer(buffer), m_position(0) {}
+    TEG_INLINE constexpr explicit binary_deserializer(Buf & buffer)  : m_buffer(buffer), m_position(0) {}
+    TEG_INLINE constexpr explicit binary_deserializer(Buf && buffer) : m_buffer(buffer), m_position(0) {}
 
     template <class... T> requires (concepts::deserializable<T> && ...)
-    teg_nodiscard teg_inline constexpr auto deserialize(T&... objs) -> error {        
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize(T&... objs) -> error {        
         if constexpr (sizeof...(objs) == 0) {
             return {};
         }        
@@ -115,7 +104,7 @@ private:
     ///  \brief Deserializes the given objects.
     ///  
     template <class T0, class... TN>
-    teg_nodiscard teg_inline constexpr auto deserialize_many(T0& first_obj, TN&... remaining_objs) -> error {        
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_many(T0& first_obj, TN&... remaining_objs) -> error {        
         if (auto const result = deserialize_one(first_obj); failure(result)) [[unlikely]] {
             return result;
         }
@@ -125,7 +114,7 @@ private:
 
     ///  \brief Case where there is no more objects to deserialize.
     ///  
-    teg_nodiscard teg_inline constexpr auto deserialize_many() -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_many() -> error {
         return {};
     }
     
@@ -134,7 +123,7 @@ private:
     template <class T>
         requires (concepts::trivially_deserializable<T, Opt>)
               || (concepts::trivially_serializable_container<T, Opt>)
-    teg_nodiscard teg_inline constexpr auto deserialize_one(T& trivial) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& trivial) -> error {
         return read_bytes(trivial);
     }
 
@@ -146,9 +135,9 @@ private:
               && (!concepts::container<T>)
               && (!concepts::tuple<T>)
               && (!concepts::trivially_deserializable<T, Opt>)
-    teg_nodiscard teg_inline constexpr auto deserialize_one(T& aggregate) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& aggregate) -> error {
         return visit_members(
-            [&](auto&&... members) teg_inline_lambda {
+            [&](auto&&... members) TEG_INLINE_LAMBDA {
                 return deserialize_many(members...);
             },
             aggregate
@@ -164,7 +153,7 @@ private:
         requires (concepts::bounded_c_array<T> || concepts::fixed_size_container<T>)
               && (!concepts::trivially_deserializable<T, Opt>)
               && (!concepts::trivially_serializable_container<T, Opt>)
-    teg_nodiscard teg_inline constexpr auto deserialize_one(T& array) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& array) -> error {
         // Deserialize the array's elements.       
         for (auto& element : array) {
             if (auto const result = deserialize_one(element); failure(result)) [[unlikely]] {
@@ -182,7 +171,7 @@ private:
     template <class T> 
         requires (concepts::container<T>)
               && (!concepts::fixed_size_container<T>)
-    teg_nodiscard teg_inline constexpr auto deserialize_one(T& container) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& container) -> error {
         
         using container_type = std::remove_reference_t<T>;
         using element_type = typename container_type::value_type;
@@ -285,7 +274,7 @@ private:
     ///  \brief Deserializes the given owning pointer.
     ///  
     template <class T> requires (concepts::owning_ptr<T>)
-    teg_nodiscard teg_inline constexpr auto deserialize_one(T& pointer) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& pointer) -> error {
         using type = std::remove_reference_t<T>;
         using element_type = typename type::element_type;
 
@@ -303,7 +292,7 @@ private:
     ///  \brief Deserializes the given optional.
     ///  
     template <class T> requires (concepts::serializable_optional<T>)
-    teg_nodiscard teg_inline constexpr auto deserialize_one(T& optional) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& optional) -> error {
         using type = std::remove_reference_t<T>;
         using value_type = typename type::value_type;
         
@@ -331,9 +320,9 @@ private:
     ///  \brief Deserializes the given tuple-like object. 
     ///
     template <class T> requires (concepts::tuple<T>) && (!concepts::container<T>)
-    teg_nodiscard teg_inline constexpr auto deserialize_one(T& tuple) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& tuple) -> error {
         return std::apply(
-            [&](auto&&... elements) teg_inline_lambda {
+            [&](auto&&... elements) TEG_INLINE_LAMBDA {
                 return deserialize_many(elements...);
             },
             tuple
@@ -343,7 +332,7 @@ private:
     ///  \brief Deserializes the given variant.
     ///  
     template <class T> requires (concepts::variant<T>)
-    teg_nodiscard teg_inline constexpr auto deserialize_one(T& variant) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& variant) -> error {
         using variant_type = std::remove_reference_t<T>;
 
         // Deserialize the index.
@@ -359,7 +348,7 @@ private:
             return error { std::errc::invalid_argument };
         }
         
-        return index_table_lookup<table_size>(runtime_index, [&](auto comptime_index) teg_inline_lambda {
+        return index_table_lookup<table_size>(runtime_index, [&](auto comptime_index) TEG_INLINE_LAMBDA {
             // Using an index table we can transform a runtime index into a compile-time index. 
             // With this technique we can then deserialize the variant alternative (based on the index)
             // at run-time.
@@ -376,15 +365,15 @@ private:
     ///  \brief Deserializes the given user-defined serializable object.
     ///  
     template <class T> requires (concepts::user_defined_serialization<T>)
-    teg_nodiscard teg_inline constexpr auto deserialize_one(T& usr_obj) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& usr_obj) -> error {
         return usr_deserialize(
-            [&](auto&&... objs) teg_inline_lambda {
+            [&](auto&&... objs) TEG_INLINE_LAMBDA {
                 return deserialize_many(objs...);
             }, usr_obj);
     }
 
     template <class T> requires (concepts::serializable_compatible<T>)
-    teg_nodiscard teg_inline constexpr auto deserialize_one(T& compatible) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& compatible) -> error {
         
         using type = std::remove_reference_t<T>;
         using value_type = typename type::value_type;
@@ -423,7 +412,7 @@ private:
     template <class T>
         requires (concepts::trivially_deserializable<T, Opt>)
               || (concepts::trivially_serializable_container<T, Opt>)
-    teg_nodiscard teg_inline constexpr auto read_bytes(T& obj) -> error {        
+    TEG_NODISCARD TEG_INLINE constexpr auto read_bytes(T& obj) -> error {        
 
         auto constexpr size = []() constexpr { // Calculate the object's size.
             if constexpr (concepts::trivially_serializable_container<T, Opt>) {
@@ -497,7 +486,7 @@ private:
         requires (concepts::contiguous_container<T>)
               && (concepts::trivially_serializable<typename T::value_type, Opt>)
               && (!concepts::trivially_serializable_container<T, Opt>)
-    teg_nodiscard teg_inline constexpr auto read_bytes(T& container) -> error {
+    TEG_NODISCARD TEG_INLINE constexpr auto read_bytes(T& container) -> error {
         // Deserialization at compile-time is not possible in this case.
         // Deserialize at run-time.
         auto* dst = reinterpret_cast<byte_type*>(container.data());
@@ -521,7 +510,7 @@ private:
 
 template <options Opt = default_mode, class Buf, class... T>
     requires (concepts::byte_buffer<Buf>) && (concepts::deserializable<T> && ...)
-teg_nodiscard teg_inline constexpr auto deserialize(Buf& input_buffer, T&... objs) -> error {
+TEG_NODISCARD TEG_INLINE constexpr auto deserialize(Buf& input_buffer, T&... objs) -> error {
     
     // Create a binary deserializer and deserialize the given objects.
     return binary_deserializer<Opt, Buf>{input_buffer}.deserialize(objs...);

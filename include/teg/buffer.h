@@ -19,13 +19,9 @@
 #ifndef TEG_BUFFER_H
 #define TEG_BUFFER_H
 
-#include <vector>
-#include <array>
-#include <type_traits>
-#include <tuple>
-
-#include "core_concepts.h"
-#include "container_concepts.h"
+#include "teg/def.h"
+#include "teg/core_concepts.h"
+#include "teg/container_concepts.h"
 
 namespace teg::concepts {
 

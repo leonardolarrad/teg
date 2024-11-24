@@ -23,7 +23,7 @@
 
 namespace teg {
 
-teg_nodiscard teg_inline constexpr auto version() -> u8 {
+TEG_NODISCARD TEG_INLINE constexpr auto version() -> u8 {
     return TEG_VERSION;
 }
 

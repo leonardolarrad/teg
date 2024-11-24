@@ -19,9 +19,8 @@
 #ifndef TEG_ENDIAN_H
 #define TEG_ENDIAN_H
 
-#include <bit>
-#include "options.h"
-#include "container_concepts.h"
+#include "teg/options.h"
+#include "teg/container_concepts.h"
 
 namespace teg {
 

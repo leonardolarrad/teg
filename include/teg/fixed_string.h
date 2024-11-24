@@ -19,17 +19,7 @@
 #ifndef TEG_FIXED_STRING_H
 #define TEG_FIXED_STRING_H
 
-#include <array>
-#include <compare>
-#include <cstddef>
-#include <cstring>
-#include <iterator>
-#include <stdexcept>
-#include <string>
-#include <string_view>
-#include <tuple>
-#include <type_traits>
-#include <utility>
+#include "teg/def.h"
 
 namespace teg {
 

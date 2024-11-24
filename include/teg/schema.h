@@ -73,7 +73,7 @@ public:
 };
 
 template <concepts::serializable T>
-teg_nodiscard teg_inline constexpr auto version_count() -> u64 {
+TEG_NODISCARD TEG_INLINE constexpr auto version_count() -> u64 {
     return schema_analyzer::template version_count<T>();
 }
 
@@ -267,7 +267,7 @@ public:
 };
 
 template <class T, u64 V = 1>
-teg_nodiscard teg_inline constexpr auto schema() -> decltype(auto) {
+TEG_NODISCARD TEG_INLINE constexpr auto schema() -> decltype(auto) {
     return schema_encoder::schema<T, V>();
 }
 

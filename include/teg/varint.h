@@ -19,13 +19,8 @@
 #ifndef TEG_VARINT_H
 #define TEG_VARINT_H
 
-#include <concepts>
-#include <limits>
-#include <span>
-#include <type_traits>
-
-#include "def.h"
-#include "error.h"
+#include "teg/def.h"
+#include "teg/error.h"
 
 namespace teg {
 
@@ -39,7 +34,7 @@ public:
     ///  \brief Encodes a signed integer to an unsigned integer using the zigzag encoding.
     ///
     template <class T> requires (std::signed_integral<T>)
-    teg_inline static constexpr auto encode(T value) -> std::make_unsigned_t<T> {
+    TEG_INLINE static constexpr auto encode(T value) -> std::make_unsigned_t<T> {
         return static_cast<std::make_unsigned_t<T>>(
             (static_cast<std::make_unsigned_t<T>>(value) << 1) ^ (value >> (sizeof(T) * 8 - 1))
         );
@@ -48,7 +43,7 @@ public:
     ///  \brief Decodes an unsigned integer to a signed integer using the zigzag encoding.
     ///
     template <class T> requires (std::unsigned_integral<T>)
-    teg_inline static constexpr auto decode(T value) -> std::make_signed_t<T> {
+    TEG_INLINE static constexpr auto decode(T value) -> std::make_signed_t<T> {
         return static_cast<std::make_signed_t<T>>((value >> 1) ^ -(value & 1));
     }
 };
@@ -70,7 +65,7 @@ public:
     ///      static_assert(size == 2);
     ///  \endcode
     ///  
-    teg_nodiscard teg_inline static constexpr auto encoded_size(u64 value) -> u8 {
+    TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size(u64 value) -> u8 {
         u8 size = 0;
 
         do {
@@ -84,14 +79,14 @@ public:
     ///  \brief Returns the maximum size in bytes that an encoded ULEB-128 value can have.
     ///  
     template <class T> requires std::unsigned_integral<T>
-    teg_nodiscard teg_inline static constexpr auto max_encoded_size() -> u8 {
+    TEG_NODISCARD TEG_INLINE static constexpr auto max_encoded_size() -> u8 {
         return encoded_size(std::numeric_limits<T>::max());
     }
 
     ///  \brief Returns the minimum size in bytes that an encoded ULEB-128 value can have.
     ///  
     template <class T> requires std::unsigned_integral<T>
-    teg_nodiscard teg_inline static constexpr auto min_encoded_size() -> u8 {
+    TEG_NODISCARD TEG_INLINE static constexpr auto min_encoded_size() -> u8 {
         return encoded_size(std::numeric_limits<T>::min());
     }
 
@@ -109,7 +104,7 @@ public:
     ///      assert(data[0] == 0b10001001 && data[1] == 0b00000110);
     ///  \endcode
     ///  
-    teg_inline static constexpr auto encode(std::span<u8> data, u64 value) -> u8 {
+    TEG_INLINE static constexpr auto encode(std::span<u8> data, u64 value) -> u8 {
         u8 size = 0;
 
         do {
@@ -144,7 +139,7 @@ public:
     ///      assert(value == 777);
     ///  \endcode
     ///  
-    teg_inline static constexpr auto decode(std::span<u8 const> data, u64& value) -> u8 {
+    TEG_INLINE static constexpr auto decode(std::span<u8 const> data, u64& value) -> u8 {
         value = 0;
         u64 shift = 0;
         u8 size = 0;
@@ -180,21 +175,21 @@ public:
 
     ///  \brief Constructs an uninitialized varint value.
     ///
-    teg_inline constexpr varint() = default;
+    TEG_INLINE constexpr varint() = default;
 
     ///  \brief Constructs a varint with the given value.
     ///
-    teg_inline constexpr varint(value_type value) : m_value(value) {}    
+    TEG_INLINE constexpr varint(value_type value) : m_value(value) {}    
 
     ///  \brief Converts the varint value to the underlying integral type.
     ///  \details Implicit conversion.
     ///
-    teg_inline constexpr operator value_type() const { return m_value; }
+    TEG_INLINE constexpr operator value_type() const { return m_value; }
 
     ///  \brief Converts the varint value to the underlying integral type reference.
     ///  \details Implicit conversion.
     ///
-    teg_inline constexpr operator value_type&() & { return m_value; }
+    TEG_INLINE constexpr operator value_type&() & { return m_value; }
 
 private:
     T m_value;
@@ -216,89 +211,6 @@ using vuint32 = varint<u32>;
 ///  
 using vuint64 = varint<u64>;
 
-///  \brief Returns the number of bytes required to serialize the given variable-length integer.
-///  \details User-defined serialization.
-///  
-template <class F, class T>
-teg_nodiscard teg_inline auto usr_serialized_size(F&& serialized_size, varint<T> var) -> u64 {
-    if constexpr (std::is_signed_v<T>) {
-        return uleb128::encoded_size(zigzag::encode((T)var));
-    }
-    else {
-        return uleb128::encoded_size((T)var);
-    }
-}
-
-///  \brief Serializes the given variable-length integer.
-///  \details User-defined serialization.
-///  
-template <class F, class T>
-teg_nodiscard teg_inline auto usr_serialize(F&& encode, varint<T> var) -> error {
-    
-    using value_type = std::make_unsigned_t<typename varint<T>::value_type>;
-    value_type value = [var]() constexpr {
-            if constexpr (std::is_signed_v<T>) {
-                return zigzag::encode((T)var);
-            }
-            else {
-                return var;
-            }
-        }();
-
-    do {
-        u8 byte = value & 0b01111111;
-        value >>= 7;
-
-        if (value != 0) {
-            byte = byte | 0b10000000;
-        }
-
-        if (auto const result = encode(byte); failure(result)) teg_unlikely {
-            return result;
-        }
-    }
-    while (value != 0);
-
-    return {};
-}
-
-///  \brief Deserializes the given variable-length integer.
-///  \details User-defined serialization.
-///  
-template <class F, class T>
-teg_nodiscard teg_inline auto usr_deserialize(F&& decode, varint<T>& var) -> error {
-    
-    using value_type = std::make_unsigned_t<typename varint<T>::value_type>;
-        
-    value_type value = 0;
-    u64 shift = 0;
-    u8 size = 0;
-
-    while (size <= uleb128::max_encoded_size<value_type>()) {        
-        u8 byte;     
-        if (auto const result = decode(byte); failure(result)) teg_unlikely {
-            return result;
-        }
-        
-        value |= u64(byte & 0b01111111) << shift;
-        
-        if ((byte & 0b10000000) == 0) {
-            if constexpr (std::is_signed_v<T>) {
-                var = zigzag::decode(value);
-                return {};
-            }
-            else {
-                var = value;
-                return {};
-            }
-        }
-
-        shift += 7;
-        size += 1;
-    }
-
-    return error { std::errc::value_too_large };
-}
 
 } // namespace teg
 

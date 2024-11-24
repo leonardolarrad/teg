@@ -19,18 +19,7 @@
 #ifndef TEG_CORE_CONCEPTS_H
 #define TEG_CORE_CONCEPTS_H
 
-#include <concepts>
-#include <array>
-#include <iterator>
-#include <memory>
-#include <optional>
-#include <ranges>
-#include <span>
-#include <tuple>
-#include <type_traits>
-#include <utility>
-#include <variant>
-#include <vector>
+#include "teg/def.h"
 
 namespace teg::concepts {
 

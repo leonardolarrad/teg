@@ -19,35 +19,58 @@
 #ifndef TEG_DEF_H
 #define TEG_DEF_H
 
+#include <array>
+#include <bit>
+#include <cassert>
+#include <compare>
+#include <concepts>
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <functional>
+#include <iterator>
+#include <limits>
+#include <memory>
+#include <optional>
+#include <ranges>
+#include <span>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <system_error>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <variant>
+#include <vector>
 
 #define TEG_VERSION 1
 
-#if !defined(teg_nodiscard)
-#define teg_nodiscard [[nodiscard]]
+#if !defined(TEG_NODISCARD)
+#define TEG_NODISCARD [[nodiscard]]
 #endif
 
-#if !defined(teg_inline)
+#if !defined(TEG_INLINE)
 #if defined(_MSC_VER)
-#define teg_inline [[msvc::forceinline]]
+#define TEG_INLINE [[msvc::forceinline]]
 #elif defined(__GNUC__) || defined(__clang__)
-#define teg_inline __attribute__((always_inline))
+#define TEG_INLINE __attribute__((always_inline))
 #else
-#define teg_inline inline
+#define TEG_INLINE inline
 #endif
-#endif // teg_inline
+#endif // TEG_INLINE
 
-#if !defined(teg_inline_lambda)
+#if !defined(TEG_INLINE_LAMBDA)
 #if defined(_MSC_VER)
-#define teg_inline_lambda [[msvc::forceinline]]
+#define TEG_INLINE_LAMBDA [[msvc::forceinline]]
 #elif defined(__GNUC__)
-#define teg_inline_lambda constexpr __attribute__((always_inline))
+#define TEG_INLINE_LAMBDA constexpr __attribute__((always_inline))
 #elif defined(__clang__)
-#define teg_inline_lambda __attribute__((always_inline)) constexpr
+#define TEG_INLINE_LAMBDA __attribute__((always_inline)) constexpr
 #else
-#define teg_inline_lambda constexpr
+#define TEG_INLINE_LAMBDA constexpr
 #endif
-#endif // teg_inline_lambda
+#endif // TEG_INLINE_LAMBDA
 
 #if !defined(teg_unlikely)
 #define teg_unlikely [[unlikely]]

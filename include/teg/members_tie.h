@@ -1,11 +1,6 @@
 #ifndef TEG_MEMBERS_TIE_H
 #define TEG_MEMBERS_TIE_H
 
-#include <tuple>
-#include <type_traits>
-#include <utility>
-
-#include "teg/def.h"
 #include "teg/members_count.h"
 
 namespace teg {
@@ -168,7 +163,7 @@ constexpr decltype(auto) tie_members_impl(T& t, std::integral_constant<std::size
 namespace teg {
 
 template <typename T>
-teg_inline constexpr auto tie_members(T& t) -> decltype(auto) {
+TEG_INLINE constexpr auto tie_members(T& t) -> decltype(auto) {
     return internal::tie_members_impl(
         t, 
         std::integral_constant<std::size_t, members_count_v<T>>()

@@ -19,15 +19,8 @@
 #ifndef TEG_CONTAINER_CONCEPTS_H
 #define TEG_CONTAINER_CONCEPTS_H
 
-#include <concepts>
-#include <iterator>
-#include <memory>
-#include <string>
-#include <type_traits>
-#include <utility>
-#include <tuple>
-
-#include "core_concepts.h"
+#include "teg/def.h"
+#include "teg/core_concepts.h"
 
 namespace teg::concepts {
 

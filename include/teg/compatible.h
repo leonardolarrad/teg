@@ -19,10 +19,6 @@
 #ifndef TEG_COMPATIBLE_H
 #define TEG_COMPATIBLE_H
 
-#include <optional>
-#include <type_traits>
-#include <concepts>
-
 #include "teg/def.h"
 
 namespace teg {
@@ -34,22 +30,22 @@ public:
 
     using std::optional<T>::optional;
         
-    teg_inline constexpr compatible() = default;
-    teg_inline constexpr compatible(T const& value) : std::optional<T>(value) {}
-    teg_inline constexpr compatible(T&& value) : std::optional<T>(std::move(value)) {}
-    teg_inline constexpr compatible(std::nullopt_t) : std::optional<T>(std::nullopt) {}
-    teg_inline constexpr compatible(const compatible &other) = default;
-    teg_inline constexpr compatible(compatible &&other) = default;
-    teg_inline constexpr compatible(std::optional<T> &&other)
+    TEG_INLINE constexpr compatible() = default;
+    TEG_INLINE constexpr compatible(T const& value) : std::optional<T>(value) {}
+    TEG_INLINE constexpr compatible(T&& value) : std::optional<T>(std::move(value)) {}
+    TEG_INLINE constexpr compatible(std::nullopt_t) : std::optional<T>(std::nullopt) {}
+    TEG_INLINE constexpr compatible(const compatible &other) = default;
+    TEG_INLINE constexpr compatible(compatible &&other) = default;
+    TEG_INLINE constexpr compatible(std::optional<T> &&other)
         : std::optional<T>(std::move(other)){};
-    teg_inline constexpr compatible(const std::optional<T> &other)
+    TEG_INLINE constexpr compatible(const std::optional<T> &other)
         : std::optional<T>(other){};
-    teg_inline constexpr compatible &operator=(const compatible &other) = default;
-    teg_inline constexpr compatible &operator=(compatible &&other) = default;
+    TEG_INLINE constexpr compatible &operator=(const compatible &other) = default;
+    TEG_INLINE constexpr compatible &operator=(compatible &&other) = default;
 };
 
 template <class T, u64 V1, u64 V2>
-teg_inline constexpr bool operator==(compatible<T, V1> const& l, compatible<T, V2> const& r) {
+TEG_INLINE constexpr bool operator==(compatible<T, V1> const& l, compatible<T, V2> const& r) {
     if (V1 != V2) {
         return false;
     }

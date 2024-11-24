@@ -49,11 +49,8 @@
 #ifndef TEG_INDEX_TABLE_H
 #define TEG_INDEX_TABLE_H
 
-#include <cassert>
-#include <cstdint>
-#include <type_traits>
-#include <utility>
-#include "unreachable.h"
+
+#include "teg/unreachable.h"
 
 namespace teg::internal {
 
@@ -429,7 +426,7 @@ namespace teg {
 ///  \return     Result of invoking the function `f(i)`.
 ///  
 template<std::size_t N, class F> 
-inline constexpr auto index_table_lookup(std::size_t i, F&& f)
+constexpr auto index_table_lookup(std::size_t i, F&& f)
     -> decltype(std::declval<F>()(std::declval<std::integral_constant<std::size_t, 0>>()))
 {
     assert(i < N);

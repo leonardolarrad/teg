@@ -19,14 +19,9 @@
 #ifndef TEG_MEMBERS_COUNT_H
 #define TEG_MEMBERS_COUNT_H
 
-#include <concepts>
-#include <cstdint>
-#include <type_traits>
-#include <utility>
-#include <tuple>
-    
-#include "core_concepts.h"
-#include "c_array.h"
+#include "teg/def.h"    
+#include "teg/core_concepts.h"
+#include "teg/c_array.h"
 
 namespace teg::internal {
 

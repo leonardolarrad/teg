@@ -27,17 +27,17 @@ private:
 };
 
 template <class F>
-teg_nodiscard teg_inline constexpr auto usr_serialized_size(F&& serialized_size, vec3 const& vec) -> teg::u64 {
+TEG_NODISCARD TEG_INLINE constexpr auto usr_serialized_size(F&& serialized_size, vec3 const& vec) -> teg::u64 {
     return serialized_size(vec.get_x(), vec.get_y(), vec.get_z());
 }
 
 template <class F>
-teg_nodiscard teg_inline constexpr auto usr_serialize(F&& encode, vec3 const& vec) -> teg::error {
+TEG_NODISCARD TEG_INLINE constexpr auto usr_serialize(F&& encode, vec3 const& vec) -> teg::error {
     return encode(vec.get_x(), vec.get_y(), vec.get_z());
 }
 
 template <class F>
-teg_nodiscard teg_inline constexpr auto usr_deserialize(F&& decode, vec3 & vec) -> teg::error {
+TEG_NODISCARD TEG_INLINE constexpr auto usr_deserialize(F&& decode, vec3 & vec) -> teg::error {
     std::tuple<teg::u32, teg::u32, teg::u32> values;
     
     if (auto const result = decode(values); teg::failure(result)) [[unlikely]] {

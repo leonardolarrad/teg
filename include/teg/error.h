@@ -19,7 +19,7 @@
 #ifndef TEG_ERROR_H
 #define TEG_ERROR_H
 
-#include <system_error>
+#include "teg/def.h"
 
 namespace teg {
 

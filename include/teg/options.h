@@ -19,13 +19,8 @@
 #ifndef TEG_OPTIONS_H
 #define TEG_OPTIONS_H
 
-#include <cstddef>
-#include <cstdint>
-#include <limits>
-#include <bit>
-
-#include "def.h"
-#include "varint.h"
+#include "teg/def.h"
+#include "teg/varint.h"
 
 namespace teg {
 

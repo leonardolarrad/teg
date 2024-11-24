@@ -54,15 +54,9 @@
 #ifndef TEG_MD5_H
 #define TEG_MD5_H
 
-#include <array>
-#include <cassert>
-#include <cstdint>
-#include <string_view>
-#include <tuple>
-
-#include "def.h"
-#include "buffer.h"
-#include "fixed_string.h"
+#include "teg/def.h"
+#include "teg/buffer.h"
+#include "teg/fixed_string.h"
 
 namespace teg {
 

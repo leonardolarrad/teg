@@ -19,14 +19,7 @@
 #ifndef TEG_MEMBERS_VISITOR_H
 #define TEG_MEMBERS_VISITOR_H
 
-#include <concepts>
-#include <type_traits>
-#include <utility>
-#include <tuple>
-
-#include "def.h"
-#include "core_concepts.h"
-#include "members_count.h"
+#include "teg/members_count.h"
 
 namespace teg::internal {
 
@@ -740,7 +733,7 @@ concept structure_bindable =
 ///  
 template<class F, class T> 
         requires (concepts::structure_bindable<std::remove_cvref_t<T>>)
-teg_inline constexpr decltype(auto) visit_members(F&& f, T&& t) noexcept {
+TEG_INLINE constexpr decltype(auto) visit_members(F&& f, T&& t) noexcept {
     if constexpr (teg::concepts::tuple<std::remove_cvref_t<T>>) {
         return internal::visit_members_impl(
             std::forward<F>(f),
