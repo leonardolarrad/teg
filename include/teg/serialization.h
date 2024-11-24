@@ -45,7 +45,7 @@ struct header {
 ///  \tparam  Buf  The type of the buffer to serialize into.
 ///  \tparam  Opt  The options for serialization.
 ///  
-template <options Opt = default_mode, class Buf = byte_buffer>
+template <options Opt = default_mode, class Buf = byte_array>
     requires concepts::byte_buffer<Buf>
 class binary_serializer {
 public:    

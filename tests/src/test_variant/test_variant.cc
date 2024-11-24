@@ -16,7 +16,7 @@ TEST_CASE("Check concepts") {
 
 TEST_CASE("Trivial de/serialization") {
     SECTION("Index 0") {
-        teg::byte_buffer b;
+        teg::byte_array b;
         std::variant<int, float, std::string> v0 = 100;
         teg::serialize(b, v0).or_throw();
 
@@ -27,7 +27,7 @@ TEST_CASE("Trivial de/serialization") {
         ASSERT(std::get<int>(v1) == 100);
     }
     SECTION("Index 1") {
-        teg::byte_buffer b;
+        teg::byte_array b;
         std::variant<int, float, std::string> v0 = 100.0f;
         teg::serialize(b, v0).or_throw();
 
@@ -38,7 +38,7 @@ TEST_CASE("Trivial de/serialization") {
         ASSERT(std::get<float>(v1) == 100.0f);
     }
     SECTION("Index 2") {
-        teg::byte_buffer b;
+        teg::byte_array b;
         std::variant<int, float, std::string> v0 = "100";
         teg::serialize(b, v0).or_throw();
 
@@ -52,7 +52,7 @@ TEST_CASE("Trivial de/serialization") {
 
 TEST_CASE("Aggregate de/serialization") {
     SECTION("Index 0") {
-        teg::byte_buffer b;
+        teg::byte_array b;
         std::variant<std::variant<int, float>, std::string> v0 = 100;
         teg::serialize(b, v0).or_throw();
 
@@ -63,7 +63,7 @@ TEST_CASE("Aggregate de/serialization") {
         ASSERT((std::get<int>(std::get<std::variant<int, float>>(v1)) == 100));
     }
     SECTION("Index 1") {
-        teg::byte_buffer b;
+        teg::byte_array b;
         std::variant<std::variant<int, float>, std::string> v0 = "100";
         teg::serialize(b, v0).or_throw();
 

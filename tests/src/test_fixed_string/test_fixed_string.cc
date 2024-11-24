@@ -59,7 +59,7 @@ TEST_CASE("Fixed string interface") {
 }
 
 TEST_CASE("De/serialize fixed string") {
-    teg::byte_buffer b;
+    teg::byte_array b;
     constexpr teg::fixed_string<5> str0 = "Hello";
     teg::serialize(b, str0).or_throw();
 
@@ -69,7 +69,7 @@ TEST_CASE("De/serialize fixed string") {
 }
 
 TEST_CASE("De/serialize fixed u8string") {
-    teg::byte_buffer b;
+    teg::byte_array b;
     constexpr teg::fixed_u8string<900> s0 = 
         u8"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec " 
         u8"finibus tortor, at egestas mi. Nam blandit lectus scelerisque neque posuere "
@@ -91,7 +91,7 @@ TEST_CASE("De/serialize fixed u8string") {
 }
 
 TEST_CASE("De/serialize fixed u16string") {
-    teg::byte_buffer b;
+    teg::byte_array b;
     constexpr teg::fixed_u16string<900> s0 = 
         u"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec " 
         u"finibus tortor, at egestas mi. Nam blandit lectus scelerisque neque posuere "
@@ -113,7 +113,7 @@ TEST_CASE("De/serialize fixed u16string") {
 }
 
 TEST_CASE("De/serialize fixed u32string") {
-    teg::byte_buffer b;
+    teg::byte_array b;
     constexpr teg::fixed_u32string<900> s0 = 
         U"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec " 
         U"finibus tortor, at egestas mi. Nam blandit lectus scelerisque neque posuere "
@@ -135,7 +135,7 @@ TEST_CASE("De/serialize fixed u32string") {
 }
 
 TEST_CASE("De/serialize fixed wstring") {
-    teg::byte_buffer b;
+    teg::byte_array b;
     constexpr teg::fixed_wstring<900> s0 = 
         L"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec " 
         L"finibus tortor, at egestas mi. Nam blandit lectus scelerisque neque posuere "

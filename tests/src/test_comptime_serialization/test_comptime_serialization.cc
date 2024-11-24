@@ -12,7 +12,7 @@ struct vec2 {
 };
 
 constexpr auto cx_int() {
-    teg::byte_buffer buffer{};
+    teg::byte_array buffer{};
 
     int i0 = 66;    
     teg::serialize(buffer, i0).or_throw();
@@ -23,7 +23,7 @@ constexpr auto cx_int() {
 }
 
 constexpr auto cx_c_array() {
-    teg::byte_buffer buffer{};
+    teg::byte_array buffer{};
 
     int i0[5] = { 1, 2, 3, 4, 55 };    
     teg::serialize(buffer, i0).or_throw();
@@ -34,7 +34,7 @@ constexpr auto cx_c_array() {
 }
 
 constexpr auto cx_md_c_array() {
-    teg::byte_buffer buffer{};
+    teg::byte_array buffer{};
 
     int a0[5][5] = { 
         { 1, 2, 3, 4, 77 }, { 6, 7, 8, 9, 10 }, { 11, 12, 13, 14, 15 }, 
@@ -47,7 +47,7 @@ constexpr auto cx_md_c_array() {
 }
 
 constexpr auto cx_std_array() {
-    teg::byte_buffer buffer{};
+    teg::byte_array buffer{};
 
     std::array<int, 5> i0 = { 1, 2, 3, 4, 77 };
     teg::serialize(buffer, i0).or_throw();
@@ -58,7 +58,7 @@ constexpr auto cx_std_array() {
 }
 
 constexpr auto cx_fixed_string() {
-    teg::byte_buffer buffer{};
+    teg::byte_array buffer{};
 
     auto s0 = teg::make_fixed_string("Hello World!");
     teg::serialize(buffer, s0).or_throw();
@@ -69,7 +69,7 @@ constexpr auto cx_fixed_string() {
 }
 
 constexpr auto cx_struct() {
-    teg::byte_buffer buffer{};
+    teg::byte_array buffer{};
 
     vec2 v0 = { 11, 99 };
     teg::serialize(buffer, v0).or_throw();
@@ -80,7 +80,7 @@ constexpr auto cx_struct() {
 }
 
 constexpr auto cx_pair() {
-    teg::byte_buffer buffer{};
+    teg::byte_array buffer{};
 
     std::pair<int32_t, int32_t> p0 = { 99, 11 };
     teg::serialize(buffer, p0).or_throw();
@@ -91,7 +91,7 @@ constexpr auto cx_pair() {
 }
 
 constexpr auto cx_tuple() {
-    teg::byte_buffer buffer{};
+    teg::byte_array buffer{};
 
     std::tuple<int32_t, int32_t, int32_t> t0 = { 99, 11, 5 };
     teg::serialize(buffer, t0).or_throw();

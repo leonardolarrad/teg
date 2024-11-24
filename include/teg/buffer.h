@@ -57,14 +57,14 @@ namespace teg {
 ///  \brief A contiguous and resizable container of bytes.
 ///  \note This is the default buffer type for run-time de/serialization.
 ///  
-using byte_buffer = std::vector<std::byte>;
+using byte_array = std::vector<std::byte>;
 
 ///  \brief A fixed contiguous container of bytes.
 ///  \tparam N The size of the buffer.
 ///  \note This is the default buffer type for compile-time de/serialization.
 ///  
 template <std::size_t N>
-using fixed_byte_buffer = std::array<std::byte, N>;
+using fixed_byte_array = std::array<std::byte, N>;
 
 } // namespace teg
 

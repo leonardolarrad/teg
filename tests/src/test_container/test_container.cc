@@ -208,7 +208,7 @@ TEST_CASE("Check concepts: set containers") {
 }
 
 TEST_CASE("De/serialize std::array") {    
-    teg::byte_buffer b;
+    teg::byte_array b;
     std::array<int, 2> arr0 = { 1, 2 };
     teg::serialize(b, arr0).or_throw();
 
@@ -218,7 +218,7 @@ TEST_CASE("De/serialize std::array") {
 }
 
 TEST_CASE("De/serialize std::vector") {    
-    teg::byte_buffer b;
+    teg::byte_array b;
     std::vector<int> v0 = { 1, 2, 3, 4, 5 };
     teg::serialize(b, v0).or_throw();
 
@@ -230,7 +230,7 @@ TEST_CASE("De/serialize std::vector") {
 }
 
 TEST_CASE("De/serialize std::string") {    
-    teg::byte_buffer b;
+    teg::byte_array b;
     std::string s0 = "Hello World!";
     teg::serialize(b, s0).or_throw();
 
@@ -240,7 +240,7 @@ TEST_CASE("De/serialize std::string") {
 }
 
 TEST_CASE("De/serialize std::deque") {    
-    teg::byte_buffer b;
+    teg::byte_array b;
     std::deque<int> d0 = { 1, 2, 3, 4, 5, 6 };
     teg::serialize(b, d0).or_throw();
 
@@ -250,7 +250,7 @@ TEST_CASE("De/serialize std::deque") {
 }
 
 TEST_CASE("De/serialize std::list") {    
-    teg::byte_buffer b;
+    teg::byte_array b;
     std::list<int> l0 = { 1, 2, 3, 4, 5, 6 };
     teg::serialize(b, l0).or_throw();
 
@@ -260,7 +260,7 @@ TEST_CASE("De/serialize std::list") {
 }
 
 TEST_CASE("De/serialize std::forward_list") {    
-    teg::byte_buffer b;
+    teg::byte_array b;
     std::forward_list<int> fl0 = std::forward_list<int>({ 1, 2, 3, 4, 5, 6 });
     teg::serialize(b, fl0).or_throw();
 
@@ -271,8 +271,8 @@ TEST_CASE("De/serialize std::forward_list") {
 
 TEST_CASE("Force allocation limit") {
     SECTION("1-byte container size limit") {
-        teg::byte_buffer buffer0{};
-        teg::byte_buffer buffer1{};
+        teg::byte_array buffer0{};
+        teg::byte_array buffer1{};
 
         constexpr teg::options opt0 = teg::options::container_size_1b;
         constexpr teg::options opt1 = teg::options::container_size_2b;
@@ -290,8 +290,8 @@ TEST_CASE("Force allocation limit") {
         ASSERT(teg::success(r1));
     }
     SECTION("2-byte container size limit") {
-        teg::byte_buffer buffer0{};
-        teg::byte_buffer buffer1{};
+        teg::byte_array buffer0{};
+        teg::byte_array buffer1{};
 
         constexpr teg::options opt0 = teg::options::container_size_2b;
         constexpr teg::options opt1 = teg::options::container_size_4b;

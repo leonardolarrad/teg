@@ -39,7 +39,7 @@ namespace teg {
 ///  \tparam  Buf  The type of the buffer to deserialize from.
 ///  \tparam  Opt  The options for deserialization.
 ///  
-template <options Opt = default_mode, class Buf = byte_buffer>
+template <options Opt = default_mode, class Buf = byte_array>
     requires concepts::byte_buffer<Buf>
 class binary_deserializer {
 public:

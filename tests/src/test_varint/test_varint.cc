@@ -147,7 +147,7 @@ TEST_CASE("De/serialize varints") {
         COMPTIME_ASSERT(!(teg::concepts::trivially_serializable<teg::vuint64, teg::default_mode>));
 
         for (teg::u8 i = 0; i < u64_values.size(); ++i) {
-            teg::byte_buffer b{};
+            teg::byte_array b{};
             
             teg::vuint64 v0 = u64_values[i];
             teg::serialize(b, v0).or_throw();
@@ -164,7 +164,7 @@ TEST_CASE("De/serialize varints") {
         COMPTIME_ASSERT(!(teg::concepts::trivially_serializable<teg::vint64, teg::default_mode>));
 
         for (teg::u8 i = 0; i < u64_values.size(); ++i) {
-            teg::byte_buffer b{};
+            teg::byte_array b{};
             
             teg::vint64 v0 = u64_values[i];
             teg::serialize(b, v0).or_throw();

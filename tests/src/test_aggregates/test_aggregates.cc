@@ -85,7 +85,7 @@ auto make_aggregate() -> aggregate0 {
 
 
 TEST_CASE("De/serialize aggregate0") {
-    teg::byte_buffer b;
+    teg::byte_array b;
     
     aggregate0 agg0 = make_aggregate();
     teg::serialize(b, agg0).or_throw();

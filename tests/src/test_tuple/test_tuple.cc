@@ -32,7 +32,7 @@ TEST_CASE("Trivial de/serialization") {
     SECTION("Tuple") {
         std::tuple<int, float, std::string> t0 = { 100, 100.0f, "100" };
 
-        teg::byte_buffer b;
+        teg::byte_array b;
         teg::serialize(b, t0).or_throw();
 
         std::tuple<int, float, std::string> t1;
@@ -45,7 +45,7 @@ TEST_CASE("Trivial de/serialization") {
     SECTION("Pair") {
         std::pair<int, float> p0 = { 100, 100.0f };
 
-        teg::byte_buffer b;
+        teg::byte_array b;
         teg::serialize(b, p0).or_throw();
 
         std::pair<int, float> p1;
@@ -59,7 +59,7 @@ TEST_CASE("Aggregate de/serialization") {
     SECTION("Tuple") {
         std::tuple<std::tuple<int, float>, std::variant<int, float>> t0 = { { 100, 100.0f }, 100 };
 
-        teg::byte_buffer b;
+        teg::byte_array b;
         teg::serialize(b, t0).or_throw();
 
         std::tuple<std::tuple<int, float>, std::variant<int, float>> t1;
@@ -73,7 +73,7 @@ TEST_CASE("Aggregate de/serialization") {
     SECTION("Pair") {
         std::pair<std::pair<int, float>, std::string> p0 = { { 100, 100.0f }, "100" };
 
-        teg::byte_buffer b;
+        teg::byte_array b;
         teg::serialize(b, p0).or_throw();        
 
         std::pair<std::pair<int, float>, std::string> p1;

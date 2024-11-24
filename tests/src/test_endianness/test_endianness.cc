@@ -17,8 +17,8 @@
 
 TEST_CASE("Check fundamental encoding with big-endian and little-endian") {
     SECTION("8-bit integer") {
-        teg::byte_buffer buffer_b{};
-        teg::byte_buffer buffer_l{};
+        teg::byte_array buffer_b{};
+        teg::byte_array buffer_l{};
         constexpr auto big_endian = teg::options::big_endian;
         constexpr auto little_endian = teg::options::little_endian;
 
@@ -38,8 +38,8 @@ TEST_CASE("Check fundamental encoding with big-endian and little-endian") {
         ASSERT_EQ(i1, i2);
     }
     SECTION("32-bit integer") {
-        teg::byte_buffer buffer_b{};
-        teg::byte_buffer buffer_l{};
+        teg::byte_array buffer_b{};
+        teg::byte_array buffer_l{};
         constexpr auto big_endian = teg::options::big_endian;
         constexpr auto little_endian = teg::options::little_endian;
 
@@ -59,8 +59,8 @@ TEST_CASE("Check fundamental encoding with big-endian and little-endian") {
         ASSERT_EQ(i1, i2);
     }
     SECTION("64-bit integer") {
-        teg::byte_buffer buffer_b{};
-        teg::byte_buffer buffer_l{};
+        teg::byte_array buffer_b{};
+        teg::byte_array buffer_l{};
         constexpr auto big_endian = teg::options::big_endian;
         constexpr auto little_endian = teg::options::little_endian;
 
@@ -86,8 +86,8 @@ TEST_CASE("Check fundamental encoding with big-endian and little-endian") {
 
 TEST_CASE("A 1-byte size element fixed contiguous container") {
     SECTION("De/serialize a c-str") {
-        teg::byte_buffer buffer_b{};
-        teg::byte_buffer buffer_l{};
+        teg::byte_array buffer_b{};
+        teg::byte_array buffer_l{};
         constexpr auto big_endian = teg::options::big_endian;
         constexpr auto little_endian = teg::options::little_endian;
 
@@ -110,8 +110,8 @@ TEST_CASE("A 1-byte size element fixed contiguous container") {
         ASSERT_EQ(std::string(s1), std::string(s2));
     }
     SECTION("Fixed array") {
-        teg::byte_buffer buffer_b{};
-        teg::byte_buffer buffer_l{};
+        teg::byte_array buffer_b{};
+        teg::byte_array buffer_l{};
         constexpr auto big_endian = teg::options::big_endian;
         constexpr auto little_endian = teg::options::little_endian;
 
@@ -134,8 +134,8 @@ TEST_CASE("A 1-byte size element fixed contiguous container") {
         ASSERT(a1 == a2);
     }
     SECTION("Fixed string") {
-        teg::byte_buffer buffer_b{};
-        teg::byte_buffer buffer_l{};
+        teg::byte_array buffer_b{};
+        teg::byte_array buffer_l{};
         constexpr auto big_endian = teg::options::big_endian;
         constexpr auto little_endian = teg::options::little_endian;
 

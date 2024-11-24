@@ -8,7 +8,7 @@ namespace bm = benchmarking;
 static std::vector<bm::ecommerce_page> data_out_1mib = bm::generate_benchmark_data(512, 1024*2);
 
 static bool test_lib() {
-    teg::byte_buffer b;
+    teg::byte_array b;
     bm::ecommerce_page t0 = data_out_1mib[0];
     auto r0 = teg::serialize(b, t0);
     if (teg::failure(r0)) {
@@ -25,8 +25,8 @@ static bool test_lib() {
 
 static void run_benchmark_00() {   
     std::vector<bm::ecommerce_page> data_in_1mib;
-    teg::byte_buffer buffer{};
-    teg::byte_buffer buffer2{};
+    teg::byte_array buffer{};
+    teg::byte_array buffer2{};
     std::string schema_in{};
 
     constexpr auto schema = teg::schema<bm::ecommerce_page>();
@@ -53,7 +53,7 @@ static void run_benchmark_00() {
 static void run_benchmark_01() {
     int64_t d0 = 99999999999999ull;
     int64_t d1;
-    teg::byte_buffer buffer{};
+    teg::byte_array buffer{};
 
     bm::benchmark()
         .warmup(10)
@@ -71,7 +71,7 @@ static void run_benchmark_01() {
 static void run_benchmark_02() {
     std::string d0 = "Hello World!";
     std::string d1;
-    teg::byte_buffer buffer{};
+    teg::byte_array buffer{};
 
     bm::benchmark()
         .warmup(10)
@@ -87,8 +87,8 @@ static void run_benchmark_02() {
 }
 
 static void run_benchmark_03() {
-    teg::byte_buffer buffer{};
-    teg::byte_buffer buffer2{};
+    teg::byte_array buffer{};
+    teg::byte_array buffer2{};
     std::string data = 
         "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
         "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
@@ -129,8 +129,8 @@ static void run_benchmark_03() {
 }
 
 static void run_benchmark_04() {
-    teg::byte_buffer buffer{};
-    teg::byte_buffer buffer2{};
+    teg::byte_array buffer{};
+    teg::byte_array buffer2{};
     std::string data = 
         "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"
         "AAAAAAAAAAAAAAAAAAAasdasdasd12312312312asssssssssssssssssssss"

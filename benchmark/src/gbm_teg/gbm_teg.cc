@@ -9,7 +9,7 @@ namespace bm = benchmarking;
 static std::vector<bm::ecommerce_page> data_1mib = bm::generate_benchmark_data(512, 2048);
 
 static void bm_serialization(benchmark::State& state) {
-    teg::byte_buffer buffer;
+    teg::byte_array buffer;
 
     for (auto _ : state) {
         buffer.clear();
@@ -18,7 +18,7 @@ static void bm_serialization(benchmark::State& state) {
 }
 
 static void bm_deserialization(benchmark::State& state) {
-    teg::byte_buffer buffer;
+    teg::byte_array buffer;
     teg::serialize(buffer, data_1mib).or_throw();
     std::vector<bm::ecommerce_page> data_out_1mib;
 

@@ -10,7 +10,7 @@
 #include "test/test.h"
 
 TEST_CASE("Reset buffer") {
-    teg::byte_buffer buffer{};
+    teg::byte_array buffer{};
     teg::binary_serializer serializer{buffer};
 
     std::string str0 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

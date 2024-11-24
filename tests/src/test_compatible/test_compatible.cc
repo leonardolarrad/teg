@@ -46,7 +46,7 @@ TEST_CASE("Compatible interface should implement 'std::optional'") {
 
 TEST_CASE("De/serialization of version compatible objects") {
     SECTION("Plain de/serialization") {
-        teg::byte_buffer b;
+        teg::byte_array b;
 
         teg::compatible<std::string, 2> comp0 = "Str test";
         teg::serialize(b, comp0).or_throw();
@@ -56,7 +56,7 @@ TEST_CASE("De/serialization of version compatible objects") {
         ASSERT(*comp0 == *comp1);
     }
     SECTION("Forward compatibility [Two versions]") {
-        teg::byte_buffer b;
+        teg::byte_array b;
 
         struct v1 { teg::i32 x; teg::i32 y; };
         struct v2 { teg::i32 x; teg::i32 y; teg::compatible<teg::f64, 2> z; };
@@ -71,7 +71,7 @@ TEST_CASE("De/serialization of version compatible objects") {
         ASSERT(!v1.z.has_value());
     }
     SECTION("Backward compatibility [Two versions]") {
-        teg::byte_buffer b;
+        teg::byte_array b;
 
         struct v1 { teg::i32 x; teg::i32 y; };
         struct v2 { teg::i32 x; teg::i32 y; teg::compatible<teg::f64, 2> z; };
@@ -85,7 +85,7 @@ TEST_CASE("De/serialization of version compatible objects") {
         ASSERT(v0.y == v1.y);
     }
     SECTION("Forward compatibility [Three versions]") {
-        teg::byte_buffer b;
+        teg::byte_array b;
 
         struct v1 { teg::i32 x; teg::i32 y; };
         struct v2 { teg::i32 x; teg::i32 y; teg::compatible<teg::f64, 2> z; };
@@ -108,7 +108,7 @@ TEST_CASE("De/serialization of version compatible objects") {
         ASSERT(!v2.w.has_value());
     }
     SECTION("Backward compatibility [Three versions]") {
-        teg::byte_buffer b;
+        teg::byte_array b;
 
         struct v1 { teg::i32 x; teg::i32 y; };
         struct v2 { teg::i32 x; teg::i32 y; teg::compatible<teg::f64, 2> z; };

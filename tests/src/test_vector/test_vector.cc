@@ -7,7 +7,7 @@
 #include "test/test.h"
 
 TEST_CASE("Trivial de/serialization") {    
-    teg::byte_buffer b;
+    teg::byte_array b;
     std::vector<int> v0 = { 1, 2, 3, 4, 5 };
     teg::serialize(b, v0).or_throw();
 
@@ -20,7 +20,7 @@ TEST_CASE("Trivial de/serialization") {
 
 TEST_CASE("Aggregate de/serialization") {
     SECTION("Vector of vectors") {
-        teg::byte_buffer b;
+        teg::byte_array b;
         std::vector<std::vector<int>> v0 = { { 1, 2, 3, 4, 5 }, { 6, 7, 8, 9, 10 } };
         teg::serialize(b, v0).or_throw();
 
@@ -30,7 +30,7 @@ TEST_CASE("Aggregate de/serialization") {
         ASSERT(v0 == v1);
     }
     SECTION("Vector of vectors of vectors") {
-        teg::byte_buffer b;
+        teg::byte_array b;
         std::vector<std::vector<std::vector<int>>> v0 = { 
             { { 1, 2, 3, 4, 5 }, { 6, 7, 8, 9, 10 } }, 
             { { 11, 12, 13, 14, 15 }, 
@@ -62,7 +62,7 @@ TEST_CASE("Aggregate de/serialization") {
             bool operator==(const non_trivial_b&) const = default;
         };
 
-        teg::byte_buffer b;
+        teg::byte_array b;
         std::vector<non_trivial_b> v0 = { non_trivial_b{}, non_trivial_b{} };
         teg::serialize(b, v0).or_throw();
 

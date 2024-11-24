@@ -4,7 +4,7 @@
 #include "test/test.h"
 
 TEST_CASE("Trivial de/serialization") {    
-    teg::byte_buffer b;
+    teg::byte_array b;
     std::string s0 = 
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec " 
       "finibus tortor, at egestas mi. Nam blandit lectus scelerisque neque posuere "
@@ -26,7 +26,7 @@ TEST_CASE("Trivial de/serialization") {
 }
 
 TEST_CASE("De/serialize const string") {
-    teg::byte_buffer b;
+    teg::byte_array b;
     std::string const s0 = "Hello World!";
     teg::serialize(b, s0).or_throw();
 
@@ -36,7 +36,7 @@ TEST_CASE("De/serialize const string") {
 }
 
 TEST_CASE("De/serialize u8string") {
-    teg::byte_buffer b;
+    teg::byte_array b;
     std::u8string s0 = 
         u8"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec " 
         u8"finibus tortor, at egestas mi. Nam blandit lectus scelerisque neque posuere "
@@ -58,7 +58,7 @@ TEST_CASE("De/serialize u8string") {
 }
 
 TEST_CASE("De/serialize u16string") {
-    teg::byte_buffer b;
+    teg::byte_array b;
     std::u16string s0 =
         u"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec " 
         u"finibus tortor, at egestas mi. Nam blandit lectus scelerisque neque posuere "
@@ -80,7 +80,7 @@ TEST_CASE("De/serialize u16string") {
 }
 
 TEST_CASE("De/serialize u32string") {
-    teg::byte_buffer b;
+    teg::byte_array b;
     std::u32string s0 = 
         U"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec " 
         U"finibus tortor, at egestas mi. Nam blandit lectus scelerisque neque posuere "
@@ -102,7 +102,7 @@ TEST_CASE("De/serialize u32string") {
 }
 
 TEST_CASE("De/serialize wstring") {
-    teg::byte_buffer b;
+    teg::byte_array b;
     std::wstring s0 =
         L"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec " 
         L"finibus tortor, at egestas mi. Nam blandit lectus scelerisque neque posuere "

@@ -57,7 +57,7 @@ TEST_CASE("Check concepts") {
 }
 
 TEST_CASE("User-defined serialization") {
-    teg::byte_buffer buffer{};
+    teg::byte_array buffer{};
 
     vec3 v0{1, 2, 3};
 
