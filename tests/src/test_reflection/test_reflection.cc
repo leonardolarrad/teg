@@ -116,3 +116,35 @@ TEST_CASE("Visit members") {
         ASSERT_EQ(r, "hello world");
     }
 }
+
+TEST_CASE("Memberwise equality") {
+    SECTION("Simple aggregates") {
+        constexpr int_2 a = { 1, 2 };
+        constexpr int_2 b = { 1, 2 };
+        constexpr int_2 c = { 2, 1 };
+        COMPTIME_ASSERT( (teg::memberwise_equal(a, b)));
+        COMPTIME_ASSERT(!(teg::memberwise_equal(a, c)));
+    }
+    SECTION("Nested aggregates") {
+        struct vec2 { float x, y; };
+        struct vec4 { vec2 u, v; };
+
+        constexpr vec4 a = { { 1, 2 }, { 3, 4 } };
+        constexpr vec4 b = { { 1, 2 }, { 3, 4 } };
+        constexpr vec4 c = { { 2, 1 }, { 3, 4 } };
+        COMPTIME_ASSERT( (teg::memberwise_equal(a, b)));
+        COMPTIME_ASSERT(!(teg::memberwise_equal(a, c)));
+    }
+    SECTION("Aggregates without aggregates members") {
+        struct person { 
+            std::string name;
+            int age;
+        };
+
+        person a = { "John", 20 };
+        person b = { "John", 20 };
+        person c = { "Johnny", 25 };
+        ASSERT( (teg::memberwise_equal(a, b)));
+        ASSERT(!(teg::memberwise_equal(a, c)));
+    }
+}

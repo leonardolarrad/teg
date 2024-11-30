@@ -199,3 +199,9 @@ TEST_CASE("Comptime buffer") {
     constexpr auto c0 = cx_encode();
     ASSERT(c0 == std::byte{1});
 }
+
+
+TEST_CASE("File stream: Fundamentals") {
+    std::ofstream out("fundamentals.bin", std::ios::binary | std::ios::trunc);
+    teg::serialize(out, 11, 5, 99).or_throw();
+}

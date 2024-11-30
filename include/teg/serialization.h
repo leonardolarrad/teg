@@ -30,6 +30,7 @@
 #include "teg/members_visitor.h"
 #include "teg/options.h"
 #include "teg/serialization_concepts.h"
+#include "teg/encoder.h"
 
 namespace teg {
 
@@ -722,8 +723,49 @@ template <options Opt = default_mode, class Buf, class... T>
     requires (concepts::byte_buffer<Buf>) 
           && (concepts::serializable<T> && ...)
 TEG_NODISCARD TEG_INLINE constexpr auto serialize(Buf& output_buffer, T const&... objs) -> error {
-    
-    return binary_serializer<Opt, Buf>{output_buffer}.serialize(objs...);
+
+    if constexpr (true) {
+        try {
+            constexpr auto options = Opt;
+            using buffer_t = Buf;
+            using writer_t = buffer_writer<buffer_safety_policy::unsafe, buffer_t>;
+            using buffer_encoder_t = encoder<options, writer_t>;
+
+            auto payload_size = buffer_encoder_t::encoded_size(objs...);
+            output_buffer.resize(payload_size);
+
+            auto const result = buffer_encoder_t{ writer_t{ output_buffer } }.encode(objs...); 
+
+            if (failure(result)) [[unlikely]] {
+                output_buffer.clear();
+            }
+
+            return result;
+        }
+        catch (...) {
+            output_buffer.clear();
+            return error { std::errc::interrupted };
+        }
+    }
+    else {
+        return binary_serializer<Opt, Buf>{output_buffer}.serialize(objs...);
+    }
+
+}
+
+
+template <options Opt = default_mode, class... T> requires (concepts::serializable<T> && ...)
+TEG_NODISCARD TEG_INLINE constexpr auto serialize(std::ostream& output_stream, T const&... objs) -> error {
+
+    try {
+        constexpr auto options = Opt;
+        using encoder_t = encoder<options, stream_writer>;
+        return encoder_t{ stream_writer{ output_stream } }.encode(objs...);
+    }
+    catch (...) {
+        return error { std::errc::interrupted };
+    }
+
 }
 
 } // namespace teg

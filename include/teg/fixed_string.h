@@ -207,17 +207,12 @@ namespace std {
 
 // Implement tuple-like interface.
 
-template <class T> struct tuple_size; // Forward declaration.
-
 ///  \brief Provides access to the number of elements in an `teg::basic_fixed_string` as a
 ///  compile-time constant expression.
 ///  
 template< class T, std::size_t N >
 struct tuple_size<teg::basic_fixed_string<T, N>> : std::integral_constant<std::size_t, N>
 { };
-
-template<std::size_t I, class T> // Forward declaration.
-struct tuple_element;
 
 ///  \brief Provides compile-time indexed access to the type of the elements of 
 ///  `teg::basic_fixed_string` using tuple-like interface.
@@ -226,7 +221,7 @@ template <std::size_t I, class T, std::size_t N>
 struct tuple_element<I, teg::basic_fixed_string<T, N>> {
     static_assert(I < N);
     using type = T;
-};
+    };
 
 } // namespace std
 

@@ -35,6 +35,7 @@
 #include "teg/members_visitor.h"
 #include "teg/members_tie.h"
 #include "teg/members_get.h"
+#include "teg/members_equal.h"
 #include "teg/options.h"
 #include "teg/serialization.h"
 #include "teg/serialization_concepts.h"
@@ -45,5 +46,6 @@
 #include "teg/xxhash.h"
 #include "teg/version.h"
 #include "teg/compatible.h"
+#include "teg/encoder.h"
 
 #endif // TEG_H

@@ -2,6 +2,7 @@
 #include "teg/teg.h"
 #include "benchmark/benchmark.h"
 #include "benchmark/data.h"
+#include <iostream>
 
 namespace bm = benchmarking;
 
@@ -37,10 +38,9 @@ static void run_benchmark_00() {
         .iterations(10)
         .repetitions(10)
         .run("teg:serialization:1mib", [&](){
-            buffer.clear();
-            buffer2.clear();
+            /*buffer.clear();*/
+            /*buffer2.clear();*/
             teg::serialize(buffer, std::string{schema.c_str(), schema.size()}, data_out_1mib).or_throw();
-            teg::serialize(buffer2, teg::xxhash::hash64(std::span<const std::byte>{buffer})).or_throw();
         })
         ;//.run("teg:deserialization:1mib", [&](){
         //    teg::deserialize(buffer, schema_in, data_in_1mib).or_throw();
@@ -57,10 +57,9 @@ static void run_benchmark_01() {
 
     bm::benchmark()
         .warmup(10)
-        .iterations(1024 * 1024 * 1024)
+        .iterations(1024 * 1024 * 10)
         .repetitions(10)
         .run("teg:serialization:i64", [&](){
-            buffer.clear();
             teg::serialize(buffer, d0).or_throw();
         })
         .run("teg:deserialization:i64", [&](){
@@ -75,7 +74,7 @@ static void run_benchmark_02() {
 
     bm::benchmark()
         .warmup(10)
-        .iterations(1024 * 1024 * 100)
+        .iterations(1024 * 1024)
         .repetitions(10)
         .run("teg:serialization:simple_string", [&](){
             buffer.clear();
@@ -121,7 +120,6 @@ static void run_benchmark_03() {
         .iterations(1000)
         .repetitions(10)
         .run("teg:serialization:checksum", [&](){
-            buffer.clear();
             //buffer2.clear();
             teg::serialize(buffer, data).or_throw();
             //teg::serialize(buffer2, teg::md5_hash_u64(std::span<const std::byte>{buffer})).or_throw();

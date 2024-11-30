@@ -66,7 +66,9 @@
 #elif defined(__GNUC__)
 #define TEG_INLINE_LAMBDA constexpr __attribute__((always_inline))
 #elif defined(__clang__)
+//NOLINTBEGIN
 #define TEG_INLINE_LAMBDA __attribute__((always_inline)) constexpr
+//NOLINTEND
 #else
 #define TEG_INLINE_LAMBDA constexpr
 #endif
