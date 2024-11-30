@@ -1,8 +1,8 @@
-#include "teg/md5.h"
 #include "teg/teg.h"
 #include "benchmark/benchmark.h"
 #include "benchmark/data.h"
 #include <iostream>
+#include <fstream>
 
 namespace bm = benchmarking;
 
@@ -24,10 +24,9 @@ static bool test_lib() {
     return t0 == t1;
 }
 
-static void run_benchmark_00() {   
+static void benchmark_00() {   
     std::vector<bm::ecommerce_page> data_in_1mib;
     teg::byte_array buffer{};
-    teg::byte_array buffer2{};
     std::string schema_in{};
 
     constexpr auto schema = teg::schema<bm::ecommerce_page>();
@@ -38,19 +37,33 @@ static void run_benchmark_00() {
         .iterations(10)
         .repetitions(10)
         .run("teg:serialization:1mib", [&](){
-            /*buffer.clear();*/
-            /*buffer2.clear();*/
             teg::serialize(buffer, std::string{schema.c_str(), schema.size()}, data_out_1mib).or_throw();
         })
-        ;//.run("teg:deserialization:1mib", [&](){
-        //    teg::deserialize(buffer, schema_in, data_in_1mib).or_throw();
-        //});
+        .run("teg:deserialization:1mib", [&](){
+            teg::deserialize(buffer, schema_in, data_in_1mib).or_throw();
+        });
 
     std::cout << "\nBuffer size: " << buffer.size() << std::endl;
-    std::cout << "\nBuffer2 size: " << buffer2.size() << std::endl;
 }
 
-static void run_benchmark_01() {
+static void benchmark_stream() {   
+    std::vector<bm::ecommerce_page> data_in_1mib;
+    std::ofstream out("bmsteam.bin", std::ios::binary | std::ios::trunc);
+
+    constexpr auto schema = teg::schema<bm::ecommerce_page>();
+    std::cout << "Schema size: " << schema.size() << std::endl;
+    std::cout << "Schema: " << schema.c_str() << std::endl;
+    bm::benchmark()
+        .warmup(10)
+        .iterations(10)
+        .repetitions(10)
+        .run("teg:serialization:stream:1mib", [&](){
+            teg::serialize(out, std::string{schema.c_str(), schema.size()}, data_out_1mib).or_throw();
+        })
+        ;
+}
+
+static void benchmark_01() {
     int64_t d0 = 99999999999999ull;
     int64_t d1;
     teg::byte_array buffer{};
@@ -67,7 +80,7 @@ static void run_benchmark_01() {
         });
 }
 
-static void run_benchmark_02() {
+static void benchmark_02() {
     std::string d0 = "Hello World!";
     std::string d1;
     teg::byte_array buffer{};
@@ -85,7 +98,7 @@ static void run_benchmark_02() {
         });
 }
 
-static void run_benchmark_03() {
+static void benchmark_03() {
     teg::byte_array buffer{};
     teg::byte_array buffer2{};
     std::string data = 
@@ -126,7 +139,7 @@ static void run_benchmark_03() {
         });
 }
 
-static void run_benchmark_04() {
+static void benchmark_04() {
     teg::byte_array buffer{};
     teg::byte_array buffer2{};
     std::string data = 
@@ -176,6 +189,6 @@ int main() {
     if (!test_lib()) {
         return 1;
     }
-    run_benchmark_00();
+    benchmark_00();
     return 0;
 }

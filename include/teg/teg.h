@@ -26,6 +26,8 @@
 #include "teg/container_concepts.h"
 #include "teg/core_concepts.h"
 #include "teg/deserialization.h"
+#include "teg/encoder.h"
+#include "teg/decoder.h"
 #include "teg/endian.h"
 #include "teg/error.h"
 #include "teg/fixed_string.h"
@@ -46,6 +48,5 @@
 #include "teg/xxhash.h"
 #include "teg/version.h"
 #include "teg/compatible.h"
-#include "teg/encoder.h"
 
 #endif // TEG_H

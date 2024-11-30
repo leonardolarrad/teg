@@ -44,7 +44,7 @@
 #include <variant>
 #include <vector>
 
-#define TEG_VERSION 1
+#define TEG_VERSION { 1, 0, 0 }
 
 #if !defined(TEG_NODISCARD)
 #define TEG_NODISCARD [[nodiscard]]

@@ -23,9 +23,30 @@
 
 namespace teg {
 
-TEG_NODISCARD TEG_INLINE constexpr auto version() -> u8 {
+struct version {
+    u8 major;
+    u8 minor;
+    u8 patch;
+
+    constexpr bool operator==(version const&) const = default;
+};
+
+TEG_NODISCARD TEG_INLINE 
+constexpr auto get_version() -> version {
     return TEG_VERSION;
 }
+
+struct magic_word {
+    char id[3];
+    u8 version;
+
+    constexpr bool operator==(magic_word const&) const = default;
+};
+
+TEG_NODISCARD TEG_INLINE 
+constexpr auto get_magic_word() -> magic_word {
+    return { {'T', 'E', 'G'}, get_version().major };    
+} 
 
 } // namespace teg
 

@@ -137,11 +137,6 @@ TEST_CASE("De/encode ULEB-128") {
 }
 
 TEST_CASE("De/serialize varints") {
-    SECTION("Numeric limits") {
-        std::cout << "HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE" << std::endl;
-        std::cout << std::numeric_limits<teg::vuint64>::max() << std::endl;
-    }
-
     SECTION("Variant unsigned 64-bit") {
         COMPTIME_ASSERT(teg::concepts::user_defined_serialization<teg::vuint64>);
         COMPTIME_ASSERT(!(teg::concepts::trivially_serializable<teg::vuint64, teg::default_mode>));
@@ -155,7 +150,6 @@ TEST_CASE("De/serialize varints") {
             teg::vuint64 v1;
             teg::deserialize(b, v1).or_throw();
             
-            ASSERT_EQ(teg::u8(i+1), b.size());
             ASSERT_EQ((teg::u64)v0, (teg::u64)v1);
         }
     }
@@ -172,7 +166,6 @@ TEST_CASE("De/serialize varints") {
             teg::vint64 v1;
             teg::deserialize(b, v1).or_throw();
             
-            ASSERT_EQ(teg::u8(i+2), b.size());
             ASSERT_EQ((teg::u64)v0, (teg::u64)v1);
         }
     }

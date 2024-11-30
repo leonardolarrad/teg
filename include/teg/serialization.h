@@ -19,18 +19,8 @@
 #ifndef TEG_SERIALIZATION_H
 #define TEG_SERIALIZATION_H
 
-#include "teg/def.h"
-#include "teg/alignment.h"
-#include "teg/buffer.h"
-#include "teg/c_array.h"
-#include "teg/container_concepts.h"
-#include "teg/core_concepts.h"
-#include "teg/endian.h"
-#include "teg/error.h"
-#include "teg/members_visitor.h"
-#include "teg/options.h"
-#include "teg/serialization_concepts.h"
 #include "teg/encoder.h"
+#include "teg/version.h"
 
 namespace teg {
 
@@ -726,15 +716,25 @@ TEG_NODISCARD TEG_INLINE constexpr auto serialize(Buf& output_buffer, T const&..
 
     if constexpr (true) {
         try {
+            constexpr auto magic_word = get_magic_word();
             constexpr auto options = Opt;
+
             using buffer_t = Buf;
             using writer_t = buffer_writer<buffer_safety_policy::unsafe, buffer_t>;
             using buffer_encoder_t = encoder<options, writer_t>;
 
-            auto payload_size = buffer_encoder_t::encoded_size(objs...);
+            auto payload_size = buffer_encoder_t::encoded_size(magic_word, options, objs...);
             output_buffer.resize(payload_size);
 
-            auto const result = buffer_encoder_t{ writer_t{ output_buffer } }.encode(objs...); 
+            auto encoder = buffer_encoder_t{ writer_t{ output_buffer } };
+
+            auto const result = encoder.encode(
+                // Header
+                magic_word, 
+                options,
+                // Payload
+                objs...
+            ); 
 
             if (failure(result)) [[unlikely]] {
                 output_buffer.clear();

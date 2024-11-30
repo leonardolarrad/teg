@@ -19,16 +19,8 @@
 #ifndef TEG_DESERIALIZATION_H
 #define TEG_DESERIALIZATION_H
 
-#include "teg/def.h"
-#include "teg/buffer.h"
-#include "teg/c_array.h"
-#include "teg/container_concepts.h"
-#include "teg/core_concepts.h"
-#include "teg/error.h"
-#include "teg/members_visitor.h"
-#include "teg/options.h"
 #include "teg/serialization.h"
-#include "teg/serialization_concepts.h"
+#include "teg/decoder.h"
 
 namespace teg {
 
@@ -41,7 +33,7 @@ namespace teg {
 ///  
 template <options Opt = default_mode, class Buf = byte_array>
     requires concepts::byte_buffer<Buf>
-class binary_deserializer {
+class deserializer {
 public:
     ///  \brief A type used to represent a portion of the buffer or the entire buffer itself.
     ///  
@@ -82,15 +74,15 @@ public:
     static constexpr u64 max_variant_index = std::numeric_limits<variant_index_type>::max();
 
     // Non-default-initializable and non-copyable.
-    binary_deserializer() = delete;
-    binary_deserializer(binary_deserializer const&) = delete;
-    binary_deserializer& operator=(binary_deserializer const&) = delete;
+    deserializer() = delete;
+    deserializer(deserializer const&) = delete;
+    deserializer& operator=(deserializer const&) = delete;
 
     ///  \brief Construct a new binary deserializer.
     ///  \param buffer The buffer to deserialize from.
     ///  
-    TEG_INLINE constexpr explicit binary_deserializer(Buf & buffer)  : m_buffer(buffer), m_position(0) {}
-    TEG_INLINE constexpr explicit binary_deserializer(Buf && buffer) : m_buffer(buffer), m_position(0) {}
+    TEG_INLINE constexpr explicit deserializer(Buf & buffer)  : m_buffer(buffer), m_position(0) {}
+    TEG_INLINE constexpr explicit deserializer(Buf && buffer) : m_buffer(buffer), m_position(0) {}
 
     template <class... T> requires (concepts::deserializable<T> && ...)
     TEG_NODISCARD TEG_INLINE constexpr auto deserialize(T&... objs) -> error {        
@@ -511,9 +503,40 @@ private:
 template <options Opt = default_mode, class Buf, class... T>
     requires (concepts::byte_buffer<Buf>) && (concepts::deserializable<T> && ...)
 TEG_NODISCARD TEG_INLINE constexpr auto deserialize(Buf& input_buffer, T&... objs) -> error {
+
+    if constexpr (true) {
+        using buffer_reader_t = buffer_reader<buffer_safety_policy::safe, Buf>;
+        using decoder_t = decoder<Opt, buffer_reader_t>;
+   
+        auto decoder = decoder_t{ buffer_reader_t{ input_buffer } };
+
+        // Decode header.
+        constexpr options decoded_options = Opt;
+        constexpr magic_word decoded_magic_word = get_magic_word();
+
+        options encoded_options;
+        magic_word encoded_magic_word;
+
+        auto const result = decoder.decode(
+            encoded_magic_word, 
+            encoded_options
+        );
+
+        if (failure(result)) {
+            return result;
+        }
     
-    // Create a binary deserializer and deserialize the given objects.
-    return binary_deserializer<Opt, Buf>{input_buffer}.deserialize(objs...);
+        if ((encoded_magic_word != decoded_magic_word) || (encoded_options != decoded_options)) {
+            return error { std::errc::protocol_error };            
+        }
+        
+        // Decode payload.
+        return decoder.decode(objs...);
+    }
+    else {
+        // Create a binary deserializer and deserialize the given objects.
+        return deserializer<Opt, Buf>{input_buffer}.deserialize(objs...);
+    }
 }
 
 } // namespace teg

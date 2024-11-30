@@ -1,4 +1,3 @@
-
 ///  Copyright (c) 2024 Adrian & Leonardo Larrad.
 ///  
 ///  This software is provided 'as-is', without any express or implied warranty. 
@@ -26,11 +25,11 @@
 #include "teg/c_array.h"
 #include "teg/container_concepts.h"
 #include "teg/core_concepts.h"
+#include "teg/serialization_concepts.h"
 #include "teg/endian.h"
 #include "teg/error.h"
 #include "teg/members_visitor.h"
 #include "teg/options.h"
-#include "teg/serialization_concepts.h"
 
 namespace teg {
 
@@ -141,27 +140,21 @@ template <options Opt, class Writer>
 class encoder {
 public:
     ///  \brief The options used by the encoder.
-    ///
     static constexpr auto options = Opt;
 
     ///  \brief The writer used by the encoder.
-    ///
     using byte_type = typename Writer::byte_type;
         
     ///  \brief The type used to represent the size of the container being serialized.
-    ///  
     using container_size_type = get_container_size_type<Opt>;
 
     ///  \brief The type used to represent the index of the variant being serialized.
-    ///  
     using variant_index_type = get_variant_index_type<Opt>;
 
     ///  \brief The maximum size of elements a container can have.
-    ///  
     static constexpr u64 max_container_size = std::numeric_limits<container_size_type>::max();
 
     ///  \brief The maximum number of alternatives a variant can have.
-    ///  
     static constexpr u64 max_variant_index = std::numeric_limits<variant_index_type>::max();
 
     TEG_INLINE constexpr encoder(Writer& writer) : m_writer(writer) {}
@@ -215,6 +208,7 @@ public:
     ///  
     template <class... T> requires (concepts::serializable<T> && ...)
     TEG_NODISCARD TEG_INLINE constexpr auto encode(T const&... objs) -> error {        
+
         if constexpr (sizeof...(objs) == 0) {
             return {};
         }
@@ -226,9 +220,9 @@ private:
     ///  \brief Calculates the encoding size of the given objects.
     ///  
     template <class T0, class... TN> 
-    TEG_NODISCARD TEG_INLINE static constexpr auto 
-        encoded_size_many(T0 const& first_obj, TN const&... remaining_objs) -> u64 
-    {
+    TEG_NODISCARD TEG_INLINE 
+    static constexpr auto encoded_size_many(T0 const& first_obj, TN const&... remaining_objs) -> u64 {
+
         return encoded_size_one(first_obj) + encoded_size_many(remaining_objs...);
     }
 
