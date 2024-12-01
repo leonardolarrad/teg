@@ -19,50 +19,7 @@
 #ifndef TEG_C_ARRAY_H
 #define TEG_C_ARRAY_H
 
-#include "teg/def.h"
-#include "teg/core_concepts.h"
 #include "teg/container_concepts.h"
-
-namespace teg::concepts {
-    
-///  \brief An c-array type.
-///  \see https://en.cppreference.com/w/cpp/language/array
-///  
-template <class T>
-concept c_array = std::is_array_v<T>;
-
-///  \brief A bounded c-array type.
-///
-///  A c-array is considered bounded when its size is kwown at compile-time.
-///  
-///  \see https://en.cppreference.com/w/cpp/types/is_bounded_array
-///  
-template <class T>
-concept bounded_c_array = std::is_bounded_array_v<T>;
-
-///  \brief An unbounded c-array type.
-///
-///  A c-array is considered unbounded when its size is unknown at compile-time.
-///  Most of the time this occurs when a c-array decays to a pointer.
-///
-///  \see https://en.cppreference.com/w/cpp/types/is_unbounded_array
-///  \see https://en.cppreference.com/w/cpp/language/array#Arrays_of_unknown_bound
-///  
-template <class T>
-concept unbounded_c_array = std::is_unbounded_array_v<T>;
-
-///  \brief An aggregate type.
-///
-///  An aggregate is an array or a class with no user-declared or inherited constructors,
-///  no private or protected direct non-static data members, no virtual functions, and
-///  no virtual, private, or protected base classes. ISO/IEC 14882:2020 [dcl.init.aggr].
-///
-///  \see https://en.cppreference.com/w/cpp/language/aggregate_initialization
-///  
-template <class T>
-concept aggregate = std::is_aggregate_v<T> && !unbounded_c_array<T>;
-
-}
 
 namespace teg::internal {
 
@@ -101,12 +58,11 @@ namespace teg {
 ///  rank one by one.
 ///  
 template <class D, class S> 
-requires
-       (concepts::bounded_c_array<D>)
-    && (concepts::bounded_c_array<S> || concepts::fixed_size_container<S>)
-    && ((!concepts::bounded_c_array<S>) || std::rank_v<S> == 1)
-    && (sizeof(D) == sizeof(S))
-    && (std::same_as<std::remove_all_extents_t<D>, typename S::value_type>)
+requires (concepts::bounded_c_array<D>)
+      && (concepts::bounded_c_array<S> || concepts::fixed_size_container<S>)
+      && ((!concepts::bounded_c_array<S>) || std::rank_v<S> == 1)
+      && (sizeof(D) == sizeof(S))
+      && (std::same_as<std::remove_all_extents_t<D>, typename S::value_type>)
 TEG_INLINE constexpr auto copy_md_c_array(D & dst, S const& src) -> void {
     std::size_t i = 0;
     internal::copy_md_c_array_impl(dst, src, i);

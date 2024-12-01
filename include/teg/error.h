@@ -34,7 +34,7 @@ struct error {
     }
 
     constexpr void or_throw() const {
-        if (code != std::errc{}) [[unlikely]] {
+        if (code != std::errc{}) TEG_UNLIKELY {
         #ifdef __cpp_exceptions
             throw std::system_error(std::make_error_code(code));
         #else

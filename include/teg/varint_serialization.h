@@ -60,7 +60,7 @@ TEG_NODISCARD TEG_INLINE constexpr auto usr_serialize(F&& encode, varint<T> var)
             byte = byte | 0b10000000;
         }
 
-        if (auto const result = encode(byte); failure(result)) teg_unlikely {
+        if (auto const result = encode(byte); failure(result)) TEG_UNLIKELY {
             return result;
         }
     }
@@ -83,7 +83,7 @@ TEG_NODISCARD TEG_INLINE constexpr auto usr_deserialize(F&& decode, varint<T>& v
 
     while (size <= uleb128::max_encoded_size<value_type>()) {        
         u8 byte;     
-        if (auto const result = decode(byte); failure(result)) teg_unlikely {
+        if (auto const result = decode(byte); failure(result)) TEG_UNLIKELY {
             return result;
         }
         

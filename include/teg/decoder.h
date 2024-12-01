@@ -20,6 +20,7 @@
 #define TEG_DECODER_H
 
 #include "teg/encoder.h"
+#include "teg/c_array.h"
 
 namespace teg {
 
@@ -28,7 +29,6 @@ template <buffer_safety_policy policy = buffer_safety_policy::safe, class Buf = 
 class buffer_reader {
 public:
     ///  \brief The byte type used by the buffer.
-    ///
     using byte_type = std::remove_const_t<typename std::remove_cvref_t<Buf>::value_type>;
     
     ///  Disable default constructor.
@@ -79,6 +79,45 @@ public:
 private:
     Buf& m_buffer;
     u64 m_position;
+};
+
+class stream_reader {
+public:
+    ///  \brief The byte type used by the stream.
+    using byte_type = char;
+
+    stream_reader() = delete; // Disable default constructor
+
+    constexpr stream_reader(std::istream& stream) noexcept : m_stream(stream) {}
+    constexpr stream_reader(std::istream&& stream) noexcept : m_stream(stream) {}
+        
+    template <bool swap_endian = false>
+    TEG_NODISCARD TEG_INLINE auto read_bytes(byte_type* data, std::size_t size) -> error {
+
+        if constexpr (swap_endian) {
+            m_stream.read(data, size);
+
+            if (m_stream.fail()) TEG_UNLIKELY {
+                return error { std::errc::io_error };
+            }
+
+            return {};
+        }
+        else {
+            for (std::size_t i = 0; i < size; ++i) {
+                m_stream.get(data[size - i - 1]);
+
+                if (m_stream.fail()) TEG_UNLIKELY {
+                    return error { std::errc::io_error };
+                }
+            }
+            return {};
+        }
+
+    }
+
+private:
+    std::istream& m_stream;
 };
 
 ///  \brief A binary deserializer.
@@ -142,7 +181,7 @@ private:
     ///  
     template <class T0, class... TN>
     TEG_NODISCARD TEG_INLINE constexpr auto decode_many(T0& first_obj, TN&... remaining_objs) -> error {        
-        if (auto const result = decode_one(first_obj); failure(result)) [[unlikely]] {
+        if (auto const result = decode_one(first_obj); failure(result)) TEG_UNLIKELY {
             return result;
         }
 
@@ -170,7 +209,7 @@ private:
             src_bytes_t src_bytes{};
             auto const result = m_reader.template read_bytes<swap_endian>(src_bytes.data(), src_bytes.size());
 
-            if (failure(result)) [[unlikely]] {
+            if (failure(result)) TEG_UNLIKELY {
                 return result;
             }
             
@@ -216,7 +255,7 @@ private:
             src_bytes_t src_bytes{};
             auto const result = m_reader.read_bytes(src_bytes.data(), std::tuple_size_v<container_t> * sizeof(element_t));
 
-            if (failure(result)) [[unlikely]] {
+            if (failure(result)) TEG_UNLIKELY {
                 return result;
             }
             
@@ -258,7 +297,7 @@ private:
 
         // Deserialize the array's elements.       
         for (auto& element : array) {
-            if (auto const result = decode_one(element); failure(result)) [[unlikely]] {
+            if (auto const result = decode_one(element); failure(result)) TEG_UNLIKELY {
                 return result;
             }
         }
@@ -281,7 +320,7 @@ private:
 
         // Deserialize the size.
         container_size_type size;
-        if (auto const result = decode_one(size); failure(result)) [[unlikely]] {
+        if (auto const result = decode_one(size); failure(result)) TEG_UNLIKELY {
             return result;
         }
 
@@ -303,7 +342,7 @@ private:
         ) {
             container.resize(size);
             for (auto& element : container) {
-                if (auto const result = decode_one(element); failure(result)) [[unlikely]] {
+                if (auto const result = decode_one(element); failure(result)) TEG_UNLIKELY {
                     return result;
                 }
             }
@@ -330,7 +369,7 @@ private:
                 key_value_element element;
 
                 for (container_size_type i = 0; i < size; ++i) {                    
-                    if (auto const result = decode_one(element); failure(result)) [[unlikely]] {
+                    if (auto const result = decode_one(element); failure(result)) TEG_UNLIKELY {
                         return result;
                     }
                     container.emplace(std::move(element));
@@ -341,7 +380,7 @@ private:
                 // Construct the elements and then move them into the container.
                 element_type element;
                 for (container_size_type i = 0; i < size; ++i) {
-                    if (auto const result = decode_one(element); failure(result)) [[unlikely]] {
+                    if (auto const result = decode_one(element); failure(result)) TEG_UNLIKELY {
                         return result;
                     }
                     container.emplace(std::move(element));
@@ -351,7 +390,7 @@ private:
             else if constexpr (concepts::back_inplace_constructing_container<container_type>) {
                 // Emplace the elements at the back of the container.
                 for (container_size_type i = 0; i < size; ++i) {                
-                    if (auto const result = decode_one(container.emplace_back()); failure(result)) [[unlikely]] {
+                    if (auto const result = decode_one(container.emplace_back()); failure(result)) TEG_UNLIKELY {
                         return result;
                     }
                 }
@@ -361,7 +400,7 @@ private:
                 // Worst-case scenario: the container constructs its elements at the front of its storage.
                 // We may need to reverse the container after deserialization.
                 for (container_size_type i = 0; i < size; ++i) {
-                    if (auto const result = decode_one(container.emplace_front()); failure(result)) [[unlikely]] {
+                    if (auto const result = decode_one(container.emplace_front()); failure(result)) TEG_UNLIKELY {
                         return result;
                     }
                 }
@@ -387,7 +426,7 @@ private:
 
         // Deserialize the element.
         auto data = std::make_unique<element_type>();
-        if (auto const result = decode_one(*data); failure(result)) [[unlikely]] {
+        if (auto const result = decode_one(*data); failure(result)) TEG_UNLIKELY {
             return result;
         }
 
@@ -407,7 +446,7 @@ private:
         
         // Deserialize the `has_value` flag.
         byte_type has_value;    
-        if (auto const result = decode_one(has_value); failure(result)) [[unlikely]] {
+        if (auto const result = decode_one(has_value); failure(result)) TEG_UNLIKELY {
             return result;
         }
 
@@ -448,14 +487,14 @@ private:
 
         // Deserialize the index.
         variant_index_type runtime_index;
-        if (auto const result = decode_one(runtime_index); failure(result)) [[unlikely]] {
+        if (auto const result = decode_one(runtime_index); failure(result)) TEG_UNLIKELY {
             return result;
         }
 
         // Deserialize the alternative.
         constexpr std::size_t table_size = std::variant_size_v<variant_type>;
 
-        if (runtime_index >= table_size) [[unlikely]] {
+        if (runtime_index >= table_size) TEG_UNLIKELY {
             return error { std::errc::invalid_argument };
         }
         
@@ -464,7 +503,7 @@ private:
             // With this technique we can then deserialize the variant alternative (based on the index)
             // at run-time.
             std::variant_alternative_t<comptime_index, variant_type> element;        
-            if (auto const result = decode_one(element); failure(result)) [[unlikely]] {
+            if (auto const result = decode_one(element); failure(result)) TEG_UNLIKELY {
                 return result;
             }
 
@@ -492,7 +531,7 @@ private:
         
         // Deserialize the `has_value` flag.
         byte_type has_value;    
-        if (auto const result = decode_one(has_value); failure(result)) [[unlikely]] {
+        if (auto const result = decode_one(has_value); failure(result)) TEG_UNLIKELY {
             // Cannot decode a single byte, in the case of compatible objects that means
             // that the value is not present in the stream.
             compatible = std::nullopt;

@@ -74,13 +74,13 @@
 #endif
 #endif // TEG_INLINE_LAMBDA
 
-#if !defined(teg_unlikely)
-#define teg_unlikely [[unlikely]]
-#endif // teg_unlikely
+#if !defined(TEG_UNLIKELY)
+#define TEG_UNLIKELY [[unlikely]]
+#endif // TEG_UNLIKELY
 
-#if !defined(teg_likely)
-#define teg_likely   [[likely]]
-#endif // teg_likely
+#if !defined(TEG_LIKELY)
+#define TEG_LIKELY   [[likely]]
+#endif // TEG_LIKELY
 
 namespace teg {
 

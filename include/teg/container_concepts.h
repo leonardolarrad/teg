@@ -19,7 +19,6 @@
 #ifndef TEG_CONTAINER_CONCEPTS_H
 #define TEG_CONTAINER_CONCEPTS_H
 
-#include "teg/def.h"
 #include "teg/core_concepts.h"
 
 namespace teg::concepts {

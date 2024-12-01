@@ -18,10 +18,8 @@
 
 #ifndef TEG_MEMBERS_COUNT_H
 #define TEG_MEMBERS_COUNT_H
-
-#include "teg/def.h"    
+   
 #include "teg/core_concepts.h"
-#include "teg/c_array.h"
 
 namespace teg::internal {
 

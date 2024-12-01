@@ -97,7 +97,7 @@ private:
     ///  
     template <class T0, class... TN>
     TEG_NODISCARD TEG_INLINE constexpr auto deserialize_many(T0& first_obj, TN&... remaining_objs) -> error {        
-        if (auto const result = deserialize_one(first_obj); failure(result)) [[unlikely]] {
+        if (auto const result = deserialize_one(first_obj); failure(result)) TEG_UNLIKELY {
             return result;
         }
 
@@ -148,7 +148,7 @@ private:
     TEG_NODISCARD TEG_INLINE constexpr auto deserialize_one(T& array) -> error {
         // Deserialize the array's elements.       
         for (auto& element : array) {
-            if (auto const result = deserialize_one(element); failure(result)) [[unlikely]] {
+            if (auto const result = deserialize_one(element); failure(result)) TEG_UNLIKELY {
                 return result;
             }
         }
@@ -170,7 +170,7 @@ private:
 
         // Deserialize the size.
         container_size_type size;
-        if (auto const result = deserialize_one(size); failure(result)) [[unlikely]] {
+        if (auto const result = deserialize_one(size); failure(result)) TEG_UNLIKELY {
             return result;
         }
 
@@ -189,7 +189,7 @@ private:
         ) {
             container.resize(size);
             for (auto& element : container) {
-                if (auto const result = deserialize_one(element); failure(result)) [[unlikely]] {
+                if (auto const result = deserialize_one(element); failure(result)) TEG_UNLIKELY {
                     return result;
                 }
             }
@@ -216,7 +216,7 @@ private:
                 key_value_element element;
 
                 for (container_size_type i = 0; i < size; ++i) {                    
-                    if (auto const result = deserialize_one(element); failure(result)) [[unlikely]] {
+                    if (auto const result = deserialize_one(element); failure(result)) TEG_UNLIKELY {
                         return result;
                     }
                     container.emplace(std::move(element));
@@ -227,7 +227,7 @@ private:
                 // Construct the elements and then move them into the container.
                 element_type element;
                 for (container_size_type i = 0; i < size; ++i) {
-                    if (auto const result = deserialize_one(element); failure(result)) [[unlikely]] {
+                    if (auto const result = deserialize_one(element); failure(result)) TEG_UNLIKELY {
                         return result;
                     }
                     container.emplace(std::move(element));
@@ -237,7 +237,7 @@ private:
             else if constexpr (concepts::back_inplace_constructing_container<container_type>) {
                 // Emplace the elements at the back of the container.
                 for (container_size_type i = 0; i < size; ++i) {                
-                    if (auto const result = deserialize_one(container.emplace_back()); failure(result)) [[unlikely]] {
+                    if (auto const result = deserialize_one(container.emplace_back()); failure(result)) TEG_UNLIKELY {
                         return result;
                     }
                 }
@@ -247,7 +247,7 @@ private:
                 // Worst-case scenario: the container constructs its elements at the front of its storage.
                 // We may need to reverse the container after deserialization.
                 for (container_size_type i = 0; i < size; ++i) {
-                    if (auto const result = deserialize_one(container.emplace_front()); failure(result)) [[unlikely]] {
+                    if (auto const result = deserialize_one(container.emplace_front()); failure(result)) TEG_UNLIKELY {
                         return result;
                     }
                 }
@@ -272,7 +272,7 @@ private:
 
         // Deserialize the element.
         auto data = std::make_unique<element_type>();
-        if (auto const result = deserialize_one(*data); failure(result)) [[unlikely]] {
+        if (auto const result = deserialize_one(*data); failure(result)) TEG_UNLIKELY {
             return result;
         }
 
@@ -290,7 +290,7 @@ private:
         
         // Deserialize the `has_value` flag.
         byte_type has_value;    
-        if (auto const result = deserialize_one(has_value); failure(result)) [[unlikely]] {
+        if (auto const result = deserialize_one(has_value); failure(result)) TEG_UNLIKELY {
             return result;
         }
 
@@ -329,14 +329,14 @@ private:
 
         // Deserialize the index.
         variant_index_type runtime_index;
-        if (auto const result = deserialize_one(runtime_index); failure(result)) [[unlikely]] {
+        if (auto const result = deserialize_one(runtime_index); failure(result)) TEG_UNLIKELY {
             return result;
         }
 
         // Deserialize the alternative.
         constexpr std::size_t table_size = std::variant_size_v<variant_type>;
 
-        if (runtime_index >= table_size) [[unlikely]] {
+        if (runtime_index >= table_size) TEG_UNLIKELY {
             return error { std::errc::invalid_argument };
         }
         
@@ -345,7 +345,7 @@ private:
             // With this technique we can then deserialize the variant alternative (based on the index)
             // at run-time.
             std::variant_alternative_t<comptime_index, variant_type> element;        
-            if (auto const result = deserialize_one(element); failure(result)) [[unlikely]] {
+            if (auto const result = deserialize_one(element); failure(result)) TEG_UNLIKELY {
                 return result;
             }
 
@@ -372,7 +372,7 @@ private:
         
         // Deserialize the `has_value` flag.
         byte_type has_value;    
-        if (auto const result = deserialize_one(has_value); failure(result)) [[unlikely]] {
+        if (auto const result = deserialize_one(has_value); failure(result)) TEG_UNLIKELY {
             // Cannot decode a single byte, in the case of compatible objects that means
             // that the value is not present in the stream.
             compatible = std::nullopt;
@@ -537,6 +537,20 @@ TEG_NODISCARD TEG_INLINE constexpr auto deserialize(Buf& input_buffer, T&... obj
         // Create a binary deserializer and deserialize the given objects.
         return deserializer<Opt, Buf>{input_buffer}.deserialize(objs...);
     }
+}
+
+template <options Opt = default_mode, class... T> requires (concepts::serializable<T> && ...)
+TEG_NODISCARD TEG_INLINE constexpr auto deserialize(std::istream& input_stream, T&... objs) -> error {
+
+    try {
+        constexpr auto options = Opt;
+        using decoder_t = decoder<options, stream_reader>;
+        return decoder_t{ stream_reader{ input_stream } }.decode(objs...);
+    }
+    catch (...) {
+        return error { std::errc::interrupted };
+    }
+
 }
 
 } // namespace teg

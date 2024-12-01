@@ -22,7 +22,6 @@
 #include "teg/def.h"
 #include "teg/alignment.h"
 #include "teg/buffer.h"
-#include "teg/c_array.h"
 #include "teg/container_concepts.h"
 #include "teg/core_concepts.h"
 #include "teg/serialization_concepts.h"
@@ -33,11 +32,11 @@
 
 namespace teg {
 
-///  \brief Policy for whether or not to validate the buffer space before writing.
+///  \brief Policy for whether or not to validate the buffer space before reading/writing.
 ///
 enum class buffer_safety_policy {
-    safe,      // Check if there is enough space in the buffer before writing.
-    unsafe     // Skip validation process.
+    safe,   // Check if there is enough space in the buffer before reading/writing.
+    unsafe  // Skip validation process.
 };
 
 template <buffer_safety_policy policy = buffer_safety_policy::safe, class Buf = byte_array> 
@@ -45,7 +44,6 @@ template <buffer_safety_policy policy = buffer_safety_policy::safe, class Buf = 
 class buffer_writer {
 public:
     ///  \brief The byte type used by the buffer.
-    ///
     using byte_type = std::remove_const_t<typename std::remove_cvref_t<Buf>::value_type>;
     
     ///  Disable default constructor.
@@ -108,12 +106,12 @@ public:
     constexpr stream_writer(std::ostream&& stream) noexcept : m_stream(stream) {}
         
     template <bool swap_endian = false>
-    [[nodiscard]] TEG_INLINE auto write_bytes(byte_type const* data, std::size_t size) -> error {
+    TEG_NODISCARD TEG_INLINE auto write_bytes(byte_type const* data, std::size_t size) -> error {
 
         if constexpr (swap_endian) {
             m_stream.write(data, size);
 
-            if (m_stream.fail()) [[unlikely]] {
+            if (m_stream.fail()) TEG_UNLIKELY {
                 return error { std::errc::io_error };
             }
 
@@ -123,7 +121,7 @@ public:
             for (std::size_t i = 0; i < size; ++i) {
                 m_stream.put(data[size - i - 1]);
 
-                if (m_stream.fail()) [[unlikely]] {
+                if (m_stream.fail()) TEG_UNLIKELY {
                     return error { std::errc::io_error };
                 }
             }
@@ -387,7 +385,7 @@ private:
     template <class T0, class... TN> 
     TEG_NODISCARD TEG_INLINE 
     constexpr auto encode_many(T0 const& first_obj, TN const&... remaining_objs) -> error {        
-        if (auto const result = encode_one(first_obj); failure(result)) [[unlikely]] {
+        if (auto const result = encode_one(first_obj); failure(result)) TEG_UNLIKELY {
             return result;
         }
 
@@ -461,7 +459,7 @@ private:
 
         // Serialize elements.            
         for (auto const& element : c_array) {
-            if (auto const result = encode_one(element); failure(result)) [[unlikely]] {
+            if (auto const result = encode_one(element); failure(result)) TEG_UNLIKELY {
                 return result;
             }
         }
@@ -496,12 +494,12 @@ private:
                 // it is already known at run-time.
                 native_size_type const size = container.size();
 
-                if (size > max_container_size) [[unlikely]] {
+                if (size > max_container_size) TEG_UNLIKELY {
                     return error { std::errc::value_too_large };
                 }
 
                 auto const result = encode_one(static_cast<container_size_type>(size));
-                if (failure(result)) [[unlikely]] {
+                if (failure(result)) TEG_UNLIKELY {
                     return result;
                 }
             }
@@ -510,12 +508,12 @@ private:
                 // don't have a `size()` observer.
                 native_size_type const size = std::distance(container.begin(), container.end());
                 
-                if (size > max_container_size) [[unlikely]] {
+                if (size > max_container_size) TEG_UNLIKELY {
                     return error { std::errc::value_too_large };
                 }
 
                 auto const result = encode_one(static_cast<container_size_type>(size));
-                if (failure(result)) [[unlikely]] {
+                if (failure(result)) TEG_UNLIKELY {
                     return result;
                 }
             }
@@ -535,7 +533,7 @@ private:
         else {
             // Non-optimized path: serialize each element one by one.
             for (auto const& element : container) {
-                if (auto const result = encode_one(element); failure(result)) [[unlikely]] {
+                if (auto const result = encode_one(element); failure(result)) TEG_UNLIKELY {
                     return result;
                 }
             }
@@ -550,7 +548,7 @@ private:
     template <class T> requires (concepts::serializable_owning_ptr<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto encode_one(T const& ptr) -> error  {
 
-        if (ptr == nullptr) [[unlikely]] {
+        if (ptr == nullptr) TEG_UNLIKELY {
             return std::errc::invalid_argument;
         }
 
@@ -563,7 +561,7 @@ private:
     template <class T> requires (concepts::serializable_optional<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto encode_one(T const& optional) -> error {
 
-        if (!optional.has_value()) [[unlikely]] {
+        if (!optional.has_value()) TEG_UNLIKELY {
             return encode_one(byte_type(false));
         } else {
             return encode_many(byte_type(true), *optional);
@@ -591,13 +589,13 @@ private:
     TEG_NODISCARD TEG_INLINE constexpr auto encode_one(T const& variant) -> error {
 
         // Check valueless by exception.
-        if (variant.valueless_by_exception()) [[unlikely]] {
+        if (variant.valueless_by_exception()) TEG_UNLIKELY {
             return error { std::errc::invalid_argument };
         }
 
         // Serialize the index.
         auto const result = encode_one(static_cast<variant_index_type>(variant.index()));
-        if (failure(result)) [[unlikely]] {
+        if (failure(result)) TEG_UNLIKELY {
             return result;        
         }    
 
@@ -628,7 +626,7 @@ private:
     template <class T> requires (concepts::serializable_compatible<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto encode_one(T const& compatible) -> error {
 
-        if (!compatible.has_value()) [[unlikely]] {
+        if (!compatible.has_value()) TEG_UNLIKELY {
             return encode_one(byte_type(false));
         }
         else {

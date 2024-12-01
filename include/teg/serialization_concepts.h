@@ -24,7 +24,6 @@
 #include "teg/core_concepts.h"
 #include "teg/container_concepts.h"
 #include "teg/error.h"
-#include "teg/c_array.h"
 #include "teg/compatible.h"
 #include "teg/options.h"
 #include "teg/endian.h"

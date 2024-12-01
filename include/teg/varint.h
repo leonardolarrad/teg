@@ -108,7 +108,7 @@ public:
         u8 size = 0;
 
         do {
-            if (size >= data.size()) teg_unlikely {                
+            if (size >= data.size()) TEG_UNLIKELY {                
                 return 0;
             }
 
@@ -145,7 +145,7 @@ public:
         u8 size = 0;
 
         while (true) {
-            if (size >= data.size()) teg_unlikely {
+            if (size >= data.size()) TEG_UNLIKELY {
                 value = 0;
                 return 0;
             }

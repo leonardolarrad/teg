@@ -145,7 +145,7 @@ public:
             u64 const new_size = m_position + serialized_size(objs...);
 
             // Check allocation limit.
-            if (new_size > allocation_limit) [[unlikely]] {
+            if (new_size > allocation_limit) TEG_UNLIKELY {
                 return error { std::errc::value_too_large };
             }
 
@@ -153,7 +153,7 @@ public:
             using buffer_size_type = typename std::remove_cvref_t<buffer_type>::size_type;
             m_buffer.resize(static_cast<buffer_size_type>(new_size));
 
-            if (auto const result = serialize_many(objs...); failure(result)) [[unlikely]] {                
+            if (auto const result = serialize_many(objs...); failure(result)) TEG_UNLIKELY {                
                 clear();
                 return result;
             }
@@ -161,7 +161,7 @@ public:
         }
         else {
             // Check buffer space.
-            if (m_buffer.size() < m_position + serialized_size(objs...)) [[unlikely]] {
+            if (m_buffer.size() < m_position + serialized_size(objs...)) TEG_UNLIKELY {
                 clear();
                 return error { std::errc::no_buffer_space };
             }
@@ -403,7 +403,7 @@ private:
     template <class T0, class... TN> 
     TEG_NODISCARD TEG_INLINE 
     constexpr auto serialize_many(T0 const& first_obj, TN const&... remaining_objs) -> error {        
-        if (auto const result = serialize_one(first_obj); failure(result)) [[unlikely]] {
+        if (auto const result = serialize_one(first_obj); failure(result)) TEG_UNLIKELY {
             return result;
         }
 
@@ -450,7 +450,7 @@ private:
     TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& c_array) -> error {
         // Serialize elements.            
         for (auto const& element : c_array) {
-            if (auto const result = serialize_one(element); failure(result)) [[unlikely]] {
+            if (auto const result = serialize_one(element); failure(result)) TEG_UNLIKELY {
                 return result;
             }
         }
@@ -482,12 +482,12 @@ private:
                 // it is already known at run-time.
                 native_size_type const size = container.size();
 
-                if (size > max_container_size) [[unlikely]] {
+                if (size > max_container_size) TEG_UNLIKELY {
                     return error { std::errc::value_too_large };
                 }
 
                 auto const result = serialize_one(static_cast<container_size_type>(size));
-                if (failure(result)) [[unlikely]] {
+                if (failure(result)) TEG_UNLIKELY {
                     return result;
                 }
             }
@@ -496,12 +496,12 @@ private:
                 // don't have a `size()` observer.
                 native_size_type const size = std::distance(container.begin(), container.end());
                 
-                if (size > max_container_size) [[unlikely]] {
+                if (size > max_container_size) TEG_UNLIKELY {
                     return error { std::errc::value_too_large };
                 }
 
                 auto const result = serialize_one(static_cast<container_size_type>(size));
-                if (failure(result)) [[unlikely]] {
+                if (failure(result)) TEG_UNLIKELY {
                     return result;
                 }
             }
@@ -518,7 +518,7 @@ private:
         else {
             // Non-optimized path: serialize each element one by one.
             for (auto const& element : container) {
-                if (auto const result = serialize_one(element); failure(result)) [[unlikely]] {
+                if (auto const result = serialize_one(element); failure(result)) TEG_UNLIKELY {
                     return result;
                 }
             }
@@ -530,7 +530,7 @@ private:
     ///  
     template <class T> requires (concepts::owning_ptr<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& ptr) -> error  {
-        if (ptr == nullptr) [[unlikely]] {
+        if (ptr == nullptr) TEG_UNLIKELY {
             return std::errc::invalid_argument;
         }
 
@@ -541,7 +541,7 @@ private:
     ///  
     template <class T> requires (concepts::serializable_optional<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& optional) -> error {
-        if (!optional.has_value()) [[unlikely]] {
+        if (!optional.has_value()) TEG_UNLIKELY {
             return serialize_one(byte_type(false));
         } else {
             return serialize_many(byte_type(true), *optional);
@@ -565,13 +565,13 @@ private:
     template <class T> requires (concepts::variant<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& variant) -> error {
         // Check valueless by exception.
-        if (variant.valueless_by_exception()) [[unlikely]] {
+        if (variant.valueless_by_exception()) TEG_UNLIKELY {
             return error { std::errc::invalid_argument };
         }
 
         // Serialize the index.
         auto const result = serialize_one(static_cast<variant_index_type>(variant.index()));
-        if (failure(result)) [[unlikely]] {
+        if (failure(result)) TEG_UNLIKELY {
             return result;        
         }    
 
@@ -596,7 +596,7 @@ private:
 
     template <class T> requires (concepts::serializable_compatible<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto serialize_one(T const& compatible) -> error {
-        if (!compatible.has_value()) [[unlikely]] {
+        if (!compatible.has_value()) TEG_UNLIKELY {
             return serialize_one(byte_type(false));
         }
         else {
@@ -681,6 +681,10 @@ private:
     u64 m_position = 0;   // The current position in the buffer.
 };
 
+namespace internal {
+
+} // internal
+
 ///  \brief Serializes the provided objects into the specified buffer using a binary format.
 ///  
 ///  \tparam  Opt   The options for serialization.
@@ -736,7 +740,7 @@ TEG_NODISCARD TEG_INLINE constexpr auto serialize(Buf& output_buffer, T const&..
                 objs...
             ); 
 
-            if (failure(result)) [[unlikely]] {
+            if (failure(result)) TEG_UNLIKELY {
                 output_buffer.clear();
             }
 
@@ -752,7 +756,6 @@ TEG_NODISCARD TEG_INLINE constexpr auto serialize(Buf& output_buffer, T const&..
     }
 
 }
-
 
 template <options Opt = default_mode, class... T> requires (concepts::serializable<T> && ...)
 TEG_NODISCARD TEG_INLINE constexpr auto serialize(std::ostream& output_stream, T const&... objs) -> error {

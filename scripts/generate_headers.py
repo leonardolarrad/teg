@@ -34,5 +34,5 @@ if __name__ == '__main__':
     members_tie_h = generate_members_tie_h.generate_header(args.n)
     members_visitor_h = generate_members_visitor_h.generate_header(args.n)
     
-    write_to_file("members_tie.h.tmp", members_tie_h)
-    write_to_file("members_visitor.h.tmp", members_visitor_h)
+    write_to_file("members_tie.h.gen", members_tie_h)
+    write_to_file("members_visitor.h.gen", members_visitor_h)
