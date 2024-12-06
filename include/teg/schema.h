@@ -19,9 +19,6 @@
 #ifndef TEG_SCHEMA_H
 #define TEG_SCHEMA_H
 
-#include <array>
-#include <utility>
-
 #include "teg/core_concepts.h"
 #include "teg/fixed_string.h"
 #include "teg/serialization_concepts.h"

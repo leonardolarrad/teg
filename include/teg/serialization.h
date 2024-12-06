@@ -19,15 +19,12 @@
 #ifndef TEG_SERIALIZATION_H
 #define TEG_SERIALIZATION_H
 
+#include "teg/schema.h"
 #include "teg/encoder.h"
+#include "teg/md5.h"
 #include "teg/version.h"
 
 namespace teg {
-
-struct header {
-    u32 magic;
-    options opts;
-};
 
 ///  \brief A binary serializer.
 ///  
@@ -681,9 +678,14 @@ private:
     u64 m_position = 0;   // The current position in the buffer.
 };
 
-namespace internal {
-
-} // internal
+template <class T>
+TEG_NODISCARD TEG_INLINE constexpr decltype(auto) schema_hash_table() {
+    return []<std::size_t... I>(std::index_sequence<I...>) TEG_INLINE_LAMBDA {
+        return std::array<u32, sizeof...(I)>{
+            (md5::hash_u32(schema<T, I + 1>()), ...)
+        };
+    }(std::make_index_sequence<version_count_v<T>>{});
+}
 
 ///  \brief Serializes the provided objects into the specified buffer using a binary format.
 ///  
@@ -726,12 +728,20 @@ TEG_NODISCARD TEG_INLINE constexpr auto serialize(Buf& output_buffer, T const&..
             using buffer_t = Buf;
             using writer_t = buffer_writer<buffer_safety_policy::unsafe, buffer_t>;
             using buffer_encoder_t = encoder<options, writer_t>;
-
-            auto payload_size = buffer_encoder_t::encoded_size(magic_word, options, objs...);
-            output_buffer.resize(payload_size);
+            
+            auto const archive_size = buffer_encoder_t::encoded_size(magic_word, options, objs...);
+            if constexpr (concepts::resizable_container<Buf>) {                
+                // Resize the buffer if needed.
+                output_buffer.resize(archive_size);
+            }
+            else {
+                // Check buffer space.
+                if (output_buffer.size() < archive_size) TEG_UNLIKELY {
+                    return error { std::errc::no_buffer_space };
+                }
+            }
 
             auto encoder = buffer_encoder_t{ writer_t{ output_buffer } };
-
             auto const result = encoder.encode(
                 // Header
                 magic_word, 
@@ -747,7 +757,10 @@ TEG_NODISCARD TEG_INLINE constexpr auto serialize(Buf& output_buffer, T const&..
             return result;
         }
         catch (...) {
-            output_buffer.clear();
+            if constexpr (concepts::resizable_container<Buf>) {
+                output_buffer.clear();
+            }
+
             return error { std::errc::interrupted };
         }
     }
@@ -773,4 +786,4 @@ TEG_NODISCARD TEG_INLINE constexpr auto serialize(std::ostream& output_stream, T
 
 } // namespace teg
 
-#endif // TEG_SERIALIZATION_H 
+#endif // TEG_SERIALIZATION_H

@@ -67,3 +67,11 @@ TEST_CASE("Schema encoding with versions") {
     std::cout << teg::schema<v4, 2>().c_str() << std::endl;
     std::cout << teg::schema<v4, 3>().c_str() << std::endl;
 }
+
+TEST_CASE("Schema hash table") {
+    constexpr auto t1 = teg::schema_hash_table<float>();
+
+    for (auto const& hash : t1) {
+        std::cout << hash << std::endl;
+    }
+}

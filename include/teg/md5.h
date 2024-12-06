@@ -58,11 +58,11 @@
 #include "teg/buffer.h"
 #include "teg/fixed_string.h"
 
-namespace teg {
+namespace teg::md5 {
 
-struct md5_digest {
+struct digest {
     u32 a, b, c, d;
-    constexpr bool operator==(md5_digest const&) const = default;
+    constexpr bool operator==(digest const&) const = default;
 };
 
 namespace internal {
@@ -87,7 +87,7 @@ static constexpr std::array<u32, 16> shifts = {
     7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21
 };
 
-static constexpr md5_digest initial_digest_data = {
+static constexpr digest initial_digest_data = {
     0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476
 };
 
@@ -178,7 +178,7 @@ static constexpr auto compute_f
     }
 }
 
-static constexpr u32 compute_f(u32 i, md5_digest mid) {
+static constexpr u32 compute_f(u32 i, digest mid) {
     return compute_f(i, mid.b, mid.c, mid.d);
 }
 
@@ -206,7 +206,7 @@ static constexpr auto left_rotate(u32 value, u32 bits) -> u32 {
     return (value << bits) | (value >> (32 - bits));
 }
 
-static constexpr auto apply_step(u32 i, round_data const& data, md5_digest mid) -> md5_digest {
+static constexpr auto apply_step(u32 i, round_data const& data, digest mid) -> digest {
     assert(i < 64);
     
     const u32 g = compute_g(i);
@@ -214,7 +214,7 @@ static constexpr auto apply_step(u32 i, round_data const& data, md5_digest mid) 
     
     const u32 f = compute_f(i, mid) + mid.a + constants[i] + data[g];
     const u32 s = get_shift(i);
-    return md5_digest {
+    return digest {
         .a = mid.d,
         .b = mid.b + left_rotate(f, s),
         .c = mid.b,
@@ -222,22 +222,22 @@ static constexpr auto apply_step(u32 i, round_data const& data, md5_digest mid) 
     };
 }
 
-static constexpr auto add(md5_digest d0, md5_digest d1) -> md5_digest {
-    return md5_digest {
+static constexpr auto add(digest d0, digest d1) -> digest {
+    return digest {
         d0.a + d1.a, d0.b + d1.b,
         d0.c + d1.c, d0.d + d1.d
     };
 }
 
 template <concepts::byte T>
-static constexpr auto process_message(std::span<T const> message) -> md5_digest {
+static constexpr auto process_message(std::span<T const> message) -> digest {
     const u32 m = get_padded_message_length(static_cast<u32>(message.size()));
     
-    md5_digest digest0 = initial_digest_data;
+    digest digest0 = initial_digest_data;
     
     for (u32 offset = 0; offset < m; offset += 64) {
         round_data data = get_round_data(message, m, offset);
-        md5_digest digest1 = digest0;
+        digest digest1 = digest0;
 
         for (u32 i = 0; i < 64; ++i) {
             digest1 = apply_step(i, data, digest1);
@@ -254,23 +254,23 @@ static constexpr auto swap_endian(u32 a) -> u32 {
 }
 
 template <concepts::byte T>
-static constexpr auto md5_hash_u32_impl(std::span<T const> data) -> u32 {
-    md5_digest md5_digest = process_message(data);
-    return swap_endian(md5_digest.a);
+static constexpr auto hash_u32_impl(std::span<T const> data) -> u32 {
+    digest digest = process_message(data);
+    return swap_endian(digest.a);
 }
 
 template <concepts::byte T>
-static constexpr auto md5_hash_u64_impl(std::span<T const> data) -> u64 {
-    md5_digest md5_digest = process_message(data);
+static constexpr auto hash_u64_impl(std::span<T const> data) -> u64 {
+    digest digest = process_message(data);
 
-    return (static_cast<u64>(swap_endian(md5_digest.a)) << 32) 
-         | (static_cast<u64>(swap_endian(md5_digest.b)) <<  0);
+    return (static_cast<u64>(swap_endian(digest.a)) << 32) 
+         | (static_cast<u64>(swap_endian(digest.b)) <<  0);
 }
 
 template <concepts::byte T>
-static constexpr auto md5_hash_u128_impl(std::span<T const> data) -> md5_digest {
+static constexpr auto hash_u128_impl(std::span<T const> data) -> digest {
     
-    md5_digest digest = process_message(data);
+    digest digest = process_message(data);
 
     return { 
         swap_endian(digest.a), 
@@ -296,13 +296,13 @@ static constexpr auto to_hex(u32 value) -> fixed_string<8> {
 }
 
 template <concepts::byte T>
-static constexpr auto md5_hash(std::span<T const> data) -> fixed_string<32> {
-    md5_digest md5_digest = process_message(data);
+static constexpr auto hash(std::span<T const> data) -> fixed_string<32> {
+    digest digest = process_message(data);
 
-    return to_hex(swap_endian(md5_digest.a)) 
-         + to_hex(swap_endian(md5_digest.b))
-         + to_hex(swap_endian(md5_digest.c)) 
-         + to_hex(swap_endian(md5_digest.d));
+    return to_hex(swap_endian(digest.a)) 
+         + to_hex(swap_endian(digest.b))
+         + to_hex(swap_endian(digest.c)) 
+         + to_hex(swap_endian(digest.d));
 }
 
 } // namespace internal
@@ -314,17 +314,17 @@ static constexpr auto md5_hash(std::span<T const> data) -> fixed_string<32> {
 ///
 /// \example
 /// \code
-///    constexpr u32 hash = teg::md5_hash_u32("Hello there!");
+///    constexpr u32 hash = teg::hash_u32("Hello there!");
 ///    static_assert(hash == 0xa77b5533ul);    
 /// \endcode
 ///
 template <concepts::byte T>
-constexpr auto md5_hash_u32(std::span<T const> data) -> u32 {
-    return internal::md5_hash_u32_impl(data);
+constexpr auto hash_u32(std::span<T const> data) -> u32 {
+    return internal::hash_u32_impl(data);
 }
 
-constexpr auto md5_hash_u32(std::string_view data) -> u32 {
-    return md5_hash_u32(std::span(data));
+constexpr auto hash_u32(std::string_view data) -> u32 {
+    return hash_u32(std::span(data));
 }
 
 ///  \brief Computes first 64 bits of the MD5 hash of the given data.
@@ -334,22 +334,22 @@ constexpr auto md5_hash_u32(std::string_view data) -> u32 {
 /// 
 ///  \example
 ///  \code
-///      constexpr u64 hash = teg::md5_hash_u64("Hello there!");
+///      constexpr u64 hash = teg::hash_u64("Hello there!");
 ///      static_assert(hash == 0xa77b55332699835cul);    
 ///  \endcode
 ///  
 template <concepts::byte T>
-constexpr auto md5_hash_u64(std::span<T const> data) -> u64 {
-    return internal::md5_hash_u64_impl(data);
+constexpr auto hash_u64(std::span<T const> data) -> u64 {
+    return internal::hash_u64_impl(data);
 }
 
-constexpr auto md5_hash_u64(std::string_view data) -> u64 {
-    return md5_hash_u64(std::span(data));
+constexpr auto hash_u64(std::string_view data) -> u64 {
+    return hash_u64(std::span(data));
 }
 
 ///  \brief Md5 digest representation as a 128-bit tuple.
 ///
-//using md5_digest = std::tuple<u32, u32, u32, u32>;
+//using digest = std::tuple<u32, u32, u32, u32>;
 
 ///  \brief Computes the MD5 hash of the given data.
 ///  
@@ -358,16 +358,16 @@ constexpr auto md5_hash_u64(std::string_view data) -> u64 {
 /// 
 ///  \example
 ///  \code
-///      constexpr teg::md5_digest hash = teg::md5_hash_u128("Hello there!");
+///      constexpr teg::digest hash = teg::hash_u128("Hello there!");
 ///      static_assert(hash == std::make_tuple(0xa77b5533, 0x2699835c, 0x035957df, 0x17630d28));    
 ///  \endcode
 template <concepts::byte T>
-constexpr auto md5_hash_u128(std::span<T const> data) -> md5_digest {
-    return internal::md5_hash_u128_impl(data);
+constexpr auto hash_u128(std::span<T const> data) -> digest {
+    return internal::hash_u128_impl(data);
 }
 
-constexpr auto md5_hash_u128(std::string_view data) -> md5_digest {
-    return md5_hash_u128(std::span(data));
+constexpr auto hash_u128(std::string_view data) -> digest {
+    return hash_u128(std::span(data));
 }
 
 ///  \brief Computes the MD5 hash of the given data.
@@ -377,17 +377,17 @@ constexpr auto md5_hash_u128(std::string_view data) -> md5_digest {
 ///  
 ///  \example
 ///  \code
-///      constexpr teg::fixed_string<32> hash = teg::md5_hash("Hello there!");
+///      constexpr teg::fixed_string<32> hash = teg::hash("Hello there!");
 ///      static_assert(hash == "a77b55332699835c035957df17630d28");
 ///  \endcode
 ///  
 template <concepts::byte T>
-constexpr auto md5_hash(std::span<T const> data) -> fixed_string<32> {
-    return internal::md5_hash(data);
+constexpr auto hash(std::span<T const> data) -> fixed_string<32> {
+    return internal::hash(data);
 }
 
-constexpr auto md5_hash(std::string_view data) -> fixed_string<32> {
-    return md5_hash(std::span(data));
+constexpr auto hash(std::string_view data) -> fixed_string<32> {
+    return hash(std::span(data));
 }
 
 } // namespace teg
