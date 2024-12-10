@@ -62,6 +62,9 @@ concept user_defined_serialization =
         { usr_deserialize(serialize_func, type) }      -> std::same_as<teg::error>;
     };
 
+template <class T>
+concept has_valid_compatibility_compoisiton = true;
+
 ///  \brief A serializable type.
 ///  
 ///  Determines whether a type is serializable or not.

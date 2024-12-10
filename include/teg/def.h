@@ -20,6 +20,7 @@
 #define TEG_DEF_H
 
 #include <array>
+#include <algorithm>
 #include <bit>
 #include <cassert>
 #include <compare>
@@ -43,8 +44,12 @@
 #include <utility>
 #include <variant>
 #include <vector>
+#include <iostream>
 
-#define TEG_VERSION { 1, 0, 0 }
+#define TEG_VERSION_MAJOR 1
+#define TEG_VERSION_MINOR 0
+#define TEG_VERSION_PATCH 0
+#define TEG_VERSION { TEG_VERSION_MAJOR, TEG_VERSION_MINOR, TEG_VERSION_PATCH }
 
 #if !defined(TEG_NODISCARD)
 #define TEG_NODISCARD [[nodiscard]]

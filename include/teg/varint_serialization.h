@@ -20,6 +20,7 @@
 #define TEG_VARINT_SERIALIZATION_H
 
 #include "teg/varint.h"
+#include "teg/fixed_string.h"
 
 namespace teg {
 
@@ -105,6 +106,11 @@ TEG_NODISCARD TEG_INLINE constexpr auto usr_deserialize(F&& decode, varint<T>& v
     }
 
     return error { std::errc::value_too_large };
+}
+
+template <class T>
+TEG_NODISCARD TEG_INLINE constexpr auto usr_schema(varint<T> const& var) -> decltype(auto) {
+    return make_fixed_string("vint");
 }
 
 } // namespace teg

@@ -510,16 +510,19 @@ TEG_NODISCARD TEG_INLINE constexpr auto deserialize(Buf& input_buffer, T&... obj
    
         auto decoder = decoder_t{ buffer_reader_t{ input_buffer } };
 
-        // Decode header.
+        // Decode the header.
         constexpr options decoded_options = Opt;
-        constexpr magic_word decoded_magic_word = get_magic_word();
+        constexpr u32 decoded_magic_word = magic_word();
+        constexpr std::array<u32, version_count_v<T...>> decoded_hash_table = schema_hash_table<T...>();
 
         options encoded_options;
-        magic_word encoded_magic_word;
+        u32 encoded_magic_word;
+        u8 encoded_hash_table_size;
 
-        auto const result = decoder.decode(
+        auto result = decoder.decode(
             encoded_magic_word, 
-            encoded_options
+            encoded_options,
+            encoded_hash_table_size         
         );
 
         if (failure(result)) {
@@ -530,7 +533,15 @@ TEG_NODISCARD TEG_INLINE constexpr auto deserialize(Buf& input_buffer, T&... obj
             return error { std::errc::protocol_error };            
         }
         
-        // Decode payload.
+        for (u8 i = 0; i < encoded_hash_table_size; ++i) {
+            u32 schema_hash;
+            
+            if (result = decoder.decode(schema_hash); failure(result)) TEG_UNLIKELY {
+                return result;
+            }
+        }
+
+        // Decode the payload.
         return decoder.decode(objs...);
     }
     else {

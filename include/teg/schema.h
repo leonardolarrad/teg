@@ -34,7 +34,7 @@ public:
         if constexpr (concepts::compatible<T>) {
             return 0; // Compatible objects cannot be the root type.
         }
-        else if constexpr (concepts::aggregate<T>) {
+        else if constexpr (concepts::serializable_aggregate<T> || concepts::serializable_tuple<T>) {
             auto const get_member_version = []<std::size_t I, class M>() constexpr -> u64 {
                 if constexpr (I == 0 && concepts::compatible<M>) {
                     return 0; // Compatible objects cannot be the root type.
@@ -46,22 +46,42 @@ public:
                 }
             };
 
-            std::array<u64, members_count_v<T>> const version_control = 
-                [&get_member_version]<size_t... I>(std::index_sequence<I...>) constexpr {
-                    return std::array<u64, members_count_v<T>>{
-                        (get_member_version.template operator()
-                            <I, std::remove_cvref_t<decltype(teg::get_member<I>(T{}))>>())...
-                    };
-                }(std::make_index_sequence<members_count_v<T>>{});
+            if constexpr (concepts::serializable_aggregate<T>) {
+                std::array<u64, members_count_v<T>> const version_control = 
+                    [&get_member_version]<size_t... I>(std::index_sequence<I...>) constexpr {
+                        return std::array<u64, members_count_v<T>>{
+                            (get_member_version.template operator()
+                                <I, std::remove_cvref_t<decltype(teg::get_member<I>(T{}))>>())...
+                        };
+                    }(std::make_index_sequence<members_count_v<T>>{});
 
-            u64 last_version = 1;
-            for (auto const version : version_control) {
-                if (version < last_version || version > last_version+1) {
-                    return 0;
+                u64 last_version = 1;
+                for (auto const version : version_control) {
+                    if (version < last_version || version > last_version + 1) {
+                        return 0;
+                    }
+                    last_version = version;
                 }
-                last_version = version;
+                return last_version;     
             }
-            return last_version;       
+            else {
+                std::array<u64, std::tuple_size_v<T>> const version_control = 
+                    [&get_member_version]<size_t... I>(std::index_sequence<I...>) constexpr {
+                        return std::array<u64, std::tuple_size_v<T>>{
+                            (get_member_version.template operator()
+                                <I, std::remove_cvref_t<std::tuple_element_t<I, T>>>())...
+                        };
+                    }(std::make_index_sequence<std::tuple_size_v<T>>{});
+                
+                u64 last_version = 1;
+                for (auto const version : version_control) {
+                    if (version < last_version || version > last_version + 1) {
+                        return 0;
+                    }
+                    last_version = version;
+                }
+                return last_version;
+            }
         } 
         else {
             return 1;
@@ -69,13 +89,21 @@ public:
     }
 };
 
-template <concepts::serializable T>
+template <concepts::serializable ...T>
+requires (sizeof...(T) > 0)
 TEG_NODISCARD TEG_INLINE constexpr auto version_count() -> u64 {
-    return schema_analyzer::template version_count<T>();
+    
+    if constexpr (sizeof...(T) == 1) {
+        return schema_analyzer::template version_count<T...>();
+    }
+    else {
+        return schema_analyzer::template version_count<std::tuple<T...>>();
+    }
+
 }
 
-template <concepts::serializable T>
-constexpr u64 version_count_v = version_count<T>();
+template <concepts::serializable... T>
+constexpr u64 version_count_v = version_count<T...>();
 
 class schema_encoder {
 public:
@@ -130,8 +158,8 @@ public:
     }
 
     template <concepts::serializable T, u64 V>
-    static constexpr auto schema() {
-        if constexpr(concepts::serializable_aggregate<T>) {
+    static constexpr auto schema() -> decltype(auto) {
+        if constexpr(concepts::serializable_aggregate<T> || concepts::serializable_tuple<T>) {
             auto member_encoder = []<std::size_t I, class M>() constexpr -> decltype(auto) {
                 if constexpr (concepts::compatible<M>) {
                     if constexpr (M::version == V) {
@@ -162,17 +190,32 @@ public:
                 }
             };
 
-            auto root_schema = struct_begin +  
-                [&encode_next]<size_t... I>(std::index_sequence<I...>) constexpr {
-                    return (
-                        (encode_next.template operator()
-                            <I, std::remove_cvref_t<decltype(get_member<I>(T{}))>>()
-                        ) + ...
-                    );
-                }(std::make_index_sequence<members_count_v<T>>{});
+            if constexpr (concepts::serializable_tuple<T>) {
+                auto root_schema = tuple_begin +  
+                    [&encode_next]<size_t... I>(std::index_sequence<I...>) constexpr {
+                        return (
+                            (encode_next.template operator()
+                                <I, std::remove_cvref_t<std::tuple_element_t<I, T>>>()
+                            ) + ...
+                        );
+                    }(std::make_index_sequence<std::tuple_size_v<T>>{});
 
-            root_schema[root_schema.size() - 1] = struct_end[0];
-            return root_schema;
+                root_schema[root_schema.size() - 1] = tuple_end[0];
+                return root_schema;
+            }
+            else {
+                auto root_schema = struct_begin +  
+                    [&encode_next]<size_t... I>(std::index_sequence<I...>) constexpr {
+                        return (
+                            (encode_next.template operator()
+                                <I, std::remove_cvref_t<decltype(get_member<I>(T{}))>>()
+                            ) + ...
+                        );
+                    }(std::make_index_sequence<members_count_v<T>>{});
+
+                root_schema[root_schema.size() - 1] = struct_end[0];
+                return root_schema;
+            }
         }
         else {
             return encode<T>();
@@ -261,11 +304,31 @@ public:
     static constexpr auto encode() -> decltype(auto) {
         return compatible_prefix + encode<typename T::value_type>();
     }
+
+    template <concepts::user_defined_serialization T>
+    static constexpr auto  encode() -> decltype(auto) {
+        return usr_schema(T{});
+        //return usr_serialized_size(
+        //    [&](auto&&... objs) constexpr {
+        //        return encoded_size_many(objs...);
+        //    }, usr_obj);
+    }
 };
 
-template <class T, u64 V = 1>
+//template <u64 V = 1, class T>
+//TEG_NODISCARD TEG_INLINE constexpr auto schema1() -> decltype(auto) {
+//    return schema_encoder::schema<T, V>();
+//}
+
+template <u64 V, class... T>
+//requires (sizeof...(T) > 0) && (V >= 1)
 TEG_NODISCARD TEG_INLINE constexpr auto schema() -> decltype(auto) {
-    return schema_encoder::schema<T, V>();
+    if constexpr (sizeof...(T) == 1) {
+        return schema_encoder::schema<T..., V>();
+    }
+    else {
+        return schema_encoder::schema<std::tuple<T...>, V>();
+    }
 }
 
 } // namespace teg

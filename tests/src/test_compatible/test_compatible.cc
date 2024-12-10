@@ -48,11 +48,15 @@ TEST_CASE("De/serialization of version compatible objects") {
     SECTION("Plain de/serialization") {
         teg::byte_array b;
 
+        int r0 = 1;
         teg::compatible<std::string, 2> comp0 = "Str test";
-        teg::serialize(b, comp0).or_throw();
+        teg::serialize(b, r0, comp0).or_throw();
 
+        int r1 = 2;
         teg::compatible<std::string, 2> comp1;
-        teg::deserialize(b, comp1).or_throw();
+        teg::deserialize(b, r1, comp1).or_throw();
+
+        ASSERT(r0 == r1);
         ASSERT(*comp0 == *comp1);
     }
     SECTION("Forward compatibility [Two versions]") {

@@ -332,7 +332,7 @@ private:
         ) {
             // Optimized path: memory copy elements.
             container.resize(size);
-
+            
             return m_reader.read_bytes(
                 reinterpret_cast<byte_type*>(container.data()), 
                 size * sizeof(element_type));
@@ -341,11 +341,13 @@ private:
             concepts::resizable_container<container_type>
         ) {
             container.resize(size);
+            
             for (auto& element : container) {
                 if (auto const result = decode_one(element); failure(result)) TEG_UNLIKELY {
                     return result;
                 }
             }
+            
             return {};
         }
         else {

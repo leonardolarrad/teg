@@ -1,4 +1,4 @@
-#include <array>
+w#include <array>
 #include <string>
 #include <vector>
 #include <memory>
@@ -48,6 +48,10 @@ TEG_NODISCARD TEG_INLINE constexpr auto usr_deserialize(F&& decode, vec3 & vec) 
     vec.set_y(std::get<1>(values));
     vec.set_z(std::get<2>(values));
     return {};
+}
+
+TEG_NODISCARD TEG_INLINE constexpr auto usr_schema(vec3 const& vec) -> decltype(auto) {
+    return teg::make_fixed_string("usr::vec3");
 }
 
 TEST_CASE("Check concepts") {

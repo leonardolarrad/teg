@@ -678,13 +678,16 @@ private:
     u64 m_position = 0;   // The current position in the buffer.
 };
 
-template <class T>
-TEG_NODISCARD TEG_INLINE constexpr decltype(auto) schema_hash_table() {
-    return []<std::size_t... I>(std::index_sequence<I...>) TEG_INLINE_LAMBDA {
+template <class... T>
+TEG_NODISCARD TEG_INLINE constexpr auto schema_hash_table() -> decltype(auto) {
+
+    return []<std::size_t... I>(std::index_sequence<I...>) constexpr {
         return std::array<u32, sizeof...(I)>{
-            (md5::hash_u32(schema<T, I + 1>()), ...)
+            (md5::hash_u32(schema<I, T...>()))...
+            //(md5::hash_u32(schema<I + 1, T...>()), ...)
         };
-    }(std::make_index_sequence<version_count_v<T>>{});
+    }(std::make_index_sequence<version_count_v<T...>>{});
+
 }
 
 ///  \brief Serializes the provided objects into the specified buffer using a binary format.
@@ -722,20 +725,31 @@ TEG_NODISCARD TEG_INLINE constexpr auto serialize(Buf& output_buffer, T const&..
 
     if constexpr (true) {
         try {
-            constexpr auto magic_word = get_magic_word();
+            constexpr auto magic_word = teg::magic_word();
             constexpr auto options = Opt;
-
+            constexpr auto hash_table = schema_hash_table<T...>();
+            
             using buffer_t = Buf;
             using writer_t = buffer_writer<buffer_safety_policy::unsafe, buffer_t>;
             using buffer_encoder_t = encoder<options, writer_t>;
+            using container_size_t = typename buffer_encoder_t::container_size_type;
             
-            auto const archive_size = buffer_encoder_t::encoded_size(magic_word, options, objs...);
+            auto const archive_size = buffer_encoder_t::encoded_size(
+                // Header
+                magic_word, 
+                options, 
+                static_cast<container_size_t>(hash_table.size()), 
+                hash_table,
+                // Payload
+                objs...
+            );
+            
             if constexpr (concepts::resizable_container<Buf>) {                
-                // Resize the buffer if needed.
+                // Resize the buffer if needed
                 output_buffer.resize(archive_size);
             }
             else {
-                // Check buffer space.
+                // Otherwise, check buffer space
                 if (output_buffer.size() < archive_size) TEG_UNLIKELY {
                     return error { std::errc::no_buffer_space };
                 }
@@ -746,6 +760,8 @@ TEG_NODISCARD TEG_INLINE constexpr auto serialize(Buf& output_buffer, T const&..
                 // Header
                 magic_word, 
                 options,
+                static_cast<u8>(hash_table.size()),
+                hash_table,
                 // Payload
                 objs...
             ); 

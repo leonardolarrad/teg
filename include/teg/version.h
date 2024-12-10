@@ -23,30 +23,26 @@
 
 namespace teg {
 
-struct version {
-    u8 major;
-    u8 minor;
-    u8 patch;
-
-    constexpr bool operator==(version const&) const = default;
-};
-
 TEG_NODISCARD TEG_INLINE 
-constexpr auto get_version() -> version {
+constexpr auto version() -> std::tuple<u8, u8, u8> {
     return TEG_VERSION;
-}
-
-struct magic_word {
-    char id[3];
-    u8 version;
-
-    constexpr bool operator==(magic_word const&) const = default;
-};
+}   
 
 TEG_NODISCARD TEG_INLINE 
-constexpr auto get_magic_word() -> magic_word {
-    return { {'T', 'E', 'G'}, get_version().major };    
-} 
+constexpr auto magic_word() -> u32 {
+
+    u8 magic_word[4];
+    magic_word[0] = 'T';
+    magic_word[1] = 'E';
+    magic_word[2] = 'G';
+    magic_word[3] = TEG_VERSION_MAJOR;
+
+    return ((u32)magic_word[0] <<  0)
+         | ((u32)magic_word[1] <<  8) 
+         | ((u32)magic_word[2] << 16) 
+         | ((u32)magic_word[3] << 24);
+         
+}
 
 } // namespace teg
 
