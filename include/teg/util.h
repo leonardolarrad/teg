@@ -16,38 +16,16 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-#ifndef TEG_H
-#define TEG_H
+#ifndef TEG_UTIL_H
+#define TEG_UTIL_H
 
-#include "teg/alignment.h"
-#include "teg/buffer.h"
-#include "teg/c_array.h"
-#include "teg/compatible.h"
-#include "teg/container_concepts.h"
-#include "teg/core_concepts.h"
-#include "teg/decoder.h"
-#include "teg/def.h"
-#include "teg/deserialization.h"
-#include "teg/encoder.h"
-#include "teg/endian.h"
-#include "teg/error.h"
-#include "teg/fixed_string.h"
-#include "teg/index_table.h"
-#include "teg/md5.h"
-#include "teg/members_count.h"
-#include "teg/members_equal.h"
-#include "teg/members_get.h"
-#include "teg/members_tie.h"
-#include "teg/members_visitor.h"
-#include "teg/options.h"
-#include "teg/schema.h"
-#include "teg/serialization.h"
-#include "teg/serialization_concepts.h"
-#include "teg/unreachable.h"
-#include "teg/varint.h"
-#include "teg/varint_serialization.h"
-#include "teg/version.h"
-#include "teg/xxhash.h"
-#include "teg/util.h"
+namespace teg {
 
-#endif // TEG_H
+template<class F, int = (F{}(), 0)>
+constexpr bool is_constexpr_friendly(F) { return true; }
+
+constexpr bool is_constexpr_friendly(...) { return false; }
+
+} // namespace teg
+
+#endif // TEG_UTIL_H

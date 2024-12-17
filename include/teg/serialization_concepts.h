@@ -137,7 +137,9 @@ concept serializable_compatible =
 template <class T, options Opt>
 concept memory_copyable = 
        (fundamental<T> || is_enum<T>)
-    || (trivially_copyable<T> && packed_standard_layout<T> && !endian_swapping_required<T, Opt>);
+    || (packed_layout<T> && !endian_swapping_required<T, Opt>);
+    
+    //|| (trivially_copyable<T> && packed_standard_layout<T> && !endian_swapping_required<T, Opt>);
 
 ///  \brief A type that cannot be trivially serialized.
 ///  

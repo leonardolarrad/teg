@@ -21,7 +21,7 @@
 
 #include "teg/def.h"
 #include "teg/core_concepts.h"
-#include "teg/members_visitor.h"
+#include "teg/members_equal.h"
 
 namespace teg::internal {
 
@@ -133,6 +133,45 @@ constexpr auto has_padding_bits() -> bool {
     return internal::has_padding_bits_impl<T>();
 }
 
+template <class T>
+consteval auto has_packed_layout() -> bool {
+    return false;
+}
+
+template <class T>
+requires concepts::fundamental<T> || concepts::is_enum<T>
+consteval auto has_packed_layout() -> bool {
+    return true;
+}
+
+template <class T>
+requires concepts::bit_castable<T> && concepts::accesible_aggregate<T>
+consteval auto has_packed_layout() -> bool {
+    
+    auto bytes = std::array<u8, sizeof(T)>{};
+    const T reference = std::bit_cast<T>(std::array<u8, sizeof(T)>{});
+
+    for (std::size_t i = 0; i < sizeof(T); ++i) {
+        bytes[i] = 1u;  // Perturb the object representation.
+        const T instance = std::bit_cast<T>(bytes);
+
+        if (memberwise_equal(instance, reference)) {
+            return false;
+        }
+
+        bytes[i] = 0u;  // Restore the object representation.
+    }
+    return true;    
+
+}
+
+template <class T>
+requires concepts::bounded_c_array<T>
+consteval auto has_packed_layout() -> bool {
+    return has_packed_layout<std::remove_cvref_t<std::remove_all_extents_t<T>>>();
+}
+
+
 } // namespace teg
 
 namespace teg::concepts {
@@ -143,6 +182,13 @@ namespace teg::concepts {
 ///
 template <class T>
 concept packed_standard_layout = standard_layout<T> && !has_padding_bits<T>();
+
+///  \brief A type that has no padding bits.
+///  \tparam T A standard layout type.
+///  \see https://en.cppreference.com/w/c/language/object
+///
+template <class T>
+concept packed_layout = has_packed_layout<T>();
 
 } // namespace teg::concepts
 

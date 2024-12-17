@@ -27,15 +27,19 @@
 namespace teg {
 
 template <class T1, class T2>
-    requires (std::equality_comparable_with<std::remove_cvref_t<T1>, std::remove_cvref_t<T2>>)
-          || ((concepts::accesible_aggregate<std::remove_cvref_t<T1>>)
-          && (concepts::accesible_aggregate<std::remove_cvref_t<T2>>))
+requires (std::equality_comparable_with<std::remove_cvref_t<T1>, std::remove_cvref_t<T2>>)
+      || (concepts::accesible_aggregate<std::remove_cvref_t<T1>> && concepts::accesible_aggregate<std::remove_cvref_t<T2>>)
 TEG_NODISCARD TEG_INLINE constexpr auto memberwise_equal(T1 const& left, T2 const& right) -> bool {
     using left_type = std::remove_cvref_t<T1>;
     using right_type = std::remove_cvref_t<T2>;
 
     if constexpr (std::equality_comparable_with<left_type, right_type>) {
-        return left == right;
+        if constexpr (concepts::c_array<left_type>) {
+            return std::ranges::equal(left, right);
+        }
+        else {
+            return left == right;
+        }
     }
     else if constexpr (members_count_v<left_type> != members_count_v<right_type>) {
         return false;
