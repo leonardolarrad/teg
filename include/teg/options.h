@@ -24,46 +24,42 @@
 
 namespace teg {
 
-///  \brief Serialization options.
+///  \brief De/serialization options.
 ///  
-enum class options : u64 {
+enum class options : u32 {
 
     // An asterisk (*) indicates the default option.
 
-    enable_format_check     = 1 << 0,   // (*) Enable format check: compile-time type code.
-    enable_integrity_check  = 1 << 1,   //     Enable integrity check: data checksum.
-    enable_all_checks       =           //     Enable all checks.
-        enable_format_check | enable_integrity_check,
+    native_endian           = 1 << 0,   //     Use native endianness for encoding/decoding data.
+    little_endian           = 1 << 1,   // (*) Use little-endian for encoding/decoding data.
+    big_endian              = 1 << 2,   //     Use big-endian for encoding/decoding data.
 
-    native_endian           = 1 << 3,   //     Use native endianness for encoding/decoding data.
-    little_endian           = 1 << 4,   // (*) Use little-endian for encoding/decoding data.
-    big_endian              = 1 << 5,   //     Use big-endian for encoding/decoding data.
+    allocation_limit_1gib   = 1 << 4,   //     Limit byte buffer allocation to 1 GiB.
+    allocation_limit_2gib   = 1 << 5,   // (*) Limit byte buffer allocation to 2 GiB.
+    allocation_limit_4gib   = 1 << 6,   //     Limit byte buffer allocation to 4 GiB.
 
-    allocation_limit_1gib   = 1 << 6,   //     Limit byte buffer allocation to 1 GiB.
-    allocation_limit_2gib   = 1 << 7,   // (*) Limit byte buffer allocation to 2 GiB.
-    allocation_limit_4gib   = 1 << 8,   //     Limit byte buffer allocation to 4 GiB.
+    container_size_native   = 1 << 8,  //     Use native container size type (std::size_t).
+    container_size_varint   = 1 << 9,  //     Use varint container size type (teg::variant<uint64_t>).
+    container_size_1b       = 1 << 10,  //     Use 1-byte container size type (uint8_t).
+    container_size_2b       = 1 << 11,  //     Use 2-byte container size type (uint16_t).
+    container_size_4b       = 1 << 12,  // (*) Use 4-byte container size type (uint32_t). 
+    container_size_8b       = 1 << 13,  //     Use 8-byte container size type (uint64_t).
 
-    container_size_native   = 1 << 11,  //     Use native container size type (std::size_t).
-    container_size_varint   = 1 << 12,  //     Use varint container size type (teg::variant<uint64_t>).
-    container_size_1b       = 1 << 13,  //     Use 1-byte container size type (uint8_t).
-    container_size_2b       = 1 << 14,  //     Use 2-byte container size type (uint16_t).
-    container_size_4b       = 1 << 15,  // (*) Use 4-byte container size type (uint32_t). 
-    container_size_8b       = 1 << 16,  //     Use 8-byte container size type (uint64_t).
+    variant_index_native    = 1 << 14,  //     Use native variant index type (std::size_t).
+    variant_index_1b        = 1 << 15,  // (*) Use 1-byte variant index type (uint8_t).
+    variant_index_2b        = 1 << 16,  //     Use 2-byte variant index type (uint16_t).
+    variant_index_4b        = 1 << 17,  //     Use 4-byte variant index type (uint32_t).
+    variant_index_8b        = 1 << 18,  //     Use 8-byte variant index type (uint64_t).
 
-    variant_index_native    = 1 << 17,  //     Use native variant index type (std::size_t).
-    variant_index_1b        = 1 << 18,  // (*) Use 1-byte variant index type (uint8_t).
-    variant_index_2b        = 1 << 19,  //     Use 2-byte variant index type (uint16_t).
-    variant_index_4b        = 1 << 20,  //     Use 4-byte variant index type (uint32_t).
-    variant_index_8b        = 1 << 21,  //     Use 8-byte variant index type (uint64_t).
-
+    force_varint            = 1 << 24,  //     Force varint encoding/decoding for all integers.
 };
 
 constexpr auto operator|(options a, options b) -> options { 
-    return options(static_cast<u64>(a) | static_cast<u64>(b));
+    return options(static_cast<u32>(a) | static_cast<u32>(b));
 }
 
 constexpr auto operator&(options a, options b) -> bool {
-    return static_cast<u64>(a) & static_cast<u64>(b);
+    return static_cast<u32>(a) & static_cast<u32>(b);
 }
 
 ///  \brief Default de/serialization mode.
@@ -78,14 +74,13 @@ static constexpr options default_mode =
 
 static constexpr options compact_mode = 
     options::little_endian | options::allocation_limit_1gib | 
-    options::container_size_varint | options::variant_index_1b;
+    options::container_size_varint | options::variant_index_1b | options::force_varint;
 
-///  \warning Fast mode is not portable.
-static constexpr options fast_mode = 
+///  \brief Use the architcture native word size and endianess to de/serialize data.
+///  \warning Native mode is not portable.
+static constexpr options native_mode = 
     options::native_endian | options::allocation_limit_4gib | 
     options::container_size_native | options::variant_index_native;
-
-static constexpr options secure_mode = default_mode | options::enable_all_checks;
 
 ///  \brief Container size type.
 ///  \tparam Opt Options flag.

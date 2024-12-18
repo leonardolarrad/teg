@@ -505,21 +505,24 @@ template <options Opt = default_mode, class Buf, class... T>
 TEG_NODISCARD TEG_INLINE constexpr auto deserialize(Buf& input_buffer, T&... objs) -> error {
 
     if constexpr (true) {
-        using buffer_reader_t = buffer_reader<buffer_safety_policy::safe, Buf>;
-        using decoder_t = decoder<Opt, buffer_reader_t>;
-   
-        auto decoder = decoder_t{ buffer_reader_t{ input_buffer } };
+        constexpr auto magic_word = teg::magic_word();
+        constexpr auto data_format_options = Opt;
+        constexpr auto header_format_options = options::little_endian | options::container_size_1b;
+        constexpr auto schema_hash_table = teg::schema_hash_table<T...>();
+
+        using buffer_t = Buf;
+        using buffer_reader_t = buffer_reader<buffer_safety_policy::safe, buffer_t>;
+        using header_decoder_t = decoder<header_format_options, buffer_reader_t>;
+        using data_decoder_t = decoder<data_format_options, buffer_reader_t>;
+  
+        auto header_decoder = header_decoder_t{ buffer_reader_t { input_buffer } };
 
         // Decode the header.
-        constexpr options decoded_options = Opt;
-        constexpr u32 decoded_magic_word = magic_word();
-        constexpr std::array<u32, version_count_v<T...>> decoded_hash_table = schema_hash_table<T...>();
-
-        options encoded_options;
         u32 encoded_magic_word;
+        options encoded_options;
         u8 encoded_hash_table_size;
 
-        auto result = decoder.decode(
+        auto result = header_decoder.decode(
             encoded_magic_word, 
             encoded_options,
             encoded_hash_table_size         
@@ -528,21 +531,22 @@ TEG_NODISCARD TEG_INLINE constexpr auto deserialize(Buf& input_buffer, T&... obj
         if (failure(result)) {
             return result;
         }
-    
-        if ((encoded_magic_word != decoded_magic_word) || (encoded_options != decoded_options)) {
+
+        if ((encoded_magic_word != magic_word) || (encoded_options != data_format_options)) {
             return error { std::errc::protocol_error };            
         }
         
         for (u8 i = 0; i < encoded_hash_table_size; ++i) {
             u32 schema_hash;
             
-            if (result = decoder.decode(schema_hash); failure(result)) TEG_UNLIKELY {
+            if (result = header_decoder.decode(schema_hash); failure(result)) TEG_UNLIKELY {
                 return result;
             }
         }
 
-        // Decode the payload.
-        return decoder.decode(objs...);
+        // Decode the data.
+        auto data_decoder = data_decoder_t{ buffer_reader_t { input_buffer, header_decoder.reader().position() }}; 
+        return data_decoder.decode(objs...);
     }
     else {
         // Create a binary deserializer and deserialize the given objects.

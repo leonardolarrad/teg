@@ -21,7 +21,6 @@
 
 #include "teg/schema.h"
 #include "teg/encoder.h"
-#include "teg/md5.h"
 #include "teg/version.h"
 
 namespace teg {
@@ -678,18 +677,6 @@ private:
     u64 m_position = 0;   // The current position in the buffer.
 };
 
-template <class... T>
-TEG_NODISCARD TEG_INLINE constexpr auto schema_hash_table() -> decltype(auto) {
-
-    return []<std::size_t... I>(std::index_sequence<I...>) constexpr {
-        return std::array<u32, sizeof...(I)>{
-            (md5::hash_u32(schema<I, T...>()))...
-            //(md5::hash_u32(schema<I + 1, T...>()), ...)
-        };
-    }(std::make_index_sequence<version_count_v<T...>>{});
-
-}
-
 ///  \brief Serializes the provided objects into the specified buffer using a binary format.
 ///  
 ///  \tparam  Opt   The options for serialization.
@@ -719,55 +706,63 @@ TEG_NODISCARD TEG_INLINE constexpr auto schema_hash_table() -> decltype(auto) {
 ///  \endcode
 ///  
 template <options Opt = default_mode, class Buf, class... T>
-    requires (concepts::byte_buffer<Buf>) 
-          && (concepts::serializable<T> && ...)
-TEG_NODISCARD TEG_INLINE constexpr auto serialize(Buf& output_buffer, T const&... objs) -> error {
+requires (concepts::byte_buffer<Buf>) 
+      && (concepts::serializable<T> && ...)
+TEG_NODISCARD TEG_INLINE constexpr auto serialize(Buf& output_buffer, T const&... data) -> error {
 
     if constexpr (true) {
         try {
             constexpr auto magic_word = teg::magic_word();
-            constexpr auto options = Opt;
-            constexpr auto hash_table = schema_hash_table<T...>();
+            constexpr auto data_format_options = Opt;
+            constexpr auto header_format_options = options::little_endian | options::container_size_1b;
+            constexpr auto schema_hash_table = teg::schema_hash_table<T...>();
             
             using buffer_t = Buf;
             using writer_t = buffer_writer<buffer_safety_policy::unsafe, buffer_t>;
-            using buffer_encoder_t = encoder<options, writer_t>;
-            using container_size_t = typename buffer_encoder_t::container_size_type;
+            using header_encoder_t = encoder<header_format_options, writer_t>;
+            using data_encoder_t = encoder<data_format_options, writer_t>;
             
-            auto const archive_size = buffer_encoder_t::encoded_size(
-                // Header
-                magic_word, 
-                options, 
-                static_cast<container_size_t>(hash_table.size()), 
-                hash_table,
-                // Payload
-                objs...
-            );
+            auto constexpr header_size = header_encoder_t::encoded_size(
+                magic_word, data_format_options, u8{}, schema_hash_table
+            );             
+            auto data_size = data_encoder_t::encoded_size(data...);
+            auto archive_size = header_size + data_size;
             
             if constexpr (concepts::resizable_container<Buf>) {                
-                // Resize the buffer if needed
+                // Resize the buffer if needed.
                 output_buffer.resize(archive_size);
             }
             else {
-                // Otherwise, check buffer space
+                // Otherwise, check buffer space.
                 if (output_buffer.size() < archive_size) TEG_UNLIKELY {
                     return error { std::errc::no_buffer_space };
                 }
             }
-
-            auto encoder = buffer_encoder_t{ writer_t{ output_buffer } };
-            auto const result = encoder.encode(
-                // Header
-                magic_word, 
-                options,
-                static_cast<u8>(hash_table.size()),
-                hash_table,
-                // Payload
-                objs...
-            ); 
+            
+            // Encode the header.
+            auto header_encoder = header_encoder_t{ writer_t{ output_buffer } };
+            auto result = header_encoder.encode(
+                magic_word,
+                data_format_options,
+                static_cast<u8>(schema_hash_table.size()),
+                schema_hash_table
+            );
 
             if (failure(result)) TEG_UNLIKELY {
-                output_buffer.clear();
+                if constexpr (concepts::resizable_container<Buf>) {
+                    output_buffer.clear();
+                }
+                return result;
+            }
+
+            // Encode the data.
+            auto data_encoder = data_encoder_t { writer_t { output_buffer, header_size } };
+            result = data_encoder.encode(data...);
+
+            if (failure(result)) TEG_UNLIKELY {
+                if constexpr (concepts::resizable_container<Buf>) {
+                    output_buffer.clear();
+                }
             }
 
             return result;
@@ -781,7 +776,7 @@ TEG_NODISCARD TEG_INLINE constexpr auto serialize(Buf& output_buffer, T const&..
         }
     }
     else {
-        return binary_serializer<Opt, Buf>{output_buffer}.serialize(objs...);
+        return binary_serializer<Opt, Buf>{output_buffer}.serialize(data...);
     }
 
 }

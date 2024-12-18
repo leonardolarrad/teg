@@ -24,11 +24,18 @@
 #include "teg/serialization_concepts.h"
 #include "teg/members_get.h"
 #include "teg/compatible.h"
+#include "teg/md5.h"
 
 namespace teg {
 
 class schema_analyzer {
 public:
+
+    ///  \brief Returns the version count of the given schema.
+    ///  
+    ///  \tparam T The type representing the schema.
+    ///  \return The version count of the schema.
+    ///
     template <concepts::serializable T>
     static constexpr auto version_count() -> u64 {
         if constexpr (concepts::compatible<T>) {
@@ -89,6 +96,11 @@ public:
     }
 };
 
+///  \brief Returns the version count of the given schema.
+///  
+///  \tparam T The type that represents the schema.
+///  \return The version count of the schema.
+///
 template <concepts::serializable ...T>
 requires (sizeof...(T) > 0)
 TEG_NODISCARD TEG_INLINE constexpr auto version_count() -> u64 {
@@ -102,6 +114,12 @@ TEG_NODISCARD TEG_INLINE constexpr auto version_count() -> u64 {
 
 }
 
+///  \brief Number of versions represented in the type schema.
+///
+///  A serializable type can be composed of multiple compatibles objects, forming
+///  multiple versions of one schema. This constant specifies the number of versions
+///  of the given type.
+///
 template <concepts::serializable... T>
 constexpr u64 version_count_v = version_count<T...>();
 
@@ -135,6 +153,8 @@ public:
     static constexpr auto separator = make_fixed_string(" ");
     static constexpr auto union_separator = make_fixed_string("|");
 
+    ///  \brief Returns the token that represents the given built-in type.
+    ///
     template <concepts::builtin T>
     static constexpr auto get_builtin_token() -> decltype(auto) {
         using type = std::conditional_t<std::is_enum_v<T>, std::underlying_type<T>, T>;
@@ -156,7 +176,17 @@ public:
         else if constexpr (std::is_enum_v<T> && sizeof(T) == 8)                return builtin_i64;
         else static_assert(!sizeof(type), "Unsupported builtin type");
     }
-
+    
+    ///  \brief Constructs a string representation of the schema for the given type.
+    ///  
+    ///  \tparam T The type to construct the schema for.
+    ///  \tparam V The version of the type to construct the schema for.
+    ///  
+    ///  \return A fixed string containing the schema for the given type.
+    ///  
+    ///  \details Constructs a string representation of the schema for the given type in 
+    ///  a generic way, but also takes into account the version of the type.
+    ///
     template <concepts::serializable T, u64 V>
     static constexpr auto schema() -> decltype(auto) {
         if constexpr(concepts::serializable_aggregate<T> || concepts::serializable_tuple<T>) {
@@ -222,11 +252,15 @@ public:
         }
     }
 
+    ///  \brief Encodes the schema for a builtin type.
+    ///  
     template <concepts::builtin T>
     static constexpr auto encode() -> decltype(auto)    {
         return get_builtin_token<T>();
     }
 
+    ///  \brief Encodes the schema for an aggregate type.
+    ///
     template <concepts::serializable_aggregate T>
     static constexpr auto encode() -> decltype(auto) {
         return visit_members(
@@ -243,6 +277,8 @@ public:
         );
     }
 
+    ///  \brief Encodes the schema for a c-array type.
+    ///
     template <concepts::serializable_c_array T>
     static constexpr auto encode() -> decltype(auto) {
         return fixed_container_prefix
@@ -251,6 +287,8 @@ public:
              + container_end;
     }
 
+    ///  \brief Encodes the schema for a container type.
+    ///
     template <concepts::serializable_container T>
     static constexpr auto encode() -> decltype(auto) {
         if constexpr (concepts::fixed_size_container<T>) {
@@ -265,16 +303,22 @@ public:
         }
     }
 
+    ///  \brief Encodes the schema for an optional type.
+    ///  
     template <concepts::serializable_optional T>
     static constexpr auto encode() -> decltype(auto) {
         return optional_prefix + encode<typename T::value_type>();
     }
 
+    ///  \brief Encodes the schema for an owning pointer type.
+    ///
     template <concepts::serializable_owning_ptr T>
     static constexpr auto encode() -> decltype(auto) {
         return owning_ptr_prefix + encode<typename T::element_type>();
     }
 
+    ///  \brief Encodes the schema for a variant type.
+    ///  
     template <concepts::serializable_variant T>
     static constexpr auto encode() -> decltype(auto) {
 
@@ -289,6 +333,8 @@ public:
             }(std::make_index_sequence<std::variant_size_v<T>>{}); 
     }
 
+    ///  \brief Encodes the schema for a tuple type.
+    ///
     template <concepts::serializable_tuple T> 
     static constexpr auto encode() -> decltype(auto) {
         return tuple_begin + 
@@ -300,28 +346,30 @@ public:
             }(std::make_index_sequence<std::tuple_size_v<T>>{}); 
     }
 
+    ///  \brief Encodes the schema for a compatible type.
+    ///
     template <concepts::serializable_compatible T>
     static constexpr auto encode() -> decltype(auto) {
         return compatible_prefix + encode<typename T::value_type>();
     }
 
+    ///  \brief Encodes the schema for a user-defined type.
+    ///  
     template <concepts::user_defined_serialization T>
     static constexpr auto  encode() -> decltype(auto) {
         return usr_schema(T{});
-        //return usr_serialized_size(
-        //    [&](auto&&... objs) constexpr {
-        //        return encoded_size_many(objs...);
-        //    }, usr_obj);
     }
 };
 
-//template <u64 V = 1, class T>
-//TEG_NODISCARD TEG_INLINE constexpr auto schema1() -> decltype(auto) {
-//    return schema_encoder::schema<T, V>();
-//}
-
+///  \brief Constructs a string representation of the schema for the given type.
+///
+///  \tparam V The version of the schema.
+///  \tparam T The type to construct the schema for.
+///
+///  \return A fixed string containing the schema for the given type.
+///
 template <u64 V, class... T>
-//requires (sizeof...(T) > 0) && (V >= 1)
+requires (sizeof...(T) > 0) && (V >= 1)
 TEG_NODISCARD TEG_INLINE constexpr auto schema() -> decltype(auto) {
     if constexpr (sizeof...(T) == 1) {
         return schema_encoder::schema<T..., V>();
@@ -329,6 +377,19 @@ TEG_NODISCARD TEG_INLINE constexpr auto schema() -> decltype(auto) {
     else {
         return schema_encoder::schema<std::tuple<T...>, V>();
     }
+}
+
+///  \brief Returns the hash table of the schema of the provided types.
+///
+template <class... T>
+TEG_NODISCARD TEG_INLINE constexpr auto schema_hash_table() -> decltype(auto) {
+
+    return []<std::size_t... I>(std::index_sequence<I...>) constexpr {
+        return std::array<u32, sizeof...(I)>{
+            (md5::hash_u32(schema<I + 1, T...>()))...
+        };
+    }(std::make_index_sequence<version_count_v<T...>>{});
+
 }
 
 } // namespace teg

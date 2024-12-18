@@ -289,6 +289,8 @@ constexpr inline bool is_variant_v<std::variant<T...>> = true;
 template <class T>
 concept variant = internal::is_variant_v<T>;
 
+///  \brief A type that can be bit-casted from an array of bytes.
+///
 template <class T>
 concept bit_castable = requires { std::bit_cast<T>(std::array<std::byte, sizeof(T)>{}); }
     && is_constexpr_friendly([] { std::ignore = std::bit_cast<T>(std::array<std::byte, sizeof(T)>{}); });

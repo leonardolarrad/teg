@@ -29,7 +29,7 @@ static void benchmark_00() {
     teg::byte_array buffer{};
     std::string schema_in{};
 
-    constexpr auto schema = teg::schema<bm::ecommerce_page>();
+    constexpr auto schema = teg::schema<1, bm::ecommerce_page>();
     std::cout << "Schema size: " << schema.size() << std::endl;
     std::cout << "Schema: " << schema.c_str() << std::endl;
     bm::benchmark()
@@ -50,7 +50,7 @@ static void benchmark_stream() {
     std::vector<bm::ecommerce_page> data_in_1mib;
     std::ofstream out("bmsteam.bin", std::ios::binary | std::ios::trunc);
 
-    constexpr auto schema = teg::schema<bm::ecommerce_page>();
+    constexpr auto schema = teg::schema<1, bm::ecommerce_page>();
     std::cout << "Schema size: " << schema.size() << std::endl;
     std::cout << "Schema: " << schema.c_str() << std::endl;
     bm::benchmark()

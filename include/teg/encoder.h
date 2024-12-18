@@ -40,20 +40,20 @@ enum class buffer_safety_policy {
 };
 
 template <buffer_safety_policy policy = buffer_safety_policy::safe, class Buf = byte_array> 
-    requires (concepts::byte_buffer<Buf>)
+requires (concepts::byte_buffer<Buf>)
 class buffer_writer {
 public:
     ///  \brief The byte type used by the buffer.
     using byte_type = std::remove_const_t<typename std::remove_cvref_t<Buf>::value_type>;
     
-    ///  Disable default constructor.
+    // Disable default constructor.
     TEG_INLINE constexpr buffer_writer() = delete;
 
     ///  \brief Constructs a new buffer writer.
     ///  \param  buffer  The buffer to write into.
     ///
-    TEG_INLINE constexpr buffer_writer(Buf& buffer) noexcept : m_buffer(buffer), m_position(0) {}
-    TEG_INLINE constexpr buffer_writer(Buf&& buffer) noexcept : m_buffer(buffer), m_position(0) {}
+    TEG_INLINE constexpr buffer_writer(Buf& buffer, u64 position = 0) noexcept : m_buffer(buffer), m_position(position) {}
+    TEG_INLINE constexpr buffer_writer(Buf&& buffer, u64 position = 0) noexcept : m_buffer(buffer), m_position(position) {}
 
     ///  \brief Writes a contiguous array of bytes into the buffer.
     ///  
@@ -64,7 +64,6 @@ public:
     ///
     template <bool swap_endian = false>
     TEG_NODISCARD TEG_INLINE constexpr auto write_bytes(byte_type const* data, std::size_t size) -> error {
-
         if constexpr (policy == buffer_safety_policy::safe) {
             if (m_position + size > m_buffer.size()) {
                 return error { std::errc::no_buffer_space };
@@ -88,7 +87,10 @@ public:
             m_position += size;
             return {};
         }
+    }
 
+    TEG_NODISCARD TEG_INLINE constexpr auto position() -> u64 {
+        return m_position;
     }
 
 private:
@@ -175,6 +177,10 @@ public:
     template <class... T> requires (concepts::serializable<T> && ...)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size(T const&... objs) -> u64 {
         return encoded_size_many(objs...);
+    }
+
+    TEG_NODISCARD TEG_INLINE constexpr auto writer() -> Writer const& {
+        return m_writer;
     }
 
     ///  \brief Binary serialization of the given objects.
@@ -486,7 +492,7 @@ private:
         // Serialize the container's size if needed.
         if constexpr (!concepts::fixed_size_container<container_type>) {
 
-            // For fixed-size containers, the size is known at compile-time; thus, no serialization
+            // For fixed-size containers the size is known at compile-time; therefore, no serialization
             // is needed. Otherwise, serialize the container's size.
             
             if constexpr (concepts::sized_container<container_type>) {

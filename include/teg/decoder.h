@@ -37,8 +37,8 @@ public:
     ///  \brief Constructs a new buffer writer.
     ///  \param  buffer  The buffer to write into.
     ///
-    TEG_INLINE constexpr buffer_reader(Buf& buffer) noexcept : m_buffer(buffer), m_position(0) {}
-    TEG_INLINE constexpr buffer_reader(Buf&& buffer) noexcept : m_buffer(buffer), m_position(0) {}
+    TEG_INLINE constexpr buffer_reader(Buf& buffer, u64 position = 0) noexcept : m_buffer(buffer), m_position(position) {}
+    TEG_INLINE constexpr buffer_reader(Buf&& buffer, u64 position = 0) noexcept : m_buffer(buffer), m_position(position) {}
 
     ///  \brief Writes a contiguous array of bytes into the buffer.
     ///  
@@ -74,6 +74,10 @@ public:
             return {};
         }
 
+    }
+
+    TEG_NODISCARD TEG_INLINE constexpr auto position() const -> u64 {
+        return m_position;
     }
 
 private:
@@ -164,6 +168,11 @@ public:
     ///  
     TEG_INLINE constexpr explicit decoder(reader_type & reader)  : m_reader(reader) {}
     TEG_INLINE constexpr explicit decoder(reader_type && reader) : m_reader(reader) {}
+
+
+    TEG_NODISCARD TEG_INLINE constexpr auto reader() const -> reader_type const& {
+        return m_reader;
+    }
 
     template <class... T> requires (concepts::deserializable<T> && ...)
     TEG_NODISCARD TEG_INLINE constexpr auto decode(T&... objs) -> error {        
