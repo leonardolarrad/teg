@@ -29,6 +29,9 @@ static void benchmark_00() {
     teg::byte_array buffer{};
     std::string schema_in{};
 
+    constexpr auto default_mode = teg::default_mode;
+    constexpr auto force_varint = teg::default_mode | teg::options::force_varint;
+
     constexpr auto schema = teg::schema<1, bm::ecommerce_page>();
     std::cout << "Schema size: " << schema.size() << std::endl;
     std::cout << "Schema: " << schema.c_str() << std::endl;
@@ -37,10 +40,10 @@ static void benchmark_00() {
         .iterations(10)
         .repetitions(10)
         .run("teg:serialization:1mib", [&](){
-            teg::serialize(buffer, std::string{schema.c_str(), schema.size()}, data_out_1mib).or_throw();
+            teg::serialize<force_varint>(buffer, std::string{schema.c_str(), schema.size()}, data_out_1mib).or_throw();
         })
         .run("teg:deserialization:1mib", [&](){
-            teg::deserialize(buffer, schema_in, data_in_1mib).or_throw();
+            teg::deserialize<force_varint>(buffer, schema_in, data_in_1mib).or_throw();
         });
 
     std::cout << "\nBuffer size: " << buffer.size() << std::endl;

@@ -131,6 +131,26 @@ constexpr auto get_allocation_limit() -> uint64_t {
     }
 }
 
+template <options Opt>
+constexpr auto is_varint_forced() -> bool {
+    return Opt & options::force_varint;
+}
+
+template <std::integral T, options Opt>
+constexpr auto requires_varint_cast() -> bool {
+    return is_varint_forced<Opt>() && (sizeof(T) > 2);    
+} 
+
+template <std::integral T, options Opt>
+using select_integer_type = std::conditional_t<requires_varint_cast<T, Opt>(), varint<T>, T>;
+
 } // namespace teg
+
+namespace teg::concepts {
+
+template <class T, options Opt>
+concept varint_cast_required = std::integral<T> && requires_varint_cast<T, Opt>();
+
+} // namespace teg::concepts
 
 #endif // TEG_OPTIONS_H

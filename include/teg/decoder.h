@@ -207,46 +207,57 @@ private:
     ///  
     template <class T> requires (concepts::trivially_deserializable<T, Opt>)
     TEG_NODISCARD TEG_INLINE constexpr auto decode_one(T& trivial) -> error {
-        
-        constexpr bool swap_endian = concepts::endian_swapping_required<T, Opt>;
+       
+        if constexpr (concepts::varint_cast_required<T, Opt>) {
+            select_integer_type<T, Opt> tmp{};     
 
-        if (std::is_constant_evaluated()) {
-            // Compile-time decoding.
-            using trivial_t = std::remove_cvref_t<T>;
-            using src_bytes_t = std::array<std::remove_cv_t<byte_type>, sizeof(trivial_t)>;
-
-            src_bytes_t src_bytes{};
-            auto const result = m_reader.template read_bytes<swap_endian>(src_bytes.data(), src_bytes.size());
-
-            if (failure(result)) TEG_UNLIKELY {
+            if (auto const result = decode_one(tmp); failure(result)) TEG_UNLIKELY {
                 return result;
             }
-            
-            if constexpr (!concepts::c_array<trivial_t>) {
-                // The object being deserialized is not a c-array and we can simply `bit-cast` its content.
-                trivial = std::bit_cast<trivial_t>(src_bytes);
-                return {};
-            }
-            else {
-                // The object being deserialized is a c-array and can have multiple dimensions (rank can be > 1).
-                using c_array_t = trivial_t;
-                using element_t = std::remove_cvref_t<std::remove_all_extents_t<c_array_t>>;
-                using tmp_array_t = std::array<element_t, sizeof(c_array_t) / sizeof(element_t)>;
 
-                // In C++ functions can not return c-arrays, and therefore, std::bit_cast can not be used directly.
-                // Instead, we have to create a temporary array and then copy its elements one by one.
-                tmp_array_t tmp_array = std::bit_cast<tmp_array_t>(src_bytes);
-                copy_md_c_array(trivial, tmp_array);                
-
-                return {};
-            }
+            trivial = static_cast<T>(tmp);
+            return {};
         }
         else {
-            // Run-time decoding.
-            return m_reader.template read_bytes<swap_endian>(
-                reinterpret_cast<byte_type*>(&trivial), sizeof(T));
-        }
+            constexpr bool swap_endian = concepts::endian_swapping_required<T, Opt>;
 
+            if (std::is_constant_evaluated()) {
+                // Compile-time decoding.
+                using trivial_t = std::remove_cvref_t<T>;
+                using src_bytes_t = std::array<std::remove_cv_t<byte_type>, sizeof(trivial_t)>;
+
+                src_bytes_t src_bytes{};
+                auto const result = m_reader.template read_bytes<swap_endian>(src_bytes.data(), src_bytes.size());
+
+                if (failure(result)) TEG_UNLIKELY {
+                    return result;
+                }
+
+                if constexpr (!concepts::c_array<trivial_t>) {
+                    // The object being deserialized is not a c-array and we can simply `bit-cast` its content.
+                    trivial = std::bit_cast<trivial_t>(src_bytes);
+                    return {};
+                }
+                else {
+                    // The object being deserialized is a c-array and can have multiple dimensions (rank can be > 1).
+                    using c_array_t = trivial_t;
+                    using element_t = std::remove_cvref_t<std::remove_all_extents_t<c_array_t>>;
+                    using tmp_array_t = std::array<element_t, sizeof(c_array_t) / sizeof(element_t)>;
+
+                    // In C++ functions can not return c-arrays, and therefore, std::bit_cast can not be used directly.
+                    // Instead, we have to create a temporary array and then copy its elements one by one.
+                    tmp_array_t tmp_array = std::bit_cast<tmp_array_t>(src_bytes);
+                    copy_md_c_array(trivial, tmp_array);                
+
+                    return {};
+                }
+            }
+            else {
+                // Run-time decoding.
+                return m_reader.template read_bytes<swap_endian>(
+                    reinterpret_cast<byte_type*>(&trivial), sizeof(T));
+            }
+        }
     }
 
     ///  \brief Deserializes the given trivially-serializable object.

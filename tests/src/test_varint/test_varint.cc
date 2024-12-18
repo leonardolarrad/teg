@@ -170,3 +170,108 @@ TEST_CASE("De/serialize varints") {
         }
     }
 }
+
+TEST_CASE("Force varint de/encoding") {
+   
+    SECTION("Simple struct") {
+        struct t1 {
+            teg::u32 x;
+            teg::u32 y;
+        };
+
+        constexpr auto mode0 = teg::default_mode | teg::options::force_varint;
+        constexpr auto mode1 = teg::default_mode;
+
+        teg::byte_array b0{};
+        teg::byte_array b1{}; 
+
+        t1 v0 { 1, 2 };
+        teg::serialize<mode0>(b0, v0).or_throw();
+        teg::serialize<mode1>(b1, v0).or_throw();
+
+        ASSERT_LT(b0.size(), b1.size());
+
+        t1 v1;
+        teg::deserialize<mode0>(b0, v1).or_throw();
+
+        ASSERT_EQ(v0.x, v1.x);
+        ASSERT_EQ(v0.y, v1.y);
+
+        teg::deserialize<mode1>(b1, v1).or_throw();
+        ASSERT_EQ(v0.x, v1.x);
+        ASSERT_EQ(v0.y, v1.y);
+    }
+    SECTION("Nested struct") {
+        struct t1 {
+            teg::u32 x;
+            teg::u32 y;
+        };
+
+        struct t2 {
+            t1 v0;
+            t1 v1;
+        };
+
+        constexpr auto mode0 = teg::default_mode | teg::options::force_varint;
+        constexpr auto mode1 = teg::default_mode;
+
+        teg::byte_array b0{};
+        teg::byte_array b1{};
+
+        t2 v0 { { 1, 2 }, { 3, 4 } };
+        teg::serialize<mode0>(b0, v0).or_throw();
+        teg::serialize<mode1>(b1, v0).or_throw();
+
+        ASSERT_LT(b0.size(), b1.size());
+
+        t2 v1;
+        teg::deserialize<mode0>(b0, v1).or_throw();
+
+        ASSERT_EQ(v0.v0.x, v1.v0.x);
+        ASSERT_EQ(v0.v0.y, v1.v0.y);
+        ASSERT_EQ(v0.v1.x, v1.v1.x);
+        ASSERT_EQ(v0.v1.y, v1.v1.y);
+
+        teg::deserialize<mode1>(b1, v1).or_throw();
+        ASSERT_EQ(v0.v0.x, v1.v0.x);
+        ASSERT_EQ(v0.v0.y, v1.v0.y);
+        ASSERT_EQ(v0.v1.x, v1.v1.x);
+        ASSERT_EQ(v0.v1.y, v1.v1.y);
+    }
+    SECTION("Struct with containers") {
+        struct l1 {
+            std::vector<teg::u32> v0;
+            std::vector<teg::u64> v1;
+        };
+
+        constexpr auto mode0 = teg::default_mode | teg::options::force_varint;
+        constexpr auto mode1 = teg::default_mode;
+
+        teg::byte_array b0{};
+        teg::byte_array b1{};
+
+        l1 v0 { { 213213, 1}, {3232133, 123123} };
+        teg::serialize<mode0>(b0, v0).or_throw();
+        teg::serialize<mode1>(b1, v0).or_throw();
+
+        ASSERT_LT(b0.size(), b1.size());
+
+        l1 v1;
+        teg::deserialize<mode0>(b0, v1).or_throw();
+
+        ASSERT_EQ(v0.v0.size(), v1.v0.size());
+        ASSERT_EQ(v0.v1.size(), v1.v1.size());
+        ASSERT_EQ(v0.v0[0], v1.v0[0]);
+        ASSERT_EQ(v0.v0[1], v1.v0[1]);
+        ASSERT_EQ(v0.v1[0], v1.v1[0]);
+        ASSERT_EQ(v0.v1[1], v1.v1[1]);
+
+        teg::deserialize<mode1>(b1, v1).or_throw();
+        ASSERT_EQ(v0.v0.size(), v1.v0.size());
+        ASSERT_EQ(v0.v1.size(), v1.v1.size());
+        ASSERT_EQ(v0.v0[0], v1.v0[0]);
+        ASSERT_EQ(v0.v0[1], v1.v0[1]);
+        ASSERT_EQ(v0.v1[0], v1.v1[0]);
+        ASSERT_EQ(v0.v1[1], v1.v1[1]);
+    }
+}

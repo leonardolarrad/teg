@@ -62,7 +62,7 @@ public:
     ///
     ///  \details Handles endian-swapping if needed.
     ///
-    template <bool swap_endian = false>
+    template <bool SwapEndian = false>
     TEG_NODISCARD TEG_INLINE constexpr auto write_bytes(byte_type const* data, std::size_t size) -> error {
         if constexpr (policy == buffer_safety_policy::safe) {
             if (m_position + size > m_buffer.size()) {
@@ -70,7 +70,7 @@ public:
             }
         }
 
-        if constexpr (!swap_endian) {
+        if constexpr (!SwapEndian) {
             if (std::is_constant_evaluated()) {
                 std::copy(data, data + size, m_buffer.data() + m_position);
                 m_position += size;
@@ -107,10 +107,10 @@ public:
     constexpr stream_writer(std::ostream& stream) noexcept : m_stream(stream) {}
     constexpr stream_writer(std::ostream&& stream) noexcept : m_stream(stream) {}
         
-    template <bool swap_endian = false>
+    template <bool SwapEndian = false>
     TEG_NODISCARD TEG_INLINE auto write_bytes(byte_type const* data, std::size_t size) -> error {
 
-        if constexpr (swap_endian) {
+        if constexpr (SwapEndian) {
             m_stream.write(data, size);
 
             if (m_stream.fail()) TEG_UNLIKELY {
@@ -238,14 +238,21 @@ private:
 
     ///  \brief Calculates the encoding size of the given trivially serializable type.
     ///  
-    template <class T> requires (concepts::builtin<T>)
+    template <class T> 
+    requires concepts::builtin<T>
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size_one(T const& trivial) -> u64 {        
-        return sizeof(trivial);
+        if constexpr (concepts::varint_cast_required<T, Opt>) {
+            return encoded_size_one(select_integer_type<T, Opt>{ trivial });
+        }
+        else {
+            return sizeof(trivial);
+        }
     }
 
     ///  \brief Calculates the encoding size of the given aggregate.
     ///  
-    template <class T> requires (concepts::serializable_aggregate<T>)
+    template <class T> 
+    requires concepts::serializable_aggregate<T>
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size_one(T const& aggregate) -> u64 {
         return visit_members(
             [&](auto&&... members) TEG_INLINE_LAMBDA {
@@ -257,7 +264,8 @@ private:
 
     ///  \brief Calculates the encoding size of the given c-array.
     ///  
-    template <class T> requires (concepts::serializable_c_array<T>) 
+    template <class T> 
+    requires concepts::serializable_c_array<T> 
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size_one(T const& c_array) -> u64 {
         return std::size(c_array) * encoded_size_one(c_array[0]);
     }
@@ -265,8 +273,8 @@ private:
     ///  \brief Calculates the encoding size of the given fixed-size container.
     ///  
     template <class T> 
-        requires (concepts::serializable_container<T>)
-              && (concepts::fixed_size_container<T>)
+    requires (concepts::serializable_container<T>)
+          && (concepts::fixed_size_container<T>)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size_one(T const& fixed_container) -> u64 {
 
         using container_type = std::remove_reference_t<T>;
@@ -287,8 +295,8 @@ private:
     ///  \brief Calculates the encoding size of the given container.
     ///  
     template <class T> 
-        requires (concepts::serializable_container<T>)
-              && (!concepts::fixed_size_container<T>)
+    requires (concepts::serializable_container<T>)
+          && (!concepts::fixed_size_container<T>)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size_one(T const& container) -> u64 {
 
         using container_type = std::remove_reference_t<T>;
@@ -410,21 +418,25 @@ private:
         requires (concepts::trivially_serializable<T, Opt>)
     TEG_NODISCARD TEG_INLINE constexpr auto encode_one(T const& trivial) -> error {
 
-        constexpr bool swap_endian = concepts::endian_swapping_required<T, Opt>;
-
-        if (std::is_constant_evaluated()) {
-            // Compile-time encoding.
-            auto const src_bytes = std::bit_cast<std::array<byte_type, sizeof(T)>>(trivial);
-
-            return m_writer.template write_bytes<swap_endian>(
-                src_bytes.data(), src_bytes.size()); 
+        if constexpr (concepts::varint_cast_required<T, Opt>) {
+            return encode_one(select_integer_type<T, Opt>{ trivial });
         }
         else {
-            // Run-time encoding.
-            return m_writer.template write_bytes<swap_endian>(
-                reinterpret_cast<byte_type const*>(&trivial), sizeof(T));
-        }
+            constexpr bool swap_endian = concepts::endian_swapping_required<T, Opt>;
 
+            if (std::is_constant_evaluated()) {
+                // Compile-time encoding.
+                auto const src_bytes = std::bit_cast<std::array<byte_type, sizeof(T)>>(trivial);
+
+                return m_writer.template write_bytes<swap_endian>(
+                    src_bytes.data(), src_bytes.size()); 
+            }
+            else {
+                // Run-time encoding.
+                return m_writer.template write_bytes<swap_endian>(
+                    reinterpret_cast<byte_type const*>(&trivial), sizeof(T));
+            }
+        }
     }
    
     ///  \brief Serialize a trivially serializable container.
