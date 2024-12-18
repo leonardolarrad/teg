@@ -38,8 +38,8 @@ enum class options : u32 {
     allocation_limit_2gib   = 1 << 5,   // (*) Limit byte buffer allocation to 2 GiB.
     allocation_limit_4gib   = 1 << 6,   //     Limit byte buffer allocation to 4 GiB.
 
-    container_size_native   = 1 << 8,  //     Use native container size type (std::size_t).
-    container_size_varint   = 1 << 9,  //     Use varint container size type (teg::variant<uint64_t>).
+    container_size_native   = 1 << 8,   //     Use native container size type (std::size_t).
+    container_size_varint   = 1 << 9,   //     Use varint container size type (teg::variant<uint64_t>).
     container_size_1b       = 1 << 10,  //     Use 1-byte container size type (uint8_t).
     container_size_2b       = 1 << 11,  //     Use 2-byte container size type (uint16_t).
     container_size_4b       = 1 << 12,  // (*) Use 4-byte container size type (uint32_t). 

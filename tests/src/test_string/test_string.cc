@@ -20,6 +20,11 @@ TEST_CASE("Trivial de/serialization") {
       "rutrum, non consequat arcu porta.";
     teg::serialize(b, s0).or_throw();
 
+    for (auto const byte : b) {
+        std::cout << (char)byte << " ";
+    }
+    std::cout << std::endl;
+
     std::string s1;
     teg::deserialize(b, s1).or_throw();
     ASSERT_EQ(s0, s1);

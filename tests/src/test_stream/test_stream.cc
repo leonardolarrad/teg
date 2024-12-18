@@ -40,17 +40,31 @@ TEST_CASE("De/serialize to stream: Arrays") {
 }
 
 TEST_CASE("De/serialize to stream: Strings") {            
-    std::string s0 = "This is how liberty dies … with thunderous applause.";
+    std::string h0 = "TEG";
+    std::string s0 = "This is how liberty dies ... with thunderous applause.";
     {
         std::ofstream out("strings.bin", std::ios::binary | std::ios::trunc);
-        teg::serialize(out, s0).or_throw();
+        teg::serialize(out, h0, s0).or_throw();
     }
 
+    std::string h1;
     std::string s1;
     {
         std::ifstream in("strings.bin", std::ios::binary);
-        teg::deserialize(in, s1).or_throw();    
+        teg::deserialize(in, h1, s1).or_throw();    
     }
 
+    ASSERT(h0 == h1);
     ASSERT(s0 == s1);
+}
+
+TEST_CASE("Small test") {
+    const char* s = "This is how liberty dies ... with thunderous applause.";
+
+    std::ofstream out("small.bin", std::ios::binary | std::ios::trunc);
+    /*out << s;*/
+    out.write(s, strlen(s));
+    
+
+    teg::serialize(out, "!TEG^").or_throw();
 }
