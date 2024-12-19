@@ -5,12 +5,12 @@ benchmark_dep = declare_dependency(
   include_directories : benchmark_inc
 )
 
+google_benchmark_proj = subproject('google-benchmark')
+google_benchmark_dep = google_benchmark_proj.get_variable('google_benchmark_dep')
+
 subproject('abseil-cpp')
 protobuf_proj = subproject('protobuf')
 protobuf_dep = protobuf_proj.get_variable('protobuf_dep')
-
-google_benchmark_proj = subproject('google-benchmark')
-google_benchmark_dep = google_benchmark_proj.get_variable('google_benchmark_dep')
 
 flatbuffers_proj = subproject('flatbuffers')
 flatbuffers_dep = flatbuffers_proj.get_variable('flatbuffers_dep')
