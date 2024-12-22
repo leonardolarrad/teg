@@ -1,7 +1,7 @@
 benchmark_protobuf = executable(
   'benchmark_protobuf', 
   ['benchmark_protobuf.cc', 'test_data.pb.cc'],
-  dependencies: [teg_dep, benchmark_dep, protobuf_dep]
+  dependencies: [teg_dep, teg_benchmarking_dep, protobuf_dep]
 )
 
 benchmark(

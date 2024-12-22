@@ -1,7 +1,7 @@
 benchmark_flatbuffers = executable(
   'benchmark_flatbuffers', 
   ['benchmark_flatbuffers.cc'],
-  dependencies: [teg_dep, benchmark_dep, flatbuffers_dep]
+  dependencies: [teg_dep, teg_benchmarking_dep, flatbuffers_dep]
 )
 
 benchmark(

@@ -1,7 +1,7 @@
 gbm_teg = executable(
   'gbm_teg', 
   'gbm_teg.cc',
-  dependencies: [teg_dep, benchmark_dep, google_benchmark_dep]
+  dependencies: [teg_dep, teg_benchmarking_dep, google_benchmark_dep]
 )
 
 benchmark(

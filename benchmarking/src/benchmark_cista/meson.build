@@ -1,7 +1,7 @@
 benchmark_cista = executable(
   'benchmark_cista', 
   'benchmark_cista.cc',
-  dependencies: [benchmark_dep]
+  dependencies: [teg_benchmarking_dep]
 )
 
 benchmark(

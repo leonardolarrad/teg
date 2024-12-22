@@ -3,7 +3,7 @@ project(
     ['c', 'cpp'],
     version: '0.1.0',
     license: 'zlib',
-    subproject_dir: 'benchmark/deps',
+    subproject_dir: 'benchmarking/deps',
     default_options: ['cpp_std=c++20'],
 )
 
@@ -37,5 +37,5 @@ endif
 
 # Build benchmarks
 if get_option('enable_benchmarking')
-  subdir('benchmark')
+  subdir('benchmarking')
 endif

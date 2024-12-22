@@ -24,7 +24,7 @@
 #include <cstdint>
 #include <random>
 
-namespace benchmarking {
+namespace benchmarking::test3 {
 
 struct ecommerce_user {
     std::uint64_t uuid;    
