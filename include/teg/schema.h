@@ -384,16 +384,27 @@ TEG_NODISCARD TEG_INLINE constexpr auto schema() -> decltype(auto) {
 template <class... T>
 TEG_NODISCARD TEG_INLINE constexpr auto schema_hash_table() -> decltype(auto) {
 
+    #if defined(_MSC_VER)
+
     return []<std::size_t... I>(std::index_sequence<I...>) constexpr {
         auto hash_n = []<std::size_t N>() constexpr {
             return (md5::hash_u32(schema<N, T...>()));
         };
         
         return std::array<u32, version_count_v<T...>>{
-            (hash_n.operator()<I+1>())...
+            ((hash_n.operator()<I+1>)())...
         };
     }(std::make_index_sequence<version_count_v<T...>>{});
 
+    #else
+
+    return []<std::size_t... I>(std::index_sequence<I...>) constexpr {
+        return std::array<u32, sizeof...(I)>{
+            (md5::hash_u32(schema<I + 1, T...>()))...
+        };
+    }(std::make_index_sequence<version_count_v<T...>>{});    
+
+    #endif
 }
 
 } // namespace teg
