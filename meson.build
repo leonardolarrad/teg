@@ -7,10 +7,10 @@ project(
     default_options: ['cpp_std=c++20'],
 )
 
-add_project_arguments(
-  ['-save-temps', '-fverbose-asm'],
-  language: 'cpp',
-)
+#add_project_arguments(
+#  ['-save-temps', '-fverbose-asm'],
+#  language: 'cpp',
+#)
 
 # Build project
 teg_dir = include_directories('include')

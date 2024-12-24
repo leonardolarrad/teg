@@ -6,7 +6,7 @@ teg_benchmarking_dep = declare_dependency(
 )
 
 # Install dependencies
-google_benchmark_proj = subproject('google-benchmark')
+google_benchmark_proj = subproject('google-benchmark', default_options: ['default_library=static'])
 google_benchmark_dep = google_benchmark_proj.get_variable('google_benchmark_dep')
 
 subproject('abseil-cpp')
@@ -19,10 +19,7 @@ flatbuffers_dep = flatbuffers_proj.get_variable('flatbuffers_dep')
 msgpack_proj = subproject('msgpackc-cxx')
 msgpack_dep = msgpack_proj.get_variable('msgpack_cxx_dep')
 
-#boost_proj = subproject('boost')
-#boost_dep = boost_proj.get_variable('boost_dep')
-
-boost_dep = dependency('boost', modules: ['serialization'])
+boost_dep = dependency('boost', static: true)
 
 # Test obj3d
 subdir('src/test_obj3d/benchmark_teg')
