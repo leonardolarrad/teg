@@ -19,14 +19,14 @@ flatbuffers_dep = flatbuffers_proj.get_variable('flatbuffers_dep')
 msgpack_proj = subproject('msgpackc-cxx')
 msgpack_dep = msgpack_proj.get_variable('msgpack_cxx_dep')
 
+#boost_proj = subproject('boost')
+#boost_dep = boost_proj.get_variable('boost_dep')
+
+boost_dep = dependency('boost', modules: ['serialization'])
+
 # Test obj3d
 subdir('src/test_obj3d/benchmark_teg')
 subdir('src/test_obj3d/benchmark_teg_compact')
 subdir('src/test_obj3d/benchmark_zppbits')
 subdir('src/test_obj3d/benchmark_msgpack')
-
-subdir('src/benchmark_protobuf')
-subdir('src/benchmark_zppbits')
-subdir('src/benchmark_flatbuffers')
-subdir('src/benchmark_cista')
-#subdir('src/gbm_teg')
+subdir('src/test_obj3d/benchmark_boost')
