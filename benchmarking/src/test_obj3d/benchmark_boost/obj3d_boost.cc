@@ -41,33 +41,24 @@ void serialize(Archive& ar, bm::test_obj3d::obj_3d& o, const unsigned int) {
 
 static inline void bm_serialization(benchmark::State& state) {
     auto data_out = bm::test_obj3d::generate_benchmark_data();
-
-    std::ostringstream buffer_out;
-    boost::archive::binary_oarchive archive_out(buffer_out);
-
-    for (auto _ : state) {
-    }
-    /*
-    auto data_out = bm::test_obj3d::generate_benchmark_data();
     std::ostringstream buffer_out;
     
+    boost::archive::binary_oarchive archive_out(buffer_out);
     
     for (auto _ : state) {
         state.PauseTiming();
-        boost::archive::binary_oarchive archive_out(buffer_out);
         buffer_out.seekp(0);
         state.ResumeTiming();
 
         archive_out << data_out;
     }
-    */
+
     #if PRINT_BUFFER_SIZE
     std::cout << buffer_out.str().size() << std::endl;
     #endif
 }
 
 static inline void bm_deserialization(benchmark::State& state) {
-    /*
     auto data_out = bm::test_obj3d::generate_benchmark_data();
     std::stringstream buffer_out;
     boost::archive::binary_oarchive archive_out(buffer_out);
@@ -83,7 +74,6 @@ static inline void bm_deserialization(benchmark::State& state) {
 
         archive_in >> data_in;
     }
-    */
 }
 
 BENCHMARK(bm_serialization)->Repetitions(10);

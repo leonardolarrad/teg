@@ -19,7 +19,7 @@ flatbuffers_dep = flatbuffers_proj.get_variable('flatbuffers_dep')
 msgpack_proj = subproject('msgpackc-cxx')
 msgpack_dep = msgpack_proj.get_variable('msgpack_cxx_dep')
 
-boost_dep = dependency('boost', static: true)
+boost_dep = dependency('boost', modules: ['serialization'], required: true, static: true)
 
 # Test obj3d
 subdir('src/test_obj3d/benchmark_teg')
