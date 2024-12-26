@@ -1,0 +1,25 @@
+syntax = "proto3";
+package protobuf.obj3d;
+
+message IVec3 {
+    int64 x = 1;
+    int64 y = 2;
+    int64 z = 3;
+}
+
+message FVec3 {
+    double x = 1;
+    double y = 2;
+    double z = 3;
+}
+
+message Face {
+    IVec3 vertice_index = 1;
+    IVec3 normal_index = 2;
+}
+
+message Obj3D {
+    repeated FVec3 vertices = 1;
+    repeated FVec3 normals = 2;
+    repeated Face faces = 3;
+}

@@ -28,10 +28,12 @@ namespace benchmarking::test_obj3d {
 
 struct ivec3 {
     int64_t x, y, z;
+    constexpr bool operator==(ivec3 const&) const = default;
 };
 
 struct fvec3 {
     double x, y, z;
+    constexpr bool operator==(fvec3 const&) const = default;
 };
 
 using vertex = fvec3;
@@ -39,13 +41,15 @@ using normal = fvec3;
 
 struct face {
     ivec3 vertex_index;
-    ivec3 normal_index;    
+    ivec3 normal_index;   
+    constexpr bool operator==(face const&) const = default;
 };
 
 struct obj_3d {
     std::vector<vertex> vertices;
     std::vector<normal> normals;
     std::vector<face> faces;
+    constexpr bool operator==(obj_3d const&) const = default;    
 };
 
 static constexpr auto generate_benchmark_data() -> obj_3d {

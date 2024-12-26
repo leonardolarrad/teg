@@ -1,0 +1,26 @@
+namespace flatbuf.obj3d;
+
+struct IVec3 {
+    x: int64;
+    y: int64;
+    z: int64;
+}
+
+struct FVec3 {
+    x: double;
+    y: double;
+    z: double;
+}
+
+struct Face {
+    vertex_index: IVec3;
+    normal_index: IVec3;
+}
+
+table Obj3D {
+    vertices: [FVec3];
+    normals: [FVec3];
+    faces: [Face];
+}
+
+root_type Obj3D;

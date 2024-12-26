@@ -24,6 +24,9 @@ boost_dep = dependency('boost', modules: ['serialization'], required: true, stat
 # Test obj3d
 subdir('src/test_obj3d/benchmark_teg')
 subdir('src/test_obj3d/benchmark_teg_compact')
+subdir('src/test_obj3d/benchmark_teg_native')
 subdir('src/test_obj3d/benchmark_zppbits')
 subdir('src/test_obj3d/benchmark_msgpack')
 subdir('src/test_obj3d/benchmark_boost')
+subdir('src/test_obj3d/benchmark_flatbuf')
+subdir('src/test_obj3d/benchmark_protobuf')

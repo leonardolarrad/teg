@@ -17,22 +17,22 @@ namespace boost {
 namespace serialization {
 
 template <class Archive>
-void serialize(Archive& ar, bm::test_obj3d::ivec3& v, const unsigned int) {
+BOOST_FORCEINLINE void serialize(Archive& ar, bm::test_obj3d::ivec3& v, const unsigned int) {
     ar & v.x & v.y & v.z;
 }
 
 template <class Archive>
-void serialize(Archive& ar, bm::test_obj3d::fvec3& v, const unsigned int) {
+BOOST_FORCEINLINE void serialize(Archive& ar, bm::test_obj3d::fvec3& v, const unsigned int) {
     ar & v.x & v.y & v.z;
 }
 
 template <class Archive>
-void serialize(Archive& ar, bm::test_obj3d::face& f, const unsigned int) {
+BOOST_FORCEINLINE void serialize(Archive& ar, bm::test_obj3d::face& f, const unsigned int) {
     ar & f.vertex_index & f.normal_index;
 }
 
 template <class Archive>
-void serialize(Archive& ar, bm::test_obj3d::obj_3d& o, const unsigned int) {
+BOOST_FORCEINLINE void serialize(Archive& ar, bm::test_obj3d::obj_3d& o, const unsigned int) {
     ar & o.vertices & o.normals & o.faces;
 }
 
