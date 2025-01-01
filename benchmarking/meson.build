@@ -2,7 +2,7 @@ teg_benchmarking_inc = include_directories('include')
 teg_benchmarking_dep = declare_dependency(
   link_args : [],
   compile_args : [],
-  include_directories : teg_benchmarking_inc
+  include_directories : teg_benchmarking_inc,
 )
 
 # Install dependencies
@@ -21,7 +21,7 @@ msgpack_dep = msgpack_proj.get_variable('msgpack_cxx_dep')
 
 boost_dep = dependency('boost', modules: ['serialization'], required: true, static: true)
 
-# Test obj3d
+# Test 1: obj3d
 subdir('src/test_obj3d/benchmark_teg')
 subdir('src/test_obj3d/benchmark_teg_compact')
 subdir('src/test_obj3d/benchmark_teg_native')
@@ -30,3 +30,12 @@ subdir('src/test_obj3d/benchmark_msgpack')
 subdir('src/test_obj3d/benchmark_boost')
 subdir('src/test_obj3d/benchmark_flatbuf')
 subdir('src/test_obj3d/benchmark_protobuf')
+
+# Test 2: ecommerce
+subdir('src/test_ecommerce/benchmark_teg')
+subdir('src/test_ecommerce/benchmark_teg_compact')
+subdir('src/test_ecommerce/benchmark_boost')
+subdir('src/test_ecommerce/benchmark_zppbits')
+subdir('src/test_ecommerce/benchmark_msgpack')
+subdir('src/test_ecommerce/benchmark_flatbuf')
+subdir('src/test_ecommerce/benchmark_protobuf')

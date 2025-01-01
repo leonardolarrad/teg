@@ -4,7 +4,10 @@ project(
     version: '0.1.0',
     license: 'zlib',
     subproject_dir: 'benchmarking/deps',
-    default_options: ['cpp_std=c++20'],
+    default_options: [
+        'cpp_std=c++20',
+        'default_library=static'  
+      ],
 )
 
 #add_project_arguments(
@@ -17,7 +20,7 @@ teg_dir = include_directories('include')
 teg_inc = [teg_dir]
 teg_src = ['src/xxhash.c']
 
-teg_lib = static_library(
+teg_lib = library(
   'teg',
   sources: teg_src,
   include_directories: teg_inc

@@ -1,0 +1,54 @@
+namespace flatbuf.ecommerce;
+
+enum ProductCategory : byte {
+  Electronics,
+  Books,
+  Clothing,
+  Home,
+  Garden,
+  Toys,
+  Food,
+  Baby,
+  Pets,
+  Health,
+  Beauty
+}
+
+table User {
+  uuid: ulong;
+  name: string;
+  email: string;
+  recent_searches: [string];
+}
+
+table Product {
+  uuid: ulong;
+  name: string;
+  description: string;
+  category: ProductCategory;
+  tags: [string];
+  image_lo_res_url: string;
+  image_hi_res_url: string;
+  price: double;
+  discount: double;
+  stock: uint;
+  rating: byte;
+  reviews: uint;
+}
+
+table Page {
+  user: User;
+  permanent_url: string;
+  query: string;
+  page: uint;
+  total_pages: uint;
+  results_per_page: uint;
+  total_results: uint;
+  products: [Product];
+}
+
+table PageList {
+  pages: [Page];
+}
+
+root_type PageList;

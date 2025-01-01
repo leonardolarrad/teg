@@ -1,7 +1,8 @@
-#include <sstream>
+#define PRINT_BUFFER_SIZE 1
 
+#include <sstream>
 #include "teg/teg.h"
-#include "benchmarking/test_obj3d.h"
+#include "benchmarking/test_ecommerce.h"
 #include "benchmark/benchmark.h" // Google benchmark
 
 // Boost.Serialization
@@ -9,31 +10,48 @@
 #include "boost/archive/binary_oarchive.hpp"
 #include "boost/serialization/vector.hpp"
 
-#define PRINT_BUFFER_SIZE 1
+namespace test = benchmarking::test_ecommerce;
 
-namespace bm = benchmarking;
+static std::vector<test::ecommerce_page> data_out =
+    test::generate_benchmark_data(512, 2048); // 1 MiB
 
 namespace boost {
 namespace serialization {
 
 template <class Archive>
-BOOST_FORCEINLINE void serialize(Archive& ar, bm::test_obj3d::ivec3& v, const unsigned int) {
-    ar & v.x & v.y & v.z;
+void serialize(Archive& ar, test::ecommerce_user& v, const unsigned int) {
+    ar & v.uuid;
+    ar & v.name;
+    ar & v.email;
+    ar & v.recent_searches;
 }
 
 template <class Archive>
-BOOST_FORCEINLINE void serialize(Archive& ar, bm::test_obj3d::fvec3& v, const unsigned int) {
-    ar & v.x & v.y & v.z;
+void serialize(Archive& ar, test::ecommerce_product& v, const unsigned int) {
+    ar & v.uuid;
+    ar & v.name;
+    ar & v.description;
+    ar & v.category;
+    ar & v.tags;
+    ar & v.image_lo_res_url;
+    ar & v.image_hi_res_url;
+    ar & v.price;
+    ar & v.discount;
+    ar & v.stock;
+    ar & v.rating;
+    ar & v.reviews;
 }
 
 template <class Archive>
-BOOST_FORCEINLINE void serialize(Archive& ar, bm::test_obj3d::face& f, const unsigned int) {
-    ar & f.vertex_index & f.normal_index;
-}
-
-template <class Archive>
-BOOST_FORCEINLINE void serialize(Archive& ar, bm::test_obj3d::obj_3d& o, const unsigned int) {
-    ar & o.vertices & o.normals & o.faces;
+void serialize(Archive& ar, test::ecommerce_page& v, const unsigned int) {
+    ar & v.user;
+    ar & v.permanent_url;
+    ar & v.query;
+    ar & v.page;
+    ar & v.total_pages;
+    ar & v.results_per_page;
+    ar & v.total_results;
+    ar & v.products;
 }
 
 } // namespace serialization
@@ -45,8 +63,6 @@ BOOST_FORCEINLINE void serialize(Archive& ar, bm::test_obj3d::obj_3d& o, const u
 class static_print_buffer {
 public:
     static_print_buffer() {
-        const auto data_out = bm::test_obj3d::generate_benchmark_data();
-
         std::ostringstream buffer_out;
         boost::archive::binary_oarchive archive_out(buffer_out);
         archive_out << data_out;
@@ -56,9 +72,7 @@ public:
 } static_print;
 #endif // PRINT_BUFFER_SIZE
 
-static void bm_serialization(benchmark::State& state) {
-    const auto data_out = bm::test_obj3d::generate_benchmark_data();
-        
+static void bm_serialization(benchmark::State& state) {        
     for (auto _ : state) {
         std::ostringstream buffer_out;
         boost::archive::binary_oarchive archive_out(buffer_out);
@@ -68,8 +82,6 @@ static void bm_serialization(benchmark::State& state) {
 
 static void bm_deserialization(benchmark::State& state) {
     const auto buffer_out = []() -> std::ostringstream {
-        const auto data_out = bm::test_obj3d::generate_benchmark_data();
-
         std::ostringstream buffer_out;
         boost::archive::binary_oarchive archive_out(buffer_out);
         archive_out << data_out;
@@ -78,7 +90,7 @@ static void bm_deserialization(benchmark::State& state) {
         }();
 
     for (auto _ : state) {
-        bm::test_obj3d::obj_3d data_in;
+        std::vector<test::ecommerce_page> data_in;
         std::istringstream buffer_in(buffer_out.str());
         boost::archive::binary_iarchive archive_in(buffer_in);
 

@@ -24,7 +24,7 @@
 #include <cstdint>
 #include <random>
 
-namespace benchmarking::test3 {
+namespace benchmarking::test_ecommerce {
 
 struct ecommerce_user {
     std::uint64_t uuid;    
@@ -35,7 +35,7 @@ struct ecommerce_user {
     constexpr bool operator==(ecommerce_user const&) const = default;
 };
 
-enum ecommerce_product_category {
+enum ecommerce_product_category : std::uint8_t {
     electronics,
     books,
     clothing,
@@ -176,8 +176,8 @@ ecommerce_page random_page_data(random_number_engine auto& rng, std::size_t byte
     bytes -= sizeof(std::uint32_t)*4;
     bytes -= sizeof(std::vector<ecommerce_product>::size_type);
     
-    std::size_t head_bytes = bytes * (2.0/10.0);
-    std::size_t body_bytes = bytes * (8.0/10.0);
+    std::size_t head_bytes = std::size_t(bytes * (2.0/10.0));
+    std::size_t body_bytes = std::size_t(bytes * (8.0/10.0));
     std::size_t remaining_bytes = bytes - head_bytes - body_bytes;
 
     std::size_t head_bytes_3 = head_bytes / 3;

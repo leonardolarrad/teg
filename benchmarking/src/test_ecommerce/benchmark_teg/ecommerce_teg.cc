@@ -1,9 +1,12 @@
 #include "teg/teg.h"
-#include "benchmarking/test_obj3d.h"
-#include "benchmark/benchmark.h" // Google benchmark
+#include "benchmarking/test_ecommerce.h"
+#include "benchmark/benchmark.h" // Google Benchmark
 
 #define PRINT_BUFFER_SIZE  0
 #define TEST_LIB           0
+
+static std::vector<benchmarking::test_ecommerce::ecommerce_page> data_out =
+    benchmarking::test_ecommerce::generate_benchmark_data(512, 2048); // 1 MiB
 
 #if PRINT_BUFFER_SIZE
 #include <iostream>
@@ -11,7 +14,6 @@
 class static_print_buffer {
 public:
     static_print_buffer() {
-        const auto data_out = benchmarking::test_obj3d::generate_benchmark_data();
         teg::byte_array buffer;
         teg::serialize(buffer, data_out).or_throw();
         std::cout << "teg:buffer size: " << buffer.size() << std::endl;
@@ -26,10 +28,9 @@ public:
 class static_test_lib {
 public:
     static_test_lib() {
-        const auto data_out = benchmarking::test_obj3d::generate_benchmark_data();
         teg::byte_array buffer;
         teg::serialize(buffer, data_out).or_throw();
-        benchmarking::test_obj3d::obj_3d data_in;
+        std::vector<benchmarking::test_ecommerce::ecommerce_page> data_in;
         teg::deserialize(buffer, data_in).or_throw();
 
         if (data_out != data_in) {
@@ -40,8 +41,6 @@ public:
 #endif
 
 static void bm_serialization(benchmark::State& state) {
-    const auto data_out = benchmarking::test_obj3d::generate_benchmark_data();
-
     for (auto _ : state) {
         teg::byte_array buffer_out;
         teg::serialize(buffer_out, data_out).or_throw();
@@ -50,19 +49,17 @@ static void bm_serialization(benchmark::State& state) {
 
 static void bm_deserialization(benchmark::State& state) {    
     auto buffer_in = []() -> teg::byte_array {
-        const auto data_out = benchmarking::test_obj3d::generate_benchmark_data();
-
         teg::byte_array buffer;
         teg::serialize(buffer, data_out).or_throw();
         return buffer;
     }();
 
     for (auto _ : state) {
-        benchmarking::test_obj3d::obj_3d data_in;
+        std::vector<benchmarking::test_ecommerce::ecommerce_page> data_in;
         teg::deserialize(buffer_in, data_in).or_throw();
     }
 }
 
-BENCHMARK(bm_serialization)->Iterations(148805)->Repetitions(1);
-//BENCHMARK(bm_deserialization)->Repetitions(10);
+BENCHMARK(bm_serialization)->Repetitions(10);
+BENCHMARK(bm_deserialization)->Repetitions(10);
 BENCHMARK_MAIN();

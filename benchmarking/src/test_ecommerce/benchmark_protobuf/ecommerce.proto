@@ -1,0 +1,53 @@
+syntax = "proto3";
+package protobuf.ecommerce;
+
+message EcommerceUser {
+    uint64 uuid = 1;
+    string name = 2;
+    string email = 3;
+    repeated string recent_searches = 4;
+}
+
+enum EcommerceProductCategory {
+    ELECTRONICS = 0;
+    BOOKS = 1;
+    CLOTHING = 2;
+    HOME = 3;
+    GARDEN = 4;
+    TOYS = 5;
+    FOOD = 6;
+    BABY = 7;
+    PETS = 8;
+    HEALTH = 9;
+    BEAUTY = 10;
+}
+
+message EcommerceProduct {
+    uint64 uuid = 1;
+    string name = 2;
+    string description = 3;
+    EcommerceProductCategory category = 4;
+    repeated string tags = 5;
+    string image_lo_res_url = 6;
+    string image_hi_res_url = 7;
+    double price = 8;
+    double discount = 9;
+    uint32 stock = 10;
+    uint32 rating = 11;
+    uint32 reviews = 12;
+}
+
+message EcommercePage {
+    EcommerceUser user = 1;
+    string permanent_url = 2;
+    string query = 3;
+    uint32 page = 4;
+    uint32 total_pages = 5;
+    uint32 results_per_page = 6;
+    uint32 total_results = 7;
+    repeated EcommerceProduct products = 8;
+}
+
+message EcommercePages {
+    repeated EcommercePage pages = 1;
+}

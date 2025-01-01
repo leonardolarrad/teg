@@ -40,6 +40,7 @@ static inline auto serialize_obj3d(flatbuffers::FlatBufferBuilder& fbb) -> std::
 }
 
 #if PRINT_BUFFER_SIZE
+#include <iostream>
 class static_print_size {
 public:
     static_print_size() {
@@ -84,6 +85,6 @@ static void bm_deserialization(benchmark::State& state) {
     }
 }
 
-BENCHMARK(bm_serialization)->MinWarmUpTime(10)->Repetitions(10);
-BENCHMARK(bm_deserialization)->MinWarmUpTime(10)->Repetitions(10);
+BENCHMARK(bm_serialization)->Repetitions(10);
+BENCHMARK(bm_deserialization)->Repetitions(10);
 BENCHMARK_MAIN();
