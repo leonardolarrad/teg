@@ -34,6 +34,7 @@ subdir('src/test_obj3d/benchmark_protobuf')
 # Test 2: ecommerce
 subdir('src/test_ecommerce/benchmark_teg')
 subdir('src/test_ecommerce/benchmark_teg_compact')
+subdir('src/test_ecommerce/benchmark_teg_native')
 subdir('src/test_ecommerce/benchmark_boost')
 subdir('src/test_ecommerce/benchmark_zppbits')
 subdir('src/test_ecommerce/benchmark_msgpack')

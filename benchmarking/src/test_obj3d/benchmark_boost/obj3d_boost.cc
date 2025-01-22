@@ -86,6 +86,6 @@ static void bm_deserialization(benchmark::State& state) {
     }
 }
 
-BENCHMARK(bm_serialization)->Repetitions(10);
-BENCHMARK(bm_deserialization)->Repetitions(10);
+//BENCHMARK(bm_serialization)->MinWarmUpTime(2)->Repetitions(20);
+BENCHMARK(bm_deserialization)->MinWarmUpTime(2)->Repetitions(20);
 BENCHMARK_MAIN();

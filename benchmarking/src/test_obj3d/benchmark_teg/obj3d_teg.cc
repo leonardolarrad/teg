@@ -63,6 +63,6 @@ static void bm_deserialization(benchmark::State& state) {
     }
 }
 
-BENCHMARK(bm_serialization)->Iterations(148805)->Repetitions(1);
-//BENCHMARK(bm_deserialization)->Repetitions(10);
+BENCHMARK(bm_serialization)->Repetitions(50);
+BENCHMARK(bm_deserialization)->Repetitions(50);
 BENCHMARK_MAIN();

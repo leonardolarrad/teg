@@ -108,12 +108,9 @@ struct convert<benchmarking::test_obj3d::obj_3d> {
 
 static void bm_serialization(benchmark::State& state) {
     auto data_out = benchmarking::test_obj3d::generate_benchmark_data();
-    msgpack::sbuffer buffer_out;
     
     for (auto _ : state) {
-        state.PauseTiming();
-        buffer_out.clear();
-        state.ResumeTiming();
+        msgpack::sbuffer buffer_out;
         msgpack::pack(buffer_out, data_out);
     }
 }
@@ -124,15 +121,15 @@ static void bm_deserialization(benchmark::State& state) {
         msgpack::pack(buffer, benchmarking::test_obj3d::generate_benchmark_data());
         return buffer;
     }();
-    benchmarking::test_obj3d::obj_3d data_in;
     
     for (auto _ : state) {
+        benchmarking::test_obj3d::obj_3d data_in;
         msgpack::object_handle obj_handle = msgpack::unpack(buffer_in.data(), buffer_in.size());
         msgpack::object obj = obj_handle.get();
         obj.convert(data_in);
     }
 }
 
-BENCHMARK(bm_serialization)->Repetitions(10);
-BENCHMARK(bm_deserialization)->Repetitions(10);
+BENCHMARK(bm_serialization)->Repetitions(50);
+BENCHMARK(bm_deserialization)->Repetitions(50);
 BENCHMARK_MAIN();

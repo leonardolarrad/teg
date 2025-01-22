@@ -17,11 +17,13 @@
 ///  3. This notice may not be removed or altered from any source distribution.
 
 #pragma once
+#include <algorithm>
 #include <concepts>
 #include <cstddef>
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <cstring>
 #include <random>
 
 namespace benchmarking::test_ecommerce {

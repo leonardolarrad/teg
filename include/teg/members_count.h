@@ -133,6 +133,16 @@ namespace teg {
 ///  \see https://en.cppreference.com/w/cpp/language/aggregate_initialization
 ///  
 template <class T> requires (concepts::aggregate<T>)
+TEG_INLINE constexpr std::size_t members_count() {
+    return internal::members_count_impl<T>();
+}
+
+///  \brief Returns the number of data members in an aggregate type.
+///  \tparam T An aggregate type.
+///  
+///  \see https://en.cppreference.com/w/cpp/language/aggregate_initialization
+///  
+template <class T> requires (concepts::aggregate<T>)
 constexpr std::size_t members_count_v = internal::members_count_impl<T>();
 
 } // namespace teg

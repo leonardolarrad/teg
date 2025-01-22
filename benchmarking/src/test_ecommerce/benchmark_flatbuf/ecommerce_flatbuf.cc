@@ -1,18 +1,19 @@
-#define PRINT_BUFFER_SIZE 1
-
 #include <span>
 #include "benchmarking/test_ecommerce.h"
 #include "benchmark/benchmark.h" // Google benchmark
 
-#include "flatbuffers/flatbuffers.h"    
+#include "flatbuffers/flatbuffers.h" // FlatBuffers    
 #include "ecommerce_generated.h"
+
+#define BM_PROFILE_MEMORY 0
 
 namespace test = benchmarking::test_ecommerce;
 
-static std::vector<test::ecommerce_page> data_out =
-    test::generate_benchmark_data(512, 2048); // 1 MiB
+#if BM_PROFILE_MEMORY
+#include "benchmarking/memory_profiling.h"
+#endif
 
-static auto serialize_ecommerce_pages(flatbuffers::FlatBufferBuilder& fbb) -> std::span<uint8_t> {
+static auto serialize_ecommerce_pages(flatbuffers::FlatBufferBuilder& fbb, std::vector<test::ecommerce_page> const& data_out) -> std::span<uint8_t> {
     std::vector<flatbuffers::Offset<flatbuf::ecommerce::Page>> pages {};
 
     for (auto const& page : data_out) {
@@ -56,87 +57,112 @@ static auto serialize_ecommerce_pages(flatbuffers::FlatBufferBuilder& fbb) -> st
     return std::span(fbb.GetBufferPointer(), fbb.GetSize());
 }
 
-#if PRINT_BUFFER_SIZE
-#include <iostream>
-
-class static_print_size {
-public:
-    static_print_size() {
-        flatbuffers::FlatBufferBuilder fbb;
-        std::cout << serialize_ecommerce_pages(fbb).size() << std::endl;
-    }
-} static_print_size;
-#endif
-
 static void bm_serialization(benchmark::State& state) {
+    std::vector<test::ecommerce_page> data_out = test::generate_benchmark_data(1024, state.range(0) * 1024);
+
+    #if BM_PROFILE_MEMORY
+    uint64_t memory_usage = 0;
+    #endif
+
     for (auto _ : state) {
         flatbuffers::FlatBufferBuilder fbb;
-        serialize_ecommerce_pages(fbb);
+        serialize_ecommerce_pages(fbb, data_out);
+
+        #if BM_PROFILE_MEMORY
+        state.PauseTiming();
+        memory_usage = std::max<uint64_t>(memory_usage, get_memory_usage());
+        state.ResumeTiming();
+        #endif
     }
+
+    flatbuffers::FlatBufferBuilder fbb;
+    state.counters["Buffer size"] = benchmark::Counter(
+        serialize_ecommerce_pages(fbb, data_out).size(),
+        benchmark::Counter::kDefaults, 
+        benchmark::Counter::kIs1024);
+
+    state.counters["Bytes/s"] = benchmark::Counter(
+        int64_t(state.iterations()) * int64_t(state.range(0) * 1024 * 1024),
+        benchmark::Counter::kIsRate,
+        benchmark::Counter::kIs1024);
+
+    #if BM_PROFILE_MEMORY
+    state.counters["Memory usage (B)"] = benchmark::Counter(
+        memory_usage, 
+        benchmark::Counter::kDefaults, 
+        benchmark::Counter::kIs1024);
+    #endif
 }
 
 static void bm_deserialization(benchmark::State& state) {
+    std::vector<test::ecommerce_page> data_out = test::generate_benchmark_data(1024, state.range(0) * 1024);
     flatbuffers::FlatBufferBuilder fbb;
-    auto buffer_in = serialize_ecommerce_pages(fbb);
+    auto buffer_in = serialize_ecommerce_pages(fbb, data_out);
 
-    for (auto _ : state) {
-        std::vector<test::ecommerce_page> data_in;        
+    #if BM_PROFILE_MEMORY
+    uint64_t memory_usage = 0;
+    #endif
+
+    for (auto _ : state) {     
         auto const fb_page_list = flatbuf::ecommerce::GetPageList(buffer_in.data());
-        data_in.reserve(fb_page_list->pages()->size());
 
+        // Traverse the data
         for (const auto& fb_page : *fb_page_list->pages()) {
             auto const fb_user = fb_page->user();
 
-            std::vector<std::string> recent_searches;
-            recent_searches.reserve(fb_user->recent_searches()->size());
             for (const auto& fb_search : *fb_user->recent_searches()) {
-                recent_searches.emplace_back(fb_search->str());
+                benchmark::DoNotOptimize(fb_search);
             }
             
-            test::ecommerce_user user {
-                fb_user->uuid(),
-                fb_user->name()->str(),
-                fb_user->email()->str(),
-                recent_searches
-            };
-            
-            std::vector<test::ecommerce_product> products;
-            products.reserve(fb_page->products()->size());
+            benchmark::DoNotOptimize(fb_user->uuid());
+            benchmark::DoNotOptimize(fb_user->name()->str());
+            benchmark::DoNotOptimize(fb_user->email()->str());
 
             for (const auto& fb_product : *fb_page->products()) {
-                std::vector<std::string> tags;
-                tags.reserve(fb_product->tags()->size());
                 for (const auto& fb_tag : *fb_product->tags()) {
-                    tags.emplace_back(fb_tag->str());
+                    benchmark::DoNotOptimize(fb_tag->str());
                 }
                 
-                test::ecommerce_product product {
-                    fb_product->uuid(),
-                    fb_product->name()->str(),
-                    fb_product->description()->str(),
-                    static_cast<test::ecommerce_product_category>(fb_product->category()),
-                    tags,
-                    fb_product->image_lo_res_url()->str()
-                };
-                products.emplace_back(product);
+                benchmark::DoNotOptimize(fb_product->uuid());
+                benchmark::DoNotOptimize(fb_product->name()->str());
+                benchmark::DoNotOptimize(fb_product->description()->str());
+                benchmark::DoNotOptimize(fb_product->category());
+                benchmark::DoNotOptimize(fb_product->image_lo_res_url()->str());
             }
-
-            test::ecommerce_page page {
-                user,
-                fb_page->permanent_url()->str(),
-                fb_page->query()->str(),
-                fb_page->page(),
-                fb_page->total_pages(),
-                fb_page->results_per_page(),
-                fb_page->total_results(),
-                products
-            };
-
-            data_in.emplace_back(page);
         }
+        
+        #if BM_PROFILE_MEMORY
+        state.PauseTiming();
+        memory_usage = std::max<uint64_t>(memory_usage, get_memory_usage());
+        state.ResumeTiming();
+        #endif
     }
+
+    state.counters["Bytes/s"] = benchmark::Counter(
+        int64_t(state.iterations()) * int64_t(state.range(0) * 1024 * 1024),
+        benchmark::Counter::kIsRate,
+        benchmark::Counter::kIs1024);
+
+    #if BM_PROFILE_MEMORY
+    state.counters["Memory usage (B)"] = benchmark::Counter(
+        memory_usage, 
+        benchmark::Counter::kDefaults, 
+        benchmark::Counter::kIs1024);
+    #endif
 }
 
-BENCHMARK(bm_serialization)->Repetitions(10);
-BENCHMARK(bm_deserialization)->Repetitions(10);
+BENCHMARK(bm_serialization)
+    ->RangeMultiplier(2)->Range(1, 1024)
+    ->MinWarmUpTime(1)
+    ->Repetitions(30)
+    ->Unit(benchmark::kMillisecond)
+    ->UseRealTime();
+
+BENCHMARK(bm_deserialization)
+    ->RangeMultiplier(2)->Range(1, 1024)
+    ->MinWarmUpTime(1)
+    ->Repetitions(30)
+    ->Unit(benchmark::kMillisecond)
+    ->UseRealTime();
+
 BENCHMARK_MAIN();

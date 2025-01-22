@@ -16,21 +16,15 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-#ifndef TEG_MEMBERS_GET_H
-#define TEG_MEMBERS_GET_H
+#pragma once
+#include <algorithm>
+#include <cstdint>
+#include <windows.h>
+#include <psapi.h>
 
-#include "teg/members_visitor.h"
-#include "teg/members_tie.h"
-
-namespace teg {
-
-template <std::size_t I, class T>
-requires (concepts::accesible_aggregate<std::remove_cvref_t<T>>)
-      && (I < members_count_v<std::remove_cvref_t<T>>)
-TEG_INLINE constexpr auto get_member(T&& t) -> decltype(auto) {
-    return std::get<I>(tie_members(t));
+uint64_t get_memory_usage() {
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(PROCESS_MEMORY_COUNTERS_EX));
+    //GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
+    return pmc.PrivateUsage;
 }
-
-} // namespace teg
-
-#endif

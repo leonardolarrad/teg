@@ -2,8 +2,8 @@
 #include "benchmarking/test_obj3d.h"
 #include "benchmark/benchmark.h" // Google benchmark
 
-#define PRINT_BUFFER_SIZE  1
-#define TEST_LIB           1
+#define PRINT_BUFFER_SIZE  0
+#define TEST_LIB           0
 
 #if PRINT_BUFFER_SIZE
 #include <iostream>
@@ -63,7 +63,6 @@ static void bm_deserialization(benchmark::State& state) {
     }
 }
 
-BENCHMARK(bm_serialization)->Iterations(148805)->Repetitions(1);
 //BENCHMARK(bm_serialization)->Repetitions(10);
-//BENCHMARK(bm_deserialization)->Repetitions(10);
+BENCHMARK(bm_deserialization)->Repetitions(10);
 BENCHMARK_MAIN();

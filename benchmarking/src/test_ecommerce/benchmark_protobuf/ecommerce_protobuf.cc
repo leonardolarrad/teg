@@ -1,15 +1,15 @@
-#define PRINT_BUFFER_SIZE 0
-
 #include "benchmarking/test_ecommerce.h"
-#include "benchmark/benchmark.h" // Google Benchmark
+#include "benchmark/benchmark.h"
+
+#define BM_PROFILE_MEMORY 0
 
 #include "ecommerce.pb.h" // Google Protobuf
+#if BM_PROFILE_MEMORY
+#include "benchmarking/memory_profiling.h"
+#endif
 
 namespace test = benchmarking::test_ecommerce;
 namespace proto = protobuf::ecommerce;
-
-static std::vector<test::ecommerce_page> test_obj =
-    test::generate_benchmark_data(512, 2048); // 1 MiB
 
 void convert_to_pb(test::ecommerce_user const& src, proto::EcommerceUser* dest) {
     dest->set_uuid(src.uuid);
@@ -127,33 +127,47 @@ void convert_from_pb(proto::EcommercePages const& src, std::vector<test::ecommer
     }
 }
 
-#if PRINT_BUFFER_SIZE
-class static_print_size {
-public:
-    static_print_size() {
-        proto::EcommercePages test_pb;
-        convert_to_pb(test_obj, &test_pb);
-
-        std::string buffer_out;
-        test_pb.SerializeToString(&buffer_out);
-
-        std::cout << "protobuf size: " << buffer_out.size() << std::endl;
-    }
-} static_print_size;
-#endif
-
 static void bm_serialization(benchmark::State& state) {
-    for (auto _ : state) {
-        proto::EcommercePages test_pb;
-        convert_to_pb(test_obj, &test_pb);
+    auto const test_obj = test::generate_benchmark_data(1024, state.range(0) * 1024);
 
-        std::string buffer_out;
+    proto::EcommercePages test_pb;
+    convert_to_pb(test_obj, &test_pb);
+
+    #if BM_PROFILE_MEMORY
+    uint64_t memory_usage = 0;
+    #endif
+
+    std::string buffer_out;
+    for (auto _ : state) {
         test_pb.SerializeToString(&buffer_out);
+
+        #if BM_PROFILE_MEMORY
+        state.PauseTiming();
+        memory_usage = std::max<uint64_t>(memory_usage, get_memory_usage());
+        state.ResumeTiming();
+        #endif
     }
+
+    state.counters["Buffer size (B)"] = benchmark::Counter(
+        buffer_out.size(), 
+        benchmark::Counter::kDefaults, 
+        benchmark::Counter::kIs1024);
+    state.counters["B/s"] = benchmark::Counter(
+        int64_t(state.iterations()) * int64_t(state.range(0) * 1024 * 1024),
+        benchmark::Counter::kIsRate, 
+        benchmark::Counter::kIs1024);
+
+    #if BM_PROFILE_MEMORY
+    state.counters["Memory usage (B)"] = benchmark::Counter(
+        memory_usage, 
+        benchmark::Counter::kDefaults, 
+        benchmark::Counter::kIs1024);
+    #endif 
 }
 
 static void bm_deserialization(benchmark::State& state) {    
-    const auto buffer_in = []() -> std::string {
+    const auto buffer_in = [&]() -> std::string {
+        auto const test_obj = test::generate_benchmark_data(1024, state.range(0) * 1024);
         proto::EcommercePages pb_data_out;
         convert_to_pb(test_obj, &pb_data_out);
         
@@ -162,15 +176,46 @@ static void bm_deserialization(benchmark::State& state) {
         return buffer_out;
     }();
 
+    #if BM_PROFILE_MEMORY
+    uint64_t memory_usage = 0;
+    #endif
+
+    proto::EcommercePages pb_data_in;
     for (auto _ : state) {
-        proto::EcommercePages pb_data_in;
         pb_data_in.ParseFromString(buffer_in);
 
-        std::vector<test::ecommerce_page> data_in;
-        convert_from_pb(pb_data_in, data_in);
+        #if BM_PROFILE_MEMORY
+        state.PauseTiming();
+        memory_usage = std::max<uint64_t>(memory_usage, get_memory_usage());
+        state.ResumeTiming();
+        #endif
     }
+
+    state.counters["B/s"] = benchmark::Counter(
+        int64_t(state.iterations()) * int64_t(state.range(0) * 1024 * 1024),
+        benchmark::Counter::kIsRate, 
+        benchmark::Counter::kIs1024);
+
+    #if BM_PROFILE_MEMORY
+    state.counters["Memory usage (B)"] = benchmark::Counter(
+        memory_usage, 
+        benchmark::Counter::kDefaults, 
+        benchmark::Counter::kIs1024);
+    #endif 
 }
 
-BENCHMARK(bm_serialization)->Repetitions(10);
-BENCHMARK(bm_deserialization)->Repetitions(10);
+BENCHMARK(bm_serialization)
+    ->RangeMultiplier(2)->Range(1, 1024)
+    ->MinWarmUpTime(1)
+    ->Repetitions(30)
+    ->Unit(benchmark::kMillisecond)
+    ->UseRealTime();
+
+BENCHMARK(bm_deserialization)
+    ->RangeMultiplier(2)->Range(1, 1024)
+    ->MinWarmUpTime(1)
+    ->Repetitions(30)
+    ->Unit(benchmark::kMillisecond)
+    ->UseRealTime();
+
 BENCHMARK_MAIN();

@@ -126,3 +126,22 @@ TEST_CASE("Compile-time de/serialization") {
     constexpr auto cx7 = cx_tuple();
     COMPTIME_ASSERT((cx7 == std::tuple<int32_t, int32_t, int32_t>{ 99, 11, 5 }));
 }
+
+constexpr auto cx_buffer() {
+    teg::fixed_byte_array<50> buffer{};
+
+    int i0 = 66;
+    teg::serialize(buffer, i0).or_throw();
+
+    return buffer;
+}
+
+TEST_CASE("Comptime serialization") {
+    constexpr auto buffer = cx_buffer();
+
+    // print buffr
+    for (auto b : buffer) {
+        std::cout << static_cast<int>(b) << " ";
+    }
+    std::cout << std::endl;
+}
