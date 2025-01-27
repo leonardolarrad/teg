@@ -4,7 +4,7 @@
 
 #include "msgpack.hpp" // MessagePack
 
-#define BM_PROFILE_MEMORY 0
+#define BM_PROFILE_MEMORY 1
 
 #if BM_PROFILE_MEMORY
 #include "benchmarking/memory_profiling.h"
@@ -214,17 +214,17 @@ static void bm_deserialization(benchmark::State& state) {
     #endif 
 }
 
-BENCHMARK(bm_serialization)
-    ->RangeMultiplier(2)->Range(1, 1024)
-    ->MinWarmUpTime(1)
-    ->Repetitions(30)
-    ->Unit(benchmark::kMillisecond)
-    ->UseRealTime();
+//BENCHMARK(bm_serialization)
+//    ->RangeMultiplier(2)->Range(1, 1024)
+//    ->MinWarmUpTime(1)
+//    ->Repetitions(30)
+//    ->Unit(benchmark::kMillisecond)
+//    ->UseRealTime();
 
 BENCHMARK(bm_deserialization)
     ->RangeMultiplier(2)->Range(1, 1024)
     ->MinWarmUpTime(1)
-    ->Repetitions(30)
+    ->Repetitions(1)
     ->Unit(benchmark::kMillisecond)
     ->UseRealTime();
 

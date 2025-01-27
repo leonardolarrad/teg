@@ -135,7 +135,7 @@ teg::uleb128::encode(buffer, z);
 
     
 
-    return z;
+    return 0;
 }
 
 #endif 

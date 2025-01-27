@@ -5,12 +5,14 @@
 #include "flatbuffers/flatbuffers.h"
 #include "obj3d_generated.h"
 
-#define PRINT_BUFFER_SIZE 1
-#define TEST_LIB          0
+#define BM_PROFILE_MEMORY 0
+#if BM_PROFILE_MEMORY
+#include "benchmarking/memory_profiling.h"
+#endif
 
-static auto const data_out = benchmarking::test_obj3d::generate_benchmark_data();
+namespace test = benchmarking::test_obj3d;
 
-static inline auto serialize_obj3d(flatbuffers::FlatBufferBuilder& fbb) -> std::span<uint8_t> {
+static inline auto serialize_obj3d(flatbuffers::FlatBufferBuilder& fbb, test::obj_3d const& data_out) -> std::span<uint8_t> {
     std::vector<flatbuf::obj3d::FVec3> vertices;
     std::vector<flatbuf::obj3d::FVec3> normals;
     std::vector<flatbuf::obj3d::Face> faces;
@@ -39,52 +41,97 @@ static inline auto serialize_obj3d(flatbuffers::FlatBufferBuilder& fbb) -> std::
     return std::span{fbb.GetBufferPointer(), fbb.GetSize()};
 }
 
-#if PRINT_BUFFER_SIZE
-#include <iostream>
-class static_print_size {
-public:
-    static_print_size() {
-        flatbuffers::FlatBufferBuilder fbb;
-        std::cout << serialize_obj3d(fbb).size() << std::endl;
-    }
-} static_print_size;
-#endif
-
 static void bm_serialization(benchmark::State& state) {
+    const auto data_out = test::generate_benchmark_data(state.range(0) * 1024 * 1024);
+
+    #if BM_PROFILE_MEMORY
+    uint64_t memory_usage = 0;
+    #endif
+
     for (auto _ : state) {
         flatbuffers::FlatBufferBuilder fbb;
-        serialize_obj3d(fbb);
+        serialize_obj3d(fbb, data_out);
+
+        #if BM_PROFILE_MEMORY
+        state.PauseTiming();
+        memory_usage = std::max<uint64_t>(memory_usage, get_memory_usage());
+        state.ResumeTiming();
+        #endif
     }
+
+    flatbuffers::FlatBufferBuilder fbb;
+    state.counters["Bytes/s"] = benchmark::Counter(
+        int64_t(state.iterations()) * int64_t(state.range(0) * 1024 * 1024),
+        benchmark::Counter::kIsRate,
+        benchmark::Counter::kIs1024);
+    state.counters["Buffer size"] = benchmark::Counter(
+        serialize_obj3d(fbb, data_out).size(),
+        benchmark::Counter::kDefaults, 
+        benchmark::Counter::kIs1024);
+    #if BM_PROFILE_MEMORY
+    state.counters["Memory usage (B)"] = benchmark::Counter(
+        memory_usage, 
+        benchmark::Counter::kDefaults, 
+        benchmark::Counter::kIs1024);
+    #endif
 }
 
-static void bm_deserialization(benchmark::State& state) {    
+static void bm_deserialization(benchmark::State& state) {
+    const auto data_out = test::generate_benchmark_data(state.range(0) * 1024 * 1024);
     flatbuffers::FlatBufferBuilder fbb;
-    auto buffer_in = serialize_obj3d(fbb);
+    const auto buffer_in = serialize_obj3d(fbb, data_out);
+
+    #if BM_PROFILE_MEMORY
+    uint64_t memory_usage = 0;
+    #endif
 
     for (auto _ : state) {
-        benchmarking::test_obj3d::obj_3d obj3d;
         auto const fb_obj3d = flatbuf::obj3d::GetObj3D(buffer_in.data());
-
-        obj3d.vertices.reserve(fb_obj3d->vertices()->size());
-        obj3d.normals.reserve(fb_obj3d->normals()->size());
-        obj3d.faces.reserve(fb_obj3d->faces()->size());
-
+        
         for (const auto& v : *fb_obj3d->vertices()) {
-            obj3d.vertices.emplace_back(benchmarking::test_obj3d::vertex(v->x(), v->y(), v->z()));
+            benchmark::DoNotOptimize(v);
         }
 
         for (const auto& n : *fb_obj3d->normals()) {
-            obj3d.normals.emplace_back(benchmarking::test_obj3d::normal(n->x(), n->y(), n->z()));
+            benchmark::DoNotOptimize(n);
         }
 
         for (const auto& f : *fb_obj3d->faces()) {
-            obj3d.faces.emplace_back(benchmarking::test_obj3d::face(
-                benchmarking::test_obj3d::ivec3(f->vertex_index().x(), f->vertex_index().y(), f->vertex_index().z()),
-                benchmarking::test_obj3d::ivec3(f->normal_index().x(), f->normal_index().y(), f->normal_index().z())));
+            benchmark::DoNotOptimize(f);
         }
+
+        #if BM_PROFILE_MEMORY
+        state.PauseTiming();
+        memory_usage = std::max<uint64_t>(memory_usage, get_memory_usage());
+        state.ResumeTiming();
+        #endif
     }
+
+    state.counters["Bytes/s"] = benchmark::Counter(
+        int64_t(state.iterations()) * int64_t(state.range(0) * 1024 * 1024),
+        benchmark::Counter::kIsRate,
+        benchmark::Counter::kIs1024);
+
+    #if BM_PROFILE_MEMORY
+    state.counters["Memory usage (B)"] = benchmark::Counter(
+        memory_usage, 
+        benchmark::Counter::kDefaults, 
+        benchmark::Counter::kIs1024);
+    #endif
 }
 
-BENCHMARK(bm_serialization)->Repetitions(50);
-BENCHMARK(bm_deserialization)->Repetitions(50);
+BENCHMARK(bm_serialization)
+    ->RangeMultiplier(2)->Range(1, 1024)
+    ->MinWarmUpTime(1)
+    ->Repetitions(30)
+    ->Unit(benchmark::kMillisecond)
+    ->UseRealTime();
+
+BENCHMARK(bm_deserialization)
+    ->RangeMultiplier(2)->Range(1, 1024)
+    ->MinWarmUpTime(1)
+    ->Repetitions(30)
+    ->Unit(benchmark::kMillisecond)
+    ->UseRealTime();
+
 BENCHMARK_MAIN();

@@ -21,22 +21,20 @@ msgpack_dep = msgpack_proj.get_variable('msgpack_cxx_dep')
 
 boost_dep = dependency('boost', modules: ['serialization'], required: true, static: true)
 
-# Test 1: obj3d
-subdir('src/test_obj3d/benchmark_teg')
-subdir('src/test_obj3d/benchmark_teg_compact')
-subdir('src/test_obj3d/benchmark_teg_native')
-subdir('src/test_obj3d/benchmark_zppbits')
-subdir('src/test_obj3d/benchmark_msgpack')
-subdir('src/test_obj3d/benchmark_boost')
-subdir('src/test_obj3d/benchmark_flatbuf')
-subdir('src/test_obj3d/benchmark_protobuf')
-
-# Test 2: ecommerce
+# Test 1: E-commerce
 subdir('src/test_ecommerce/benchmark_teg')
 subdir('src/test_ecommerce/benchmark_teg_compact')
 subdir('src/test_ecommerce/benchmark_teg_native')
 subdir('src/test_ecommerce/benchmark_boost')
-subdir('src/test_ecommerce/benchmark_zppbits')
 subdir('src/test_ecommerce/benchmark_msgpack')
 subdir('src/test_ecommerce/benchmark_flatbuf')
 subdir('src/test_ecommerce/benchmark_protobuf')
+
+# Test 2: Model 3d
+subdir('src/test_obj3d/benchmark_teg')
+subdir('src/test_obj3d/benchmark_teg_compact')
+subdir('src/test_obj3d/benchmark_teg_native')
+subdir('src/test_obj3d/benchmark_msgpack')
+subdir('src/test_obj3d/benchmark_boost')
+subdir('src/test_obj3d/benchmark_flatbuf')
+subdir('src/test_obj3d/benchmark_protobuf')

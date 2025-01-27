@@ -58,7 +58,7 @@ static auto serialize_ecommerce_pages(flatbuffers::FlatBufferBuilder& fbb, std::
 }
 
 static void bm_serialization(benchmark::State& state) {
-    std::vector<test::ecommerce_page> data_out = test::generate_benchmark_data(1024, state.range(0) * 1024);
+    const auto data_out = test::generate_benchmark_data(1024, state.range(0) * 1024);
 
     #if BM_PROFILE_MEMORY
     uint64_t memory_usage = 0;
@@ -95,9 +95,9 @@ static void bm_serialization(benchmark::State& state) {
 }
 
 static void bm_deserialization(benchmark::State& state) {
-    std::vector<test::ecommerce_page> data_out = test::generate_benchmark_data(1024, state.range(0) * 1024);
+    const auto data_out = test::generate_benchmark_data(1024, state.range(0) * 1024);
     flatbuffers::FlatBufferBuilder fbb;
-    auto buffer_in = serialize_ecommerce_pages(fbb, data_out);
+    const auto buffer_in = serialize_ecommerce_pages(fbb, data_out);
 
     #if BM_PROFILE_MEMORY
     uint64_t memory_usage = 0;

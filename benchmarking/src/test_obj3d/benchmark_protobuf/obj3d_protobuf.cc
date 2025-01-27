@@ -1,11 +1,11 @@
-#define PRINT_BUFFER_SIZE 0
-
 #include "benchmarking/test_obj3d.h"
 #include "benchmark/benchmark.h" // Google benchmark
-
 #include "obj3d.pb.h"
 
-static auto const data_out = benchmarking::test_obj3d::generate_benchmark_data();
+#define BM_PROFILE_MEMORY 0
+#if BM_PROFILE_MEMORY
+#include "benchmarking/memory_profiling.h"
+#endif
 
 namespace test = benchmarking::test_obj3d;
 namespace proto = protobuf::obj3d;
@@ -68,36 +68,48 @@ void inline convert_from_pb(proto::Obj3D const& src, test::obj_3d& dest) {
     }        
 }
 
-static const auto test_obj = test::generate_benchmark_data();
-
-#if PRINT_BUFFER_SIZE
-class static_print_size {
-public:
-    static_print_size() {
-        proto::Obj3D test_pb;
-        convert_to_pb(test_obj, &test_pb);
-
-        std::string buffer_out;
-        test_pb.SerializeToString(&buffer_out);
-
-        std::cout << buffer_out.size() << std::endl;
-    }
-} static_print_size;
-#endif
-
 static void bm_serialization(benchmark::State& state) {
+    auto const test_obj = test::generate_benchmark_data(state.range(0) * 1024 * 1024);
 
+    proto::Obj3D test_pb;
+    convert_to_pb(test_obj, &test_pb);
+
+    #if BM_PROFILE_MEMORY
+    uint64_t memory_usage = 0;
+    #endif
+
+    std::string buffer_out;
     for (auto _ : state) {
-        proto::Obj3D test_pb;
-        convert_to_pb(test_obj, &test_pb);
-
-        std::string buffer_out;
         test_pb.SerializeToString(&buffer_out);
+
+        #if BM_PROFILE_MEMORY
+        state.PauseTiming();
+        memory_usage = std::max<uint64_t>(memory_usage, get_memory_usage());
+        state.ResumeTiming();
+        #endif
     }
+
+    state.counters["Buffer size (B)"] = benchmark::Counter(
+        buffer_out.size(), 
+        benchmark::Counter::kDefaults, 
+        benchmark::Counter::kIs1024);
+    state.counters["B/s"] = benchmark::Counter(
+        int64_t(state.iterations()) * int64_t(state.range(0) * 1024 * 1024),
+        benchmark::Counter::kIsRate, 
+        benchmark::Counter::kIs1024);
+
+    #if BM_PROFILE_MEMORY
+    state.counters["Memory usage (B)"] = benchmark::Counter(
+        memory_usage, 
+        benchmark::Counter::kDefaults, 
+        benchmark::Counter::kIs1024);
+    #endif 
 }
 
 static void bm_deserialization(benchmark::State& state) {    
-    const auto buffer_in = []() -> std::string {
+    const auto buffer_in = [&]() -> std::string {
+        auto const test_obj = test::generate_benchmark_data(state.range(0) * 1024 * 1024);
+
         proto::Obj3D pb_data_out;
         convert_to_pb(test_obj, &pb_data_out);
         
@@ -106,15 +118,46 @@ static void bm_deserialization(benchmark::State& state) {
         return buffer_out;
     }();
 
+    #if BM_PROFILE_MEMORY
+    uint64_t memory_usage = 0;
+    #endif
+
+    proto::Obj3D pb_data_in;
     for (auto _ : state) {
-        proto::Obj3D pb_data_in;
         pb_data_in.ParseFromString(buffer_in);
 
-        test::obj_3d data_in;
-        convert_from_pb(pb_data_in, data_in);
+        #if BM_PROFILE_MEMORY
+        state.PauseTiming();
+        memory_usage = std::max<uint64_t>(memory_usage, get_memory_usage());
+        state.ResumeTiming();
+        #endif
     }
+
+    state.counters["B/s"] = benchmark::Counter(
+        int64_t(state.iterations()) * int64_t(state.range(0) * 1024 * 1024),
+        benchmark::Counter::kIsRate, 
+        benchmark::Counter::kIs1024);
+
+    #if BM_PROFILE_MEMORY
+    state.counters["Memory usage (B)"] = benchmark::Counter(
+        memory_usage, 
+        benchmark::Counter::kDefaults, 
+        benchmark::Counter::kIs1024);
+    #endif 
 }
 
-BENCHMARK(bm_serialization)->Repetitions(50);
-BENCHMARK(bm_deserialization)->Repetitions(50);
+BENCHMARK(bm_serialization)
+    ->RangeMultiplier(2)->Range(1, 1024)
+    ->MinWarmUpTime(1)
+    ->Repetitions(30)
+    ->Unit(benchmark::kMillisecond)
+    ->UseRealTime();
+
+BENCHMARK(bm_deserialization)
+    ->RangeMultiplier(2)->Range(1, 1024)
+    ->MinWarmUpTime(1)
+    ->Repetitions(30)
+    ->Unit(benchmark::kMillisecond)
+    ->UseRealTime();
+
 BENCHMARK_MAIN();
