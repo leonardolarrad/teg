@@ -15,6 +15,13 @@ project(
 #  language: 'cpp',
 #)
 
+# Generate header files: members_visit.h and members_tie.h
+run_command(
+  'python', './scripts/generate_headers.py', 
+  '--n', get_option('max_visit_members').to_string(), 
+  '--output-dir', meson.source_root() + '/include/teg/',
+  check: true)
+
 # Build project
 teg_dir = include_directories('include')
 teg_inc = [teg_dir]
@@ -23,7 +30,7 @@ teg_src = ['src/xxhash.c']
 teg_lib = library(
   'teg',
   sources: teg_src,
-  include_directories: teg_inc
+  include_directories: teg_inc,
 )
 
 teg_dep = declare_dependency(
@@ -42,3 +49,6 @@ endif
 if get_option('enable_benchmarking')
   subdir('benchmarking')
 endif
+
+# Install headers
+install_subdir('include/teg', install_dir: get_option('includedir'))

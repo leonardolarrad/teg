@@ -1,9 +1,18 @@
-option('enable_tests',
+option(
+  'max_visit_members', 
+  type : 'integer', 
+  min : 0, 
+  max : 4294967295, # 2^32 - 1
+  value : 64       # default value
+)
+option(
+  'enable_tests',
   type : 'boolean',
-  value : true,
+  value : false,
   description : 'Enables tests.'
 )
-option('enable_benchmarking',
+option(
+  'enable_benchmarking',
   type : 'boolean',
   value : false,
   description : 'Enables benchmarking.'

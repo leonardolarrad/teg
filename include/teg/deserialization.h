@@ -62,7 +62,6 @@ TEG_NODISCARD TEG_INLINE constexpr auto deserialize(Buf& input_buffer, T&... obj
     
     // Verify schema.
     for (u8 i = 0; i < client_schema_table_size; ++i) {
-        
         u32 client_schema_hash;
         
         if (result = header_decoder.decode(client_schema_hash); failure(result)) TEG_UNLIKELY {

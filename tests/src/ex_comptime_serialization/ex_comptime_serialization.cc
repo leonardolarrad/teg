@@ -1,4 +1,5 @@
 #include "teg/teg.h"
+#include <iostream>
 
 class User {
 public:
@@ -7,135 +8,61 @@ public:
     std::string email;
     uint64_t created_at;
     uint64_t modified_at;
+    std::optional<std::array<uint8_t, 6>> sms_code;
 };
-
-#if false 
-
-constexpr teg::fixed_byte_array<17> serialize_number(teg::i32 number) {
-    teg::fixed_byte_array<17> buffer{};
-    teg::serialize(buffer, number).or_throw();
-    
-    return buffer;
-}
-
-int main() {
-    auto buffer = serialize_number(99);   
-
-    return 0;
-}
-
-#endif
-
-
-#if false 
-
-int main() {
-    auto user = User{ 123, "Juan Carlos", "juanc99@gmail.com" };
-    const std::string& user_email = teg::get_member<2>(user);
-
-    return 0;
-}
-
-#endif
-
-#if false
-
-#include <iostream>
 
 template <class T>
 void print(T const& t) {
-    std::cout << t << " ";
+    std::cout << t;
 }
-
-
-int main() {
-    auto user = User { 1,  "Juan Carlos", "jnc99@gmail.com", 1738714000, 1738742800 };
-
-teg::visit_members(
-    [](auto const&... members) {
-        (print(members), ...);
-    },
-    user
-);
-
-    return 0;
-}
-
-#endif
-
-#if false
-
-#include <stdlib.h>     /* srand, rand */
-#include <time.h>       /* time */
-
-
-
-class Vector3 {
-public:
-    float x, y, z;
-};
-
-int main() {
-    srand(time(NULL));
-    auto v1 = Vector3{ float(rand() % 10 + 1), float(rand() % 10 + 1), float(rand() % 10 + 1) };
-    auto v2 = Vector3{ float(rand() % 10 + 1), float(rand() % 10 + 1), float(rand() % 10 + 1) };
-
-bool t = teg::memberwise_equal(v1, v2);
-
-    return t;
-}
-
-#endif
-
-#if false
-
-#include <tuple>
-#include <string>
-#include <iostream>
 
 template <class T>
-void print(T const& t) {
-    std::cout << t << " ";
+void hex_print(T const& t) {
+    std::cout << std::hex << (int)t << " ";
 }
 
-template <class T, class U>
-void print(T const& t, U const& u) {
-    std::cout << t << " " << u;
-}
+struct image_data_v1 {
+    std::string id;
+    std::string content_base64;
+};
 
-uint64_t time() {
-    return 1738749123;
-}
+struct image_data_v2 {
+    std::string id;
+    std::string content_base64;
+    teg::compatible<std::string, 2> alt_text;
+};
+
+struct NonPacked {
+    uint32_t a;
+    uint8_t b;
+};
+
+    #pragma pack(push, 1)
+    struct Packed {
+        uint32_t a;
+        uint8_t b;
+    };
+    #pragma pack(pop)
+
 
 int main() {
-auto user = User{ 1,  "Juan Carlos", "jnc99@gmail.com", 1738714000, 1738742800 };
+    constexpr bool is_packed = teg::concepts::packed_layout<Packed>;
 
-teg::get_member<2>(user) = "juanc99@gmail.com";
-teg::get_member<4>(user) = time();
+    try {
+        teg::fixed_byte_array<1> buffer; // A buffer with just 1 byte of space
+        auto result = teg::serialize(buffer, "Just an ordinary string");
+        print(result.code);
+    }
+    catch (std::exception e) {
+        print(e.what()); // system_error 
+    }
 
-print(user.email, user.modified_at);
 
-    return 0;
-}
-
-#endif 
-
-#if true 
-
-int main() {
-int64_t n = -200;
-
-uint64_t z = teg::zigzag::encode(n);
-       
-
-std::vector<uint8_t> buffer;
-buffer.resize(teg::uleb128::encoded_size(z));
-
-teg::uleb128::encode(buffer, z);
-
+    teg::fixed_string<34> const schema = teg::schema<1, User>();
     
-
+    for (auto x : schema) {
+        print(x);
+    }
+    
     return 0;
 }
-
-#endif 

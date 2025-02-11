@@ -28,11 +28,14 @@ def write_to_file(filename, content):
 if __name__ == '__main__':
     # Parse command line arguments.
     parser = argparse.ArgumentParser("generate_headers")
-    parser.add_argument('--n', help="number of functions to generate", type=int, default=64)
+    parser.add_argument('--n', help="number of functions to generate", type=int, default=255)
+    parser.add_argument('--output-dir', help="output directory", type=str, default="./../include/teg/")
     args = parser.parse_args()
 
     members_tie_h = generate_members_tie_h.generate_header(args.n)
     members_visitor_h = generate_members_visitor_h.generate_header(args.n)
     
-    write_to_file("members_tie.h.gen", members_tie_h)
-    write_to_file("members_visitor.h.gen", members_visitor_h)
+    write_to_file(args.output_dir + "members_tie.h", members_tie_h)
+    write_to_file(args.output_dir + "members_visitor.h", members_visitor_h)
+
+    exit()
