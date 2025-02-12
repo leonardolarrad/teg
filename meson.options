@@ -3,7 +3,7 @@ option(
   type : 'integer', 
   min : 0, 
   max : 4294967295, # 2^32 - 1
-  value : 64       # default value
+  value : 255       # default value
 )
 option(
   'enable_tests',
