@@ -160,7 +160,7 @@ namespace teg::concepts::internal {
 
 class type_analyzer {
 public:
-    static constexpr u32 max_recursion_depth = 500;
+    static constexpr u32 max_recursion_depth = 100;
 
     template <class T, u32 Depth = 0>
     static constexpr auto is_serializable() -> bool {
