@@ -294,7 +294,7 @@ private:
     ///  \brief Deserializes the given aggregate.
     ///  
     template <class T>
-        requires (concepts::serializable_aggregate<T>)
+        requires (concepts::match_aggregate<T>)
              && (!concepts::trivially_deserializable<T, Opt>)
     TEG_NODISCARD TEG_INLINE constexpr auto decode_one(T& aggregate) -> error {
 
@@ -309,8 +309,8 @@ private:
     ///  \brief Deserializes a bounded c-array or a fixed-size container.
     ///  
     template <class T>
-        requires (concepts::serializable_c_array<T> 
-              || (concepts::serializable_container<T> && concepts::fixed_size_container<T>))
+        requires (concepts::match_c_array<T> 
+              || (concepts::match_container<T> && concepts::fixed_size_container<T>))
               && (!concepts::trivially_deserializable<T, Opt>)
               && (!concepts::trivially_serializable_container<T, Opt>)
     TEG_NODISCARD TEG_INLINE constexpr auto decode_one(T& array) -> error {
@@ -331,7 +331,7 @@ private:
     ///  including contiguous containers and associative containers with a generic approach.
     ///  
     template <class T> 
-        requires (concepts::serializable_container<T>)
+        requires (concepts::match_container<T>)
               && (!concepts::fixed_size_container<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto decode_one(T& container) -> error {
         
@@ -440,7 +440,7 @@ private:
 
     ///  \brief Deserializes the given owning pointer.
     ///  
-    template <class T> requires (concepts::serializable_owning_ptr<T>)
+    template <class T> requires (concepts::match_owning_ptr<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto decode_one(T& pointer) -> error {
 
         using type = std::remove_reference_t<T>;
@@ -460,7 +460,7 @@ private:
 
     ///  \brief Deserializes the given optional.
     ///  
-    template <class T> requires (concepts::serializable_optional<T>)
+    template <class T> requires (concepts::match_optional<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto decode_one(T& optional) -> error {
 
         using type = std::remove_reference_t<T>;
@@ -489,7 +489,7 @@ private:
 
     ///  \brief Deserializes the given tuple-like object. 
     ///
-    template <class T> requires (concepts::serializable_tuple<T>)
+    template <class T> requires (concepts::match_tuple<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto decode_one(T& tuple) -> error {
 
         return std::apply(
@@ -502,7 +502,7 @@ private:
 
     ///  \brief Deserializes the given variant.
     ///  
-    template <class T> requires (concepts::serializable_variant<T>)
+    template <class T> requires (concepts::match_variant<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto decode_one(T& variant) -> error {
 
         using variant_type = std::remove_reference_t<T>;
@@ -545,7 +545,7 @@ private:
             }, usr_obj);
     }
 
-    template <class T> requires (concepts::serializable_compatible<T>)
+    template <class T> requires (concepts::match_compatible<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto decode_one(T& compatible) -> error {
         
         using type = std::remove_reference_t<T>;

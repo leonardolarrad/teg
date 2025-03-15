@@ -41,7 +41,7 @@ public:
         if constexpr (concepts::compatible<T>) {
             return 0; // Compatible objects cannot be the root type.
         }
-        else if constexpr (concepts::serializable_aggregate<T> || concepts::serializable_tuple<T>) {
+        else if constexpr (concepts::match_aggregate<T> || concepts::match_tuple<T>) {
             auto const get_member_version = []<std::size_t I, class M>() constexpr -> u64 {
                 if constexpr (I == 0 && concepts::compatible<M>) {
                     return 0; // Compatible objects cannot be the root type.
@@ -53,7 +53,7 @@ public:
                 }
             };
 
-            if constexpr (concepts::serializable_aggregate<T>) {
+            if constexpr (concepts::match_aggregate<T>) {
                 std::array<u64, members_count_v<T>> const version_control = 
                     [&get_member_version]<size_t... I>(std::index_sequence<I...>) constexpr {
                         return std::array<u64, members_count_v<T>>{
@@ -103,15 +103,13 @@ public:
 ///
 template <concepts::serializable ...T>
 requires (sizeof...(T) > 0)
-TEG_NODISCARD TEG_INLINE constexpr auto version_count() -> u64 {
-    
+TEG_NODISCARD TEG_INLINE constexpr auto version_count() -> u64 {    
     if constexpr (sizeof...(T) == 1) {
         return schema_analyzer::template version_count<T...>();
     }
     else {
         return schema_analyzer::template version_count<std::tuple<T...>>();
     }
-
 }
 
 ///  \brief Number of versions represented in the type schema.
@@ -125,33 +123,33 @@ constexpr u64 version_count_v = version_count<T...>();
 
 class schema_encoder {
 public:
-    static constexpr auto builtin_char = make_fixed_string("char");
-    static constexpr auto builtin_u8 = make_fixed_string("u8");
-    static constexpr auto builtin_u16 = make_fixed_string("u16");
-    static constexpr auto builtin_u32 = make_fixed_string("u32");
-    static constexpr auto builtin_u64 = make_fixed_string("u64");
-    static constexpr auto builtin_i8 = make_fixed_string("i8");
-    static constexpr auto builtin_i16 = make_fixed_string("i16");
-    static constexpr auto builtin_i32 = make_fixed_string("i32");
-    static constexpr auto builtin_i64 = make_fixed_string("i64");
-    static constexpr auto builtin_f32 = make_fixed_string("f32");
-    static constexpr auto builtin_f64 = make_fixed_string("f64");
+    static constexpr auto builtin_char = make_fixed_string("u8");
+    static constexpr auto builtin_u8   = make_fixed_string("u8");
+    static constexpr auto builtin_u16  = make_fixed_string("u16");
+    static constexpr auto builtin_u32  = make_fixed_string("u32");
+    static constexpr auto builtin_u64  = make_fixed_string("u64");
+    static constexpr auto builtin_i8   = make_fixed_string("i8");
+    static constexpr auto builtin_i16  = make_fixed_string("i16");
+    static constexpr auto builtin_i32  = make_fixed_string("i32");
+    static constexpr auto builtin_i64  = make_fixed_string("i64");
+    static constexpr auto builtin_f32  = make_fixed_string("f32");
+    static constexpr auto builtin_f64  = make_fixed_string("f64");
 
-    static constexpr auto struct_begin = make_fixed_string("{");
-    static constexpr auto struct_end = make_fixed_string("}");
+    static constexpr auto struct_begin    = make_fixed_string("{");
+    static constexpr auto struct_end      = make_fixed_string("}");
     static constexpr auto container_begin = make_fixed_string("[");
-    static constexpr auto container_end = make_fixed_string("]");
-    static constexpr auto tuple_begin = make_fixed_string("(");
-    static constexpr auto tuple_end = make_fixed_string(")");
-    static constexpr auto variant_begin = make_fixed_string("<");
-    static constexpr auto variant_end = make_fixed_string(">");
+    static constexpr auto container_end   = make_fixed_string("]");
+    static constexpr auto tuple_begin     = make_fixed_string("(");
+    static constexpr auto tuple_end       = make_fixed_string(")");
+    static constexpr auto variant_begin   = make_fixed_string("<");
+    static constexpr auto variant_end     = make_fixed_string(">");
     
     static constexpr auto fixed_container_prefix = make_fixed_string("#");
-    static constexpr auto owning_ptr_prefix = make_fixed_string("*");
-    static constexpr auto optional_prefix = make_fixed_string("?");
-    static constexpr auto compatible_prefix = make_fixed_string("@");
-    static constexpr auto separator = make_fixed_string(" ");
-    static constexpr auto union_separator = make_fixed_string("|");
+    static constexpr auto owning_ptr_prefix      = make_fixed_string("*");
+    static constexpr auto optional_prefix        = make_fixed_string("?");
+    static constexpr auto compatible_prefix      = make_fixed_string("@");
+    static constexpr auto separator              = make_fixed_string(" ");
+    static constexpr auto union_separator        = make_fixed_string("|");
 
     ///  \brief Returns the token that represents the given built-in type.
     ///
@@ -189,7 +187,7 @@ public:
     ///
     template <concepts::serializable T, u64 V>
     static constexpr auto schema() -> decltype(auto) {
-        if constexpr(concepts::serializable_aggregate<T> || concepts::serializable_tuple<T>) {
+        if constexpr(concepts::match_aggregate<T> || concepts::match_tuple<T>) {
             auto member_encoder = []<std::size_t I, class M>() constexpr -> decltype(auto) {
                 if constexpr (concepts::compatible<M>) {
                     if constexpr (M::version == V) {
@@ -220,7 +218,7 @@ public:
                 }
             };
 
-            if constexpr (concepts::serializable_tuple<T>) {
+            if constexpr (concepts::match_tuple<T>) {
                 auto root_schema = tuple_begin +  
                     [&encode_next]<size_t... I>(std::index_sequence<I...>) constexpr {
                         return (
@@ -248,7 +246,7 @@ public:
             }
         }
         else {
-            return encode<T>();
+            return encode<std::remove_cvref_t<T>>();
         }
     }
 
@@ -261,7 +259,7 @@ public:
 
     ///  \brief Encodes the schema for an aggregate type.
     ///
-    template <concepts::serializable_aggregate T>
+    template <concepts::match_aggregate T>
     static constexpr auto encode() -> decltype(auto) {
         return visit_members(
             [](auto&&... members) constexpr {
@@ -279,7 +277,7 @@ public:
 
     ///  \brief Encodes the schema for a c-array type.
     ///
-    template <concepts::serializable_c_array T>
+    template <concepts::match_c_array T>
     static constexpr auto encode() -> decltype(auto) {
         return fixed_container_prefix
              + container_begin
@@ -289,7 +287,7 @@ public:
 
     ///  \brief Encodes the schema for a container type.
     ///
-    template <concepts::serializable_container T>
+    template <concepts::match_container T>
     static constexpr auto encode() -> decltype(auto) {
         if constexpr (concepts::fixed_size_container<T>) {
             return fixed_container_prefix
@@ -305,21 +303,21 @@ public:
 
     ///  \brief Encodes the schema for an optional type.
     ///  
-    template <concepts::serializable_optional T>
+    template <concepts::match_optional T>
     static constexpr auto encode() -> decltype(auto) {
         return optional_prefix + encode<typename T::value_type>();
     }
 
     ///  \brief Encodes the schema for an owning pointer type.
     ///
-    template <concepts::serializable_owning_ptr T>
+    template <concepts::match_owning_ptr T>
     static constexpr auto encode() -> decltype(auto) {
         return owning_ptr_prefix + encode<typename T::element_type>();
     }
 
     ///  \brief Encodes the schema for a variant type.
     ///  
-    template <concepts::serializable_variant T>
+    template <concepts::match_variant T>
     static constexpr auto encode() -> decltype(auto) {
 
         return variant_begin + 
@@ -335,7 +333,7 @@ public:
 
     ///  \brief Encodes the schema for a tuple type.
     ///
-    template <concepts::serializable_tuple T> 
+    template <concepts::match_tuple T> 
     static constexpr auto encode() -> decltype(auto) {
         return tuple_begin + 
             []<std::size_t... I>(std::index_sequence<I...>) constexpr {
@@ -348,14 +346,14 @@ public:
 
     ///  \brief Encodes the schema for a compatible type.
     ///
-    template <concepts::serializable_compatible T>
+    template <concepts::match_compatible T>
     static constexpr auto encode() -> decltype(auto) {
         return compatible_prefix + encode<typename T::value_type>();
     }
 
     ///  \brief Encodes the schema for a user-defined type.
     ///  
-    template <concepts::user_defined_serialization T>
+    template <class T> requires concepts::user_defined_serialization<std::remove_cvref_t<T>>
     static constexpr auto  encode() -> decltype(auto) {
         return usr_schema(T{});
     }
@@ -372,10 +370,10 @@ template <u64 V, class... T>
 requires (sizeof...(T) > 0) && (V >= 1)
 TEG_NODISCARD TEG_INLINE constexpr auto schema() -> decltype(auto) {
     if constexpr (sizeof...(T) == 1) {
-        return schema_encoder::schema<T..., V>();
+        return schema_encoder::schema<std::remove_cvref_t<T>..., V>();
     }
     else {
-        return schema_encoder::schema<std::tuple<T...>, V>();
+        return schema_encoder::schema<std::tuple<std::remove_cvref_t<T>...>, V>();
     }
 }
 
@@ -388,13 +386,13 @@ TEG_NODISCARD TEG_INLINE constexpr auto schema_hash_table() -> decltype(auto) {
 
     return []<std::size_t... I>(std::index_sequence<I...>) constexpr {
         auto hash_n = []<std::size_t N>() constexpr {
-            return (md5::hash_u32(schema<N, T...>()));
+            return (md5::hash_u32(schema<N, std::remove_cvref_t<T>...>()));
         };
         
-        return std::array<u32, version_count_v<T...>>{
+        return std::array<u32, version_count_v<std::remove_cvref_t<T>...>>{
             ((hash_n.operator()<I+1>)())...
         };
-    }(std::make_index_sequence<version_count_v<T...>>{});
+    }(std::make_index_sequence<version_count_v<std::remove_cvref_t<T>...>>{});
 
     #else
 

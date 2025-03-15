@@ -31,4 +31,4 @@ subdir('src/test_stream')
 subdir('src/test_schema')
 subdir('src/test_compatible')
 
-#subdir('src/ex_comptime_serialization')
+subdir('src/ex_comptime_serialization')

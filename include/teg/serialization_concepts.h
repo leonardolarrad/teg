@@ -27,6 +27,7 @@
 #include "teg/compatible.h"
 #include "teg/options.h"
 #include "teg/endian.h"
+#include "teg/members_get.h"
 
 namespace teg::concepts {
 
@@ -43,7 +44,7 @@ concept user_defined_encoding =
     {
         { encoded_size(size_func, const_type) } -> std::convertible_to<u64>;
         { encode(serialize_func, const_type) }  -> std::same_as<teg::error>;
-        { decode(serialize_func, type) }      -> std::same_as<teg::error>;
+        { decode(serialize_func, type) }        -> std::same_as<teg::error>;
     };
 
 ///  \brief A user type with custom serialization.
@@ -57,7 +58,7 @@ concept user_defined_serialization =
         std::function<teg::u64()> && size_func,
         std::function<teg::error()>&& serialize_func) 
     {
-        { usr_serialized_size(size_func, const_type) } -> std::convertible_to<u64>;
+        { usr_serialized_size(size_func, const_type) } -> std::convertible_to<teg::u64>;
         { usr_serialize(serialize_func, const_type) }  -> std::same_as<teg::error>;
         { usr_deserialize(serialize_func, type) }      -> std::same_as<teg::error>;
     };
@@ -65,68 +66,53 @@ concept user_defined_serialization =
 template <class T>
 concept has_valid_compatibility_compoisiton = true;
 
-///  \brief A serializable type.
-///  
-///  Determines whether a type is serializable or not.
-///  
-template <class T>
-concept serializable = true;
-
-///  \brief A type that can be deserialized.
-///  
-///  Determines whether a type can be deserialized or not.
-///  
-template <class T>
-concept deserializable = serializable<T>;
-
 template <class T>
 concept builtin = fundamental<T> || is_enum<T>;
 
 template <class T>
-concept serializable_aggregate = 
-        serializable<T> && aggregate<T>
+concept match_aggregate = 
+        aggregate<T>
     && !bounded_c_array<T> && !optional<T> && !variant<T> && !tuple<T> 
     && !container<T> && !owning_ptr<T> && !user_defined_serialization<T>;
 
 template <class T>
-concept serializable_c_array = 
-        serializable<T> && bounded_c_array<T>
+concept match_c_array = 
+        bounded_c_array<T>
     && !optional<T> && !variant<T> && !tuple<T> && !container<T> 
     && !owning_ptr<T> && !user_defined_serialization<T>;
 
 template <class T>
-concept serializable_container = 
-        serializable<T> && container<T> 
+concept match_container = 
+        container<T> 
     && !optional<T> && !variant<T> && !owning_ptr<T> 
     && !user_defined_serialization<T>;
 
 template <class T>
-concept serializable_tuple =
-        serializable<T> && tuple<T>
+concept match_tuple =
+        tuple<T>
     && !optional<T> && !variant<T> && !container<T> 
     && !owning_ptr<T> && !user_defined_serialization<T>;
 
 template <class T>
-concept serializable_variant = 
-        serializable<T> && variant<T>
+concept match_variant = 
+        variant<T>
     && !optional<T> && !tuple<T> && !container<T> 
     && !owning_ptr<T> && !user_defined_serialization<T>;
 
 template <class T>
-concept serializable_owning_ptr = 
-        serializable<T> && owning_ptr<T>
+concept match_owning_ptr = 
+        owning_ptr<T>
     && !optional<T> && !variant<T> && !tuple<T> && !container<T> 
     && !user_defined_serialization<T>;
 
 template <class T>
-concept serializable_optional = 
-        optional<T> && serializable<typename T::value_type>
+concept match_optional = 
+        optional<T>
     && !variant<T> && !tuple<T> && !container<T> && !owning_ptr<T> 
     && !compatible<T> && !user_defined_serialization<T>;
 
 template <class T>
-concept serializable_compatible = 
-        compatible<T> && serializable<typename T::value_type>;
+concept match_compatible = compatible<T>;
 
 ///  \brief A memory copyable type.
 ///  
@@ -135,7 +121,7 @@ concept serializable_compatible =
 ///  endian-swapping.
 ///  
 template <class T, options Opt>
-concept memory_copyable = (fundamental<T> || is_enum<T>)
+concept safe_memory_copyable = (fundamental<T> || is_enum<T>)
     || (packed_layout<T> && !endian_swapping_required<T, Opt> && !is_varint_forced<Opt>());
 
 ///  \brief A type that cannot be trivially serialized.
@@ -154,7 +140,7 @@ concept non_trivially_serializable =
 template <class T, options Opt>
 concept trivially_serializable_container =
        (fixed_size_container<T>) 
-    && (memory_copyable<typename T::value_type, Opt>)
+    && (safe_memory_copyable<typename T::value_type, Opt>)
     && (!endian_swapping_required<T, Opt>);
 
 ///  \brief A trivially serializable type.
@@ -163,10 +149,120 @@ concept trivially_serializable_container =
 ///  
 template <class T, options Opt>
 concept trivially_serializable = 
-    memory_copyable<T, Opt> && !non_trivially_serializable<T>;
+    safe_memory_copyable<T, Opt> && !non_trivially_serializable<T>;
 
 template <class T, options Opt>
 concept trivially_deserializable = trivially_serializable<T, Opt>;
+
+} // namespace teg::concepts
+
+namespace teg::concepts::internal {
+
+class type_analyzer {
+public:
+    static constexpr u32 max_recursion_depth = 500;
+
+    template <class T, u32 Depth = 0>
+    static constexpr auto is_serializable() -> bool {
+        return is_serializable_impl<T, Depth>(); 
+    }
+
+private:    
+    template <class T, u32 Depth>
+    static constexpr auto is_serializable_impl() -> bool { 
+        return false; // Max recursion depth reached or invalid type.
+    }
+    
+    template <class T, u32 Depth>
+    requires builtin<T> && (Depth < max_recursion_depth)
+    static constexpr auto is_serializable_impl() -> bool { 
+        return true;
+    }
+    
+    template <class T, u32 Depth>
+    requires match_aggregate<T> && (Depth < max_recursion_depth)
+    static constexpr auto is_serializable_impl() -> bool {
+        return [&]<size_t... I>(std::index_sequence<I...>) constexpr -> bool {
+            return (
+                (is_serializable_impl<
+                    std::remove_cvref_t<decltype(get_member<I>(T{}))>, Depth + 1>()
+                ) && ...
+            );
+        }(std::make_index_sequence<members_count_v<T>>{});
+    }
+    
+    template <class T, u32 Depth>
+    requires match_c_array<T> && (Depth < max_recursion_depth)
+    static constexpr auto is_serializable_impl() -> bool { 
+        return is_serializable<std::remove_all_extents_t<T>, Depth + 1>();
+    }
+    
+    template <class T, u32 Depth>
+    requires match_container<T> && (Depth < max_recursion_depth)
+    static constexpr auto is_serializable_impl() -> bool { 
+        return is_serializable<typename T::value_type, Depth + 1>();
+    }
+    
+    template <class T, u32 Depth>
+    requires match_tuple<T> && (Depth < max_recursion_depth)
+    static constexpr auto is_serializable_impl() -> bool { 
+        return std::apply(
+            [](auto&&... members) { 
+                return (is_serializable<std::remove_cvref_t<decltype(members)>, Depth + 1>() && ...); 
+            },
+            T{});
+    }
+    
+    template <class T, u32 Depth>
+    requires match_variant<T> && (Depth < max_recursion_depth)
+    static constexpr auto is_serializable_impl() -> bool {
+        return []<size_t... I>(std::index_sequence<I...>) {
+            return ((is_serializable<std::remove_cvref_t<std::variant_alternative_t<I, T>>, Depth + 1>()) && ...);
+        }(std::make_index_sequence<std::variant_size_v<T>>{});
+    }
+    
+    template <class T, u32 Depth>
+    requires match_owning_ptr<T> && (Depth < max_recursion_depth)
+    static constexpr auto is_serializable_impl() -> bool { 
+        return is_serializable<std::remove_cvref_t<typename T::element_type>, Depth + 1>(); 
+    }
+    
+    template <class T, u32 Depth>
+    requires match_optional<T> && (Depth < max_recursion_depth)
+    static constexpr auto is_serializable_impl() -> bool { 
+        return is_serializable<std::remove_cvref_t<typename T::value_type>, Depth + 1>(); 
+    }
+    
+    template <class T, u32 Depth>
+    requires match_compatible<T> && (Depth < max_recursion_depth)
+    static constexpr auto is_serializable_impl() -> bool { 
+        return is_serializable<std::remove_cvref_t<typename T::value_type>, Depth + 1>(); 
+    }
+    
+    template <class T, u32 Depth>
+    requires user_defined_serialization<T> && (Depth < max_recursion_depth)
+    static constexpr auto is_serializable_impl() -> bool { 
+        return true; 
+    }
+};
+
+} // namespace teg::internal
+
+namespace teg::concepts {
+
+///  \brief A serializable type.
+///  
+///  Determines whether a type is serializable or not.
+///  
+template <class T>
+concept serializable = internal::type_analyzer::is_serializable<T>();
+
+///  \brief A type that can be deserialized.
+///  
+///  Determines whether a type can be deserialized or not.
+///  
+template <class T>
+concept deserializable = serializable<T>;
 
 } // namespace teg::concepts
 

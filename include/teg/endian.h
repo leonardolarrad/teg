@@ -34,7 +34,8 @@ constexpr auto requires_endian_swap() -> bool {
     }
     else {
         constexpr auto system_endian = std::endian::native;
-        constexpr auto config_endian = (Opt & options::big_endian) ? std::endian::big : std::endian::little;
+        constexpr auto config_endian = (Opt & options::big_endian) ? 
+            std::endian::big : std::endian::little;
 
         return system_endian != config_endian;
     }

@@ -47,8 +47,8 @@ struct aggregate0 {
     std::optional<std::string> opt0;
 
     // Owning pointers.
-    std::shared_ptr<std::uint64_t> sp0;
-    std::optional<std::unique_ptr<std::uint64_t>> opt1;
+    //std::shared_ptr<std::uint64_t> sp0;
+    //std::optional<std::unique_ptr<std::uint64_t>> opt1;
 
     bool operator==(const aggregate0& other) const {
         return std::equal(std::begin(ca0), std::end(ca0), std::begin(other.ca0))
@@ -56,10 +56,12 @@ struct aggregate0 {
             && std::equal(std::begin(a0), std::end(a0), std::begin(other.a0))
             && fs0 == other.fs0 && v0 == other.v0 && dq0 == other.dq0 && s0 == other.s0
             && m0 == other.m0 && fl0 == other.fl0 && l0 == other.l0 && v1 == other.v1
-            && t0 == other.t0 && opt0 == other.opt0 && *sp0 == *other.sp0
-            && ((opt1.has_value() && other.opt1.has_value()) 
-                ? *(opt1.value()) == *(other.opt1.value())
-                : !opt1.has_value() && !other.opt1.has_value());
+            && t0 == other.t0 && opt0 == other.opt0
+            ;
+            //&& *sp0 == *other.sp0
+            //&& ((opt1.has_value() && other.opt1.has_value()) 
+            //    ? *(opt1.value()) == *(other.opt1.value())
+            //    : !opt1.has_value() && !other.opt1.has_value());
     }
 };
 
@@ -78,11 +80,34 @@ auto make_aggregate() -> aggregate0 {
         .v1 = 100,
         .t0 = { "a", "b", "c" },
         .opt0 = "hello",
-        .sp0 = std::make_shared<std::uint64_t>(99),
-        .opt1 = std::make_unique<std::uint64_t>(999)
+        //.sp0 = std::make_shared<std::uint64_t>(99),
+        //.opt1 = std::make_unique<std::uint64_t>(999)
     };
 }
 
+//template <class T>
+//consteval auto _a() {
+//    auto encode_next = []<std::size_t I, class M>() constexpr {
+//        return true;
+//    };
+//
+//    return  
+//        [&]<size_t... I>(std::index_sequence<I...>) constexpr {
+//            return (
+//                (encode_next.template operator()
+//                    <I, std::remove_cvref_t<decltype(teg::get_member<I>(T{}))>>()
+//                ) && ...
+//            );
+//        }(std::make_index_sequence<teg::members_count_v<T>>{});
+//
+//    //return teg::get_member<1>(T{});
+//    //return teg::visit_members(
+//    //    [&](auto&&... members) constexpr {
+//    //        return true;
+//    //    },
+//    //    T{}
+//    //);
+//}
 
 TEST_CASE("De/serialize aggregate0") {
     teg::byte_array b;

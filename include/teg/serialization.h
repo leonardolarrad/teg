@@ -61,7 +61,7 @@ TEG_NODISCARD TEG_INLINE constexpr auto serialize(Buf& output_buffer, T const&..
         constexpr auto magic_word = teg::magic_word();
         constexpr auto data_format_options = Opt;
         constexpr auto header_format_options = options::little_endian | options::container_size_1b;
-        constexpr auto schema_hash_table = teg::schema_hash_table<T...>();
+        constexpr auto schema_hash_table = teg::schema_hash_table<std::remove_cvref_t<T>...>();
         
         using buffer_t = Buf;
         using writer_t = buffer_writer<buffer_safety_policy::unsafe, buffer_t>;

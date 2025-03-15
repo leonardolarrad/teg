@@ -252,7 +252,7 @@ private:
     ///  \brief Calculates the encoding size of the given aggregate.
     ///  
     template <class T> 
-    requires concepts::serializable_aggregate<T>
+    requires concepts::match_aggregate<T>
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size_one(T const& aggregate) -> u64 {
         return visit_members(
             [&](auto&&... members) TEG_INLINE_LAMBDA {
@@ -265,7 +265,7 @@ private:
     ///  \brief Calculates the encoding size of the given c-array.
     ///  
     template <class T> 
-    requires concepts::serializable_c_array<T> 
+    requires concepts::match_c_array<T> 
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size_one(T const& c_array) -> u64 {
         return std::size(c_array) * encoded_size_one(c_array[0]);
     }
@@ -273,7 +273,7 @@ private:
     ///  \brief Calculates the encoding size of the given fixed-size container.
     ///  
     template <class T> 
-    requires (concepts::serializable_container<T>)
+    requires (concepts::match_container<T>)
           && (concepts::fixed_size_container<T>)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size_one(T const& fixed_container) -> u64 {
 
@@ -295,7 +295,7 @@ private:
     ///  \brief Calculates the encoding size of the given container.
     ///  
     template <class T> 
-    requires (concepts::serializable_container<T>)
+    requires (concepts::match_container<T>)
           && (!concepts::fixed_size_container<T>)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size_one(T const& container) -> u64 {
 
@@ -326,7 +326,7 @@ private:
 
     ///  \brief Calculates the encoding size of the given owning pointer.
     ///  
-    template <class T> requires (concepts::serializable_owning_ptr<T>)
+    template <class T> requires (concepts::match_owning_ptr<T>)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size_one(T const& ptr) -> u64 {
         if (ptr == nullptr) {
             return 0;
@@ -336,7 +336,7 @@ private:
 
     ///  \brief Calculates the encoding size of the given optional.
     ///  
-    template <class T> requires (concepts::serializable_optional<T>)
+    template <class T> requires (concepts::match_optional<T>)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size_one(T const& optional) -> u64 {    
         if (optional.has_value()) {
             return sizeof(byte_type) + encoded_size_one(optional.value());
@@ -348,7 +348,7 @@ private:
 
     ///  \brief Calculates the encoding size of the given tuple-like object.
     ///  
-    template <class T> requires (concepts::serializable_tuple<T>) 
+    template <class T> requires (concepts::match_tuple<T>) 
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size_one(T const& tuple) -> u64 {    
         return std::apply(
             [](auto&&... elements) TEG_INLINE_LAMBDA {
@@ -360,7 +360,7 @@ private:
 
     ///  \brief Calculates the encoding size of the given variant.
     ///  
-    template <class T> requires (concepts::serializable_variant<T>)
+    template <class T> requires (concepts::match_variant<T>)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size_one(T const& variant) -> u64 {
         const u64 index_size = sizeof(variant_index_type);
         const u64 element_size = std::visit(
@@ -384,7 +384,7 @@ private:
 
     ///  \brief Calculates the encoding size of the given compatible type.
     ///
-    template <class T> requires (concepts::serializable_compatible<T>)
+    template <class T> requires (concepts::match_compatible<T>)
     TEG_NODISCARD TEG_INLINE static constexpr auto encoded_size_one(T const& compatible) -> u64 {
         if (compatible.has_value()) {
             return sizeof(byte_type) + encoded_size_one(compatible.value());
@@ -455,7 +455,7 @@ private:
     ///  \brief Serialize the given aggregate.
     ///  
     template <class T>
-        requires (concepts::serializable_aggregate<T>)
+        requires (concepts::match_aggregate<T>)
               && (!concepts::trivially_serializable<T, Opt>)
     TEG_NODISCARD TEG_INLINE constexpr auto encode_one(T const& aggregate) -> error {
 
@@ -471,7 +471,7 @@ private:
     ///  \brief Serialize the given bounded c-array.
     ///  
     template <class T> 
-        requires (concepts::serializable_c_array<T>) 
+        requires (concepts::match_c_array<T>) 
               && (!concepts::trivially_serializable<T, Opt>)
     TEG_NODISCARD TEG_INLINE constexpr auto encode_one(T const& c_array) -> error {
 
@@ -493,7 +493,7 @@ private:
     ///  in a generic way.
     ///  
     template <class T> 
-        requires (concepts::serializable_container<T>)
+        requires (concepts::match_container<T>)
               && (!concepts::trivially_serializable_container<T, Opt>)
     TEG_NODISCARD TEG_INLINE constexpr auto encode_one(T const& container) -> error {
 
@@ -563,7 +563,7 @@ private:
 
     ///  \brief Serializes a given owning pointer.
     ///  
-    template <class T> requires (concepts::serializable_owning_ptr<T>)
+    template <class T> requires (concepts::match_owning_ptr<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto encode_one(T const& ptr) -> error  {
 
         if (ptr == nullptr) TEG_UNLIKELY {
@@ -576,7 +576,7 @@ private:
 
     ///  \brief Serializes the given optional.
     ///  
-    template <class T> requires (concepts::serializable_optional<T>)
+    template <class T> requires (concepts::match_optional<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto encode_one(T const& optional) -> error {
 
         if (!optional.has_value()) TEG_UNLIKELY {
@@ -589,7 +589,7 @@ private:
 
     ///  \brief Serializes the given tuple-like object. 
     ///  
-    template <class T> requires (concepts::serializable_tuple<T>)
+    template <class T> requires (concepts::match_tuple<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto encode_one(T const& tuple) -> error {    
 
         return std::apply(
@@ -603,7 +603,7 @@ private:
 
     ///  \brief Serializes the given variant.
     ///  
-    template <class T> requires (concepts::serializable_variant<T>)
+    template <class T> requires (concepts::match_variant<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto encode_one(T const& variant) -> error {
 
         // Check valueless by exception.
@@ -641,7 +641,7 @@ private:
 
     }
 
-    template <class T> requires (concepts::serializable_compatible<T>)
+    template <class T> requires (concepts::match_compatible<T>)
     TEG_NODISCARD TEG_INLINE constexpr auto encode_one(T const& compatible) -> error {
 
         if (!compatible.has_value()) TEG_UNLIKELY {

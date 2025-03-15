@@ -11,7 +11,7 @@
 
 TEST_CASE("Schema encoding") {
     SECTION("Builtin types") {
-        COMPTIME_ASSERT((teg::schema<1, char>() == teg::make_fixed_string("char")));
+        COMPTIME_ASSERT((teg::schema<1, char>() == teg::make_fixed_string("u8")));
         COMPTIME_ASSERT((teg::schema<1, uint8_t>() == teg::make_fixed_string("u8")));
         COMPTIME_ASSERT((teg::schema<1, uint16_t>() == teg::make_fixed_string("u16")));
         COMPTIME_ASSERT((teg::schema<1, uint32_t>() == teg::make_fixed_string("u32")));
