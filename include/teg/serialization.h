@@ -122,18 +122,56 @@ TEG_NODISCARD TEG_INLINE constexpr auto serialize(Buf& output_buffer, T const&..
     }
 }
 
-template <options Opt = default_mode, class... T> requires (concepts::serializable<T> && ...)
-TEG_NODISCARD TEG_INLINE constexpr auto serialize(std::ostream& output_stream, T const&... objs) -> error {
+///  \brief Serializes the provided objects into the specified buffer using a binary format.
+///  
+///  \tparam  Opt            The options for serialization.
+///  \tparam  ...T           The types of the objects to serialize.
+///  \param   output_stream  The stream to serialize the data into.
+///  \param   objs...        The objects to be serialized.
+///  \return                 An error code indicating the success or failure of
+///                          the serialization process.
+///  \example 
+///  \code
+///      std::ofstream stream{"file.bin", std::ios::binary};
+///      teg::serialize(buffer, "A string!", 55, 9.99f).or_throw();
+///  \endcode
+///  
+template <options Opt = default_mode, concepts::serializable... T>
+TEG_NODISCARD TEG_INLINE constexpr auto serialize(std::ostream& output_stream, T const&... data) -> error {
+    if (!output_stream) {
+        return error { std::errc::no_stream_resources };
+    }
 
     try {
-        constexpr auto options = Opt;
-        using encoder_t = encoder<options, stream_writer>;
-        return encoder_t{ stream_writer{ output_stream } }.encode(objs...);
+        constexpr auto magic_word = teg::magic_word();
+        constexpr auto data_format_options = Opt;
+        constexpr auto header_format_options = options::little_endian | options::container_size_1b;
+        constexpr auto schema_hash_table = teg::schema_hash_table<std::remove_cvref_t<T>...>();
+        
+        using writer_t = stream_writer;
+        using header_encoder_t = encoder<header_format_options, writer_t>;
+        using data_encoder_t = encoder<data_format_options, writer_t>;
+        
+        // Encode the header.
+        auto header_encoder = header_encoder_t{ writer_t{ output_stream } };
+        auto result = header_encoder.encode(
+            magic_word,
+            data_format_options,
+            static_cast<u8>(schema_hash_table.size()),
+            schema_hash_table
+        );
+
+        if (failure(result)) TEG_UNLIKELY {
+            return result;
+        }
+
+        // Encode the data.
+        auto data_encoder = data_encoder_t { writer_t { output_stream } };
+        return data_encoder.encode(data...);
     }
     catch (...) {
         return error { std::errc::interrupted };
     }
-
 }
 
 } // namespace teg

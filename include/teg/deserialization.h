@@ -78,18 +78,56 @@ TEG_NODISCARD TEG_INLINE constexpr auto deserialize(Buf& input_buffer, T&... obj
     return data_decoder.decode(objs...);    
 }
 
-template <options Opt = default_mode, class... T> requires (concepts::serializable<T> && ...)
+template <options Opt = default_mode, concepts::serializable... T>
 TEG_NODISCARD TEG_INLINE constexpr auto deserialize(std::istream& input_stream, T&... objs) -> error {
 
-    try {
-        constexpr auto options = Opt;
-        using decoder_t = decoder<options, stream_reader>;
-        return decoder_t{ stream_reader{ input_stream } }.decode(objs...);
-    }
-    catch (...) {
-        return error { std::errc::interrupted };
+    constexpr auto host_magic_word = teg::magic_word();
+    constexpr auto host_data_opts = Opt;
+    constexpr auto host_header_opts = options::little_endian | options::container_size_1b;
+    constexpr auto host_schema_table = teg::schema_hash_table<T...>();
+
+    using reader_t = stream_reader;
+    using header_decoder_t = decoder<host_header_opts, reader_t>;
+    using data_decoder_t = decoder<host_data_opts, reader_t>;
+
+    auto header_decoder = header_decoder_t{ reader_t { input_stream } };
+
+    // Decode the header.
+    u32 client_magic_word;
+    options client_opts;
+    u8 client_schema_table_size;
+
+    auto result = header_decoder.decode(
+        client_magic_word, 
+        client_opts,
+        client_schema_table_size         
+    );
+
+    if (failure(result)) {
+        return result;
     }
 
+    // Verify magic word and options.
+    if ((client_magic_word != host_magic_word) || (client_opts != host_data_opts)) {
+        return error { std::errc::bad_file_descriptor };            
+    }
+    
+    // Verify schema.
+    for (u8 i = 0; i < client_schema_table_size; ++i) {
+        u32 client_schema_hash;
+        
+        if (result = header_decoder.decode(client_schema_hash); failure(result)) TEG_UNLIKELY {
+            return result;
+        }
+
+        if ((i < host_schema_table.size()) && (client_schema_hash != host_schema_table[i])) TEG_UNLIKELY {
+            return error { std::errc::protocol_error };
+        }
+    }
+
+    // Decode the data.
+    auto data_decoder = data_decoder_t{ reader_t { input_stream }}; 
+    return data_decoder.decode(objs...); 
 }
 
 } // namespace teg

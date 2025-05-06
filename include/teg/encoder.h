@@ -110,7 +110,7 @@ public:
     template <bool SwapEndian = false>
     TEG_NODISCARD TEG_INLINE auto write_bytes(byte_type const* data, std::size_t size) -> error {
 
-        if constexpr (SwapEndian) {
+        if constexpr (!SwapEndian) {
             m_stream.write(data, size);
 
             if (m_stream.fail()) TEG_UNLIKELY {

@@ -95,10 +95,10 @@ public:
     constexpr stream_reader(std::istream& stream) noexcept : m_stream(stream) {}
     constexpr stream_reader(std::istream&& stream) noexcept : m_stream(stream) {}
         
-    template <bool swap_endian = false>
+    template <bool SwapEndian = false>
     TEG_NODISCARD TEG_INLINE auto read_bytes(byte_type* data, std::size_t size) -> error {
 
-        if constexpr (swap_endian) {
+        if constexpr (!SwapEndian) {
             m_stream.read(data, size);
 
             if (m_stream.fail()) TEG_UNLIKELY {
