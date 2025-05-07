@@ -47,7 +47,6 @@
 #include "teg/varint.h"
 #include "teg/varint_serialization.h"
 #include "teg/version.h"
-#include "teg/xxhash.h"
 #include "teg/util.h"
 
 #endif // TEG_H

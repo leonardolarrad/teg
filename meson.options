@@ -17,3 +17,9 @@ option(
   value : false,
   description : 'Enables benchmarking.'
 )
+option(
+  'generate_asm',
+  type : 'boolean',
+  value : false,
+  description : 'Generates assembly code.'
+)
