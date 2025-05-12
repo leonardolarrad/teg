@@ -72,6 +72,10 @@ static constexpr options default_mode =
     options::little_endian | options::allocation_limit_2gib | 
     options::container_size_4b | options::variant_index_1b;
 
+///  \brief Compact mode.
+///  
+///  The compact mode converts all integers to varint format using uleb-128.
+///  
 static constexpr options compact_mode = 
     options::little_endian | options::allocation_limit_1gib | 
     options::container_size_varint | options::variant_index_1b | options::force_varint;
