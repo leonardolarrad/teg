@@ -44,7 +44,7 @@ public:
     ///
     template <class T> requires (std::unsigned_integral<T>)
     TEG_INLINE static constexpr auto decode(T value) -> std::make_signed_t<T> {
-        return static_cast<std::make_signed_t<T>>((value >> 1) ^ -(value & 1));
+        return static_cast<std::make_signed_t<T>>((value >> 1) ^ - static_cast<std::make_signed_t<T>>(value & 1));
     }
 };
 

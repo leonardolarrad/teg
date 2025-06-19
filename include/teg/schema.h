@@ -281,7 +281,7 @@ public:
     static constexpr auto encode() -> decltype(auto) {
         return fixed_container_prefix
              + container_begin
-             + encode<std::remove_extent_t<T>>()
+             + encode<std::remove_cvref_t<std::remove_extent_t<T>>>()
              + container_end;
     }
 
@@ -292,11 +292,11 @@ public:
         if constexpr (concepts::fixed_size_container<T>) {
             return fixed_container_prefix
                  + container_begin
-                 + encode<typename T::value_type>()
+                 + encode<std::remove_cvref_t<typename T::value_type>>()
                  + container_end;
         } else {
             return container_begin
-                 + encode<typename T::value_type>()
+                 + encode<std::remove_cvref_t<typename T::value_type>>()
                  + container_end;
         }
     }

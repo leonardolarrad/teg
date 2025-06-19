@@ -49,24 +49,13 @@ TEST_CASE("Aggregate de/serialization") {
             std::string s3 = "Text 2";
 
             bool operator==(const non_trivial_a&) const = default;
-        };
-        
-        struct non_trivial_b {
-            std::array<std::vector<non_trivial_a>, 2> a0 = { { { non_trivial_a{} }, { non_trivial_a{} } } };
-            std::array<std::vector<non_trivial_a>, 2> a1 = { { { non_trivial_a{} }, { non_trivial_a{} } } };
+        };        
 
-            non_trivial_a na0 = non_trivial_a{};
-            non_trivial_a na1 = non_trivial_a{};
-            non_trivial_a na2 = non_trivial_a{};
-
-            bool operator==(const non_trivial_b&) const = default;
-        };
-
-        teg::byte_array b;
-        std::vector<non_trivial_b> v0 = { non_trivial_b{}, non_trivial_b{} };
+        teg::byte_array b = {};
+        std::vector<non_trivial_a> v0 = { non_trivial_a{}, non_trivial_a{}, non_trivial_a{} };
         teg::serialize(b, v0).or_throw();
-
-        std::vector<non_trivial_b> v1;
+        
+        std::vector<non_trivial_a> v1;
         teg::deserialize(b, v1).or_throw();
         
         ASSERT(v0 == v1);

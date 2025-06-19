@@ -1,6 +1,7 @@
 .vscode/
 .cache/
 .ccls-cache/
+./compile_commands.json
 **/__pycache__
 **/build*
 **/scripts/*.tmp
