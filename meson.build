@@ -8,6 +8,7 @@ project(
       'cpp_std=c++20',
       'default_library=static'  
     ],
+  meson_version: '>=1.1.0',
 )
 
 if get_option('generate_asm')
@@ -21,7 +22,7 @@ endif
 run_command(
   'python', './scripts/generate_headers.py', 
   '--n', get_option('max_visit_members').to_string(), 
-  '--output-dir', meson.source_root() + '/include/teg/',
+  '--output-dir', meson.project_source_root() + '/include/teg/',
   check: true)
 
 # Build project
