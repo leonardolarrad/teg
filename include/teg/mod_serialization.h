@@ -16,16 +16,26 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-#ifndef TEG_UTIL_H
-#define TEG_UTIL_H
+#ifndef TEG_MOD_SERIALIZATION_H
+#define TEG_MOD_SERIALIZATION_H
 
-namespace teg {
+#include "./mod_reflecton.h"
+#include "./mod_varint.h"
 
-template<class F, int = (F{}(), 0)>
-constexpr bool is_constexpr_friendly(F) { return true; }
+#include "./version.h"
+#include "./buffer.h"
+#include "./c_array.h"
+#include "./compatible.h"
+#include "./decoder.h"
+#include "./encoder.h"
+#include "./endian.h"
+#include "./error.h"
+#include "./options.h"
+#include "./schema.h"
+#include "./serialization_concepts.h"
+#include "./serialization.h"
+#include "./deserialization.h"
+#include "./unreachable.h"
+#include "./varint_serialization.h"
 
-constexpr bool is_constexpr_friendly(...) { return false; }
-
-} // namespace teg
-
-#endif // TEG_UTIL_H
+#endif // TEG_MOD_SERIALIZATION_H

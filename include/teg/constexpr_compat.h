@@ -16,43 +16,16 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-#ifndef TEG_H
-#define TEG_H
+#ifndef TEG_UTIL_H
+#define TEG_UTIL_H
 
-#include "./def.h"
-#include "./md5.h"
-#include "./fixed_string.h"
+namespace teg {
 
-///  Reflection Module.
-#include "./core_concepts.h"
-#include "./container_concepts.h"
-#include "./members_count.h"
-#include "./members_equal.h"
-#include "./members_get.h"
-#include "./members_tie.h"
-#include "./members_visitor.h"
-#include "./alignment.h"
-#include "./index_table.h"
-#include "./constexpr_compat.h"
+template<class F, int = (F{}(), 0)>
+constexpr bool is_constexpr_compat(F) { return true; }
 
-///  Varint Module.
-#include "./varint.h"
+constexpr bool is_constexpr_compat(...) { return false; }
 
-///  Serialization Module.
-#include "./version.h"
-#include "./buffer.h"
-#include "./c_array.h"
-#include "./compatible.h"
-#include "./decoder.h"
-#include "./encoder.h"
-#include "./endian.h"
-#include "./error.h"
-#include "./options.h"
-#include "./schema.h"
-#include "./serialization_concepts.h"
-#include "./serialization.h"
-#include "./deserialization.h"
-#include "./unreachable.h"
-#include "./varint_serialization.h"
+} // namespace teg
 
-#endif // TEG_H
+#endif // TEG_UTIL_H

@@ -20,7 +20,7 @@
 #define TEG_CORE_CONCEPTS_H
 
 #include "teg/def.h"
-#include "teg/util.h"
+#include "teg/constexpr_compat.h"
 
 namespace teg::concepts {
 
@@ -293,7 +293,7 @@ concept variant = internal::is_variant_v<T>;
 ///
 template <class T>
 concept bit_castable = requires { std::bit_cast<T>(std::array<std::byte, sizeof(T)>{}); }
-    && is_constexpr_friendly([] { std::ignore = std::bit_cast<T>(std::array<std::byte, sizeof(T)>{}); });
+    && is_constexpr_compat([] { std::ignore = std::bit_cast<T>(std::array<std::byte, sizeof(T)>{}); });
 
 } // namespace teg::concepts
 

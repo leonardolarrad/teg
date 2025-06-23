@@ -69,7 +69,7 @@ namespace internal {
 
 using round_data = std::array<u32, 16>;
 
-static constexpr std::array<u32, 64> constants = {
+inline constexpr std::array<u32, 64> constants = {
     0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a,
     0xa8304613, 0xfd469501, 0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be,
     0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821, 0xf61e2562, 0xc040b340,
@@ -83,27 +83,25 @@ static constexpr std::array<u32, 64> constants = {
     0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391
 };
 
-static constexpr std::array<u32, 16> shifts = {
+inline constexpr std::array<u32, 16> shifts = {
     7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21
 };
 
-static constexpr digest initial_digest_data = {
+inline constexpr digest initial_digest_data = {
     0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476
 };
 
-static constexpr auto get_padded_message_length(u32 len) -> u32 {
+constexpr auto get_padded_message_length(u32 len) -> u32 {
     return (((len + 1 + 8) + 63) / 64) * 64;
 }
 
-static constexpr auto extract_byte(u64 value, u32 i) -> u8 {
+constexpr auto extract_byte(u64 value, u32 i) -> u8 {
     assert(i < 8u);
     return static_cast<u8>((value >> (i * 8)) & 0xff);
 }
 
 template <concepts::byte T>
-static constexpr auto get_padded_message_byte
-    (std::span<T const> data, u32 m, u32 i) -> u8 {
-
+constexpr auto get_padded_message_byte(std::span<T const> data, u32 m, u32 i) -> u8 {
     assert(i < m);
     assert(data.size() < m);
     assert(m % 64 == 0) ;
@@ -120,9 +118,7 @@ static constexpr auto get_padded_message_byte
 }
 
 template <concepts::byte T>
-static constexpr auto get_padded_message_word
-    (std::span<T const> data, u32 m, u32 i) -> u32 {
-
+constexpr auto get_padded_message_word(std::span<T const> data, u32 m, u32 i) -> u32 {
     assert(i % 4 == 0);
     assert(i < m);
     assert(data.size() < m);
@@ -135,8 +131,7 @@ static constexpr auto get_padded_message_word
 }
 
 template <concepts::byte T>
-static constexpr auto get_round_data(std::span<T const> data, u32 m, u32 i) -> round_data {
-
+constexpr auto get_round_data(std::span<T const> data, u32 m, u32 i) -> round_data {
     assert(i % 64 == 0);
     assert(i < m);
     assert(data.size() < m);
@@ -162,9 +157,7 @@ static constexpr auto get_round_data(std::span<T const> data, u32 m, u32 i) -> r
     };
 }
 
-static constexpr auto compute_f
-    (u32 i, u32 b, u32 c, u32 d) -> u32 {
-
+constexpr auto compute_f(u32 i, u32 b, u32 c, u32 d) -> u32 {
     assert(i < 64);
 
     if (i < 16) {
@@ -178,11 +171,11 @@ static constexpr auto compute_f
     }
 }
 
-static constexpr u32 compute_f(u32 i, digest mid) {
+constexpr auto compute_f(u32 i, digest mid) -> u32 {
     return compute_f(i, mid.b, mid.c, mid.d);
 }
 
-static constexpr u32 compute_g(u32 i) {
+constexpr auto compute_g(u32 i) -> u32 {
     assert(i < 64);
 
     if (i < 16) {
@@ -196,17 +189,17 @@ static constexpr u32 compute_g(u32 i) {
     }
 }
 
-static constexpr auto get_shift(u32 i) -> u32 {
+constexpr auto get_shift(u32 i) -> u32 {
     assert(i < 64);
     return shifts[(i / 16) * 4 + (i % 4)];
 }
 
-static constexpr auto left_rotate(u32 value, u32 bits) -> u32 {
+constexpr auto left_rotate(u32 value, u32 bits) -> u32 {
     assert(bits < 32);
     return (value << bits) | (value >> (32 - bits));
 }
 
-static constexpr auto apply_step(u32 i, round_data const& data, digest mid) -> digest {
+constexpr auto apply_step(u32 i, round_data const& data, digest mid) -> digest {
     assert(i < 64);
     
     const u32 g = compute_g(i);
@@ -222,7 +215,7 @@ static constexpr auto apply_step(u32 i, round_data const& data, digest mid) -> d
     };
 }
 
-static constexpr auto add(digest d0, digest d1) -> digest {
+constexpr auto add(digest d0, digest d1) -> digest {
     return digest {
         d0.a + d1.a, d0.b + d1.b,
         d0.c + d1.c, d0.d + d1.d
@@ -230,7 +223,7 @@ static constexpr auto add(digest d0, digest d1) -> digest {
 }
 
 template <concepts::byte T>
-static constexpr auto process_message(std::span<T const> message) -> digest {
+constexpr auto process_message(std::span<T const> message) -> digest {
     const u32 m = get_padded_message_length(static_cast<u32>(message.size()));
     
     digest digest0 = initial_digest_data;
@@ -247,20 +240,20 @@ static constexpr auto process_message(std::span<T const> message) -> digest {
     return digest0;
 }
 
-static constexpr auto swap_endian(u32 a) -> u32 {
+constexpr auto swap_endian(u32 a) -> u32 {
     return
         ((a & 0xff) << 24) | (((a >> 8) & 0xff) << 16) |
         (((a >> 16) & 0xff) << 8) | ((a >> 24) & 0xff);
 }
 
 template <concepts::byte T>
-static constexpr auto hash_u32_impl(std::span<T const> data) -> u32 {
+constexpr auto hash_u32_impl(std::span<T const> data) -> u32 {
     digest digest = process_message(data);
     return swap_endian(digest.a);
 }
 
 template <concepts::byte T>
-static constexpr auto hash_u64_impl(std::span<T const> data) -> u64 {
+constexpr auto hash_u64_impl(std::span<T const> data) -> u64 {
     digest digest = process_message(data);
 
     return (static_cast<u64>(swap_endian(digest.a)) << 32) 
@@ -268,7 +261,7 @@ static constexpr auto hash_u64_impl(std::span<T const> data) -> u64 {
 }
 
 template <concepts::byte T>
-static constexpr auto hash_u128_impl(std::span<T const> data) -> digest {
+constexpr auto hash_u128_impl(std::span<T const> data) -> digest {
     
     digest digest = process_message(data);
 
@@ -280,7 +273,7 @@ static constexpr auto hash_u128_impl(std::span<T const> data) -> digest {
     };
 }
 
-static constexpr auto to_hex(u32 value) -> fixed_string<8> {
+constexpr auto to_hex(u32 value) -> fixed_string<8> {
     constexpr char hex_digits[] = "0123456789abcdef";
 
     return {
@@ -296,7 +289,7 @@ static constexpr auto to_hex(u32 value) -> fixed_string<8> {
 }
 
 template <concepts::byte T>
-static constexpr auto hash(std::span<T const> data) -> fixed_string<32> {
+constexpr auto hash(std::span<T const> data) -> fixed_string<32> {
     digest digest = process_message(data);
 
     return to_hex(swap_endian(digest.a)) 
@@ -346,10 +339,6 @@ constexpr auto hash_u64(std::span<T const> data) -> u64 {
 constexpr auto hash_u64(std::string_view data) -> u64 {
     return hash_u64(std::span(data));
 }
-
-///  \brief Md5 digest representation as a 128-bit tuple.
-///
-//using digest = std::tuple<u32, u32, u32, u32>;
 
 ///  \brief Computes the MD5 hash of the given data.
 ///  

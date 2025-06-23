@@ -16,43 +16,20 @@
 ///     misrepresented as being the original software.
 ///  3. This notice may not be removed or altered from any source distribution.
 
-#ifndef TEG_H
-#define TEG_H
+export module teg.serialization;
 
-#include "./def.h"
-#include "./md5.h"
-#include "./fixed_string.h"
-
-///  Reflection Module.
-#include "./core_concepts.h"
-#include "./container_concepts.h"
-#include "./members_count.h"
-#include "./members_equal.h"
-#include "./members_get.h"
-#include "./members_tie.h"
-#include "./members_visitor.h"
-#include "./alignment.h"
-#include "./index_table.h"
-#include "./constexpr_compat.h"
-
-///  Varint Module.
-#include "./varint.h"
-
-///  Serialization Module.
-#include "./version.h"
-#include "./buffer.h"
-#include "./c_array.h"
-#include "./compatible.h"
-#include "./decoder.h"
-#include "./encoder.h"
-#include "./endian.h"
-#include "./error.h"
-#include "./options.h"
-#include "./schema.h"
-#include "./serialization_concepts.h"
-#include "./serialization.h"
-#include "./deserialization.h"
-#include "./unreachable.h"
-#include "./varint_serialization.h"
-
-#endif // TEG_H
+export import "teg/version.h";
+export import "teg/buffer.h";
+export import "teg/c_array.h";
+export import "teg/compatible.h";
+export import "teg/decoder.h";
+export import "teg/encoder.h";
+export import "teg/endian.h";
+export import "teg/error.h";
+export import "teg/options.h";
+export import "teg/schema.h";
+export import "teg/serialization_concepts.h";
+export import "teg/serialization.h";
+export import "teg/deserialization.h";
+export import "teg/unreachable.h";
+export import "teg/varint_serialization.h";

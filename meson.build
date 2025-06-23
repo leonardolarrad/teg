@@ -36,6 +36,27 @@ teg_dep = declare_dependency(
   compile_args : [],
 )
 
+# Build lib with modules
+if get_option('with_modules')
+  tegmod_src = [
+    'src/teg.ixx',
+    'src/reflection.ixx',
+    'src/varint.ixx',
+    'src/serialization.ixx',
+  ]
+
+  tegmod_lib = static_library(
+    'tegmod',
+    tegmod_src,
+    dependencies: [teg_dep],
+  )
+
+  tegmod_dep = declare_dependency(
+    include_directories : teg_inc,
+    link_with : [tegmod_lib],
+  )
+endif
+
 # Build tests
 if get_option('enable_tests')
   subdir('tests')

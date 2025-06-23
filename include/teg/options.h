@@ -68,7 +68,7 @@ constexpr auto operator&(options a, options b) -> bool {
 ///  and the default variant index type to 1 byte. That means that a container can hold up to 
 ///  2^32 (4'294'967'296) elements, and a variant can have up to 2^8 (255) alternatives.
 ///  
-static constexpr options default_mode = 
+inline constexpr options default_mode = 
     options::little_endian | options::allocation_limit_2gib | 
     options::container_size_4b | options::variant_index_1b;
 
@@ -76,13 +76,13 @@ static constexpr options default_mode =
 ///  
 ///  The compact mode converts all integers to varint format using uleb-128.
 ///  
-static constexpr options compact_mode = 
+inline constexpr options compact_mode = 
     options::little_endian | options::allocation_limit_1gib | 
     options::container_size_varint | options::variant_index_1b | options::force_varint;
 
 ///  \brief Use the architcture native word size and endianess to de/serialize data.
 ///  \warning Native mode is not portable.
-static constexpr options native_mode = 
+inline constexpr options native_mode = 
     options::native_endian | options::allocation_limit_4gib | 
     options::container_size_native | options::variant_index_native;
 

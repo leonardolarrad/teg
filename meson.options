@@ -23,3 +23,9 @@ option(
   value : false,
   description : 'Generates assembly code.'
 )
+option(
+  'with_modules',
+  type : 'boolean',
+  value : false,
+  description : 'Use cpp20 modules.'
+)

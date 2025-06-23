@@ -49,6 +49,7 @@
 #ifndef TEG_INDEX_TABLE_H
 #define TEG_INDEX_TABLE_H
 
+#include "teg/def.h"
 #include "teg/unreachable.h"
 
 namespace teg::internal {

@@ -4559,7 +4559,7 @@ namespace teg {
 
 ///  \brief The maximum number of members that can be visited using `visit_members`.
 ///  
-constexpr static auto max_visit_members = 255;
+constexpr auto max_visit_members = 255;
 
 namespace concepts {
 

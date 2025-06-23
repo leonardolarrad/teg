@@ -82,7 +82,7 @@ namespace teg {{
 
 ///  \\brief The maximum number of members that can be visited using `visit_members`.
 ///  
-constexpr static auto max_visit_members = {n};
+constexpr auto max_visit_members = {n};
 
 namespace concepts {{
 
